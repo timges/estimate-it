@@ -1,0 +1,31 @@
+- generic [ref=e16]:
+  - banner [ref=e17]:
+    - heading "estimate." [level=1] [ref=e18]
+    - generic [ref=e20] [cursor=pointer]: bird-caterpillar
+    - generic [ref=e21]: connected
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: No Story
+        - generic [ref=e26]: Estimating...
+        - generic [ref=e27]: Discuss the story verbally, then pick your estimate.
+      - button "+ Add Story" [ref=e28] [cursor=pointer]
+      - generic [ref=e29]:
+        - heading "Your Estimate" [level=3] [ref=e30]
+        - generic [ref=e31]:
+          - button "1" [ref=e32] [cursor=pointer]
+          - button "2" [ref=e33] [cursor=pointer]
+          - button "3" [ref=e34] [cursor=pointer]
+          - button "5" [ref=e35] [cursor=pointer]
+          - button "8" [ref=e36] [cursor=pointer]
+          - button "13" [ref=e37] [cursor=pointer]
+          - button "21" [ref=e38] [cursor=pointer]
+          - button "☕" [ref=e39] [cursor=pointer]
+      - button "Reveal Estimates" [ref=e41] [cursor=pointer]
+    - generic [ref=e42]:
+      - heading "Participants (1)" [level=3] [ref=e43]
+      - generic [ref=e45]:
+        - generic [ref=e46]: AL
+        - generic [ref=e47]:
+          - generic [ref=e48]: Alice
+          - generic [ref=e49]: picking...
