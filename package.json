@@ -8,7 +8,9 @@
     "preview": "wrangler dev",
     "deploy": "vite build && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "framer-motion": "^12.0.0",
