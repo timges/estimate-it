@@ -14,46 +14,47 @@
 
 ### Backend (Cloudflare Worker)
 
-| File | Responsibility |
-|------|---------------|
-| `src/worker/index.ts` | Entry point, asset serving, WebSocket upgrade |
-| `src/worker/hono.ts` | Hono app with API routes |
-| `src/worker/room.ts` | Durable Object — Room state, WebSocket, SQLite |
+| File                  | Responsibility                                 |
+| --------------------- | ---------------------------------------------- |
+| `src/worker/index.ts` | Entry point, asset serving, WebSocket upgrade  |
+| `src/worker/hono.ts`  | Hono app with API routes                       |
+| `src/worker/room.ts`  | Durable Object — Room state, WebSocket, SQLite |
 | `src/shared/types.ts` | Shared message types between client and server |
 
 ### Frontend (React SPA)
 
-| File | Responsibility |
-|------|---------------|
-| `src/client/App.tsx` | Root component, router |
-| `src/client/pages/Landing.tsx` | Create/join room |
-| `src/client/pages/Room.tsx` | Estimation room |
-| `src/client/components/CardGrid.tsx` | 3D Fibonacci card selection |
-| `src/client/components/CardGrid.module.css` | 3D card table styles |
-| `src/client/components/ParticipantList.tsx` | Sidebar with participants |
-| `src/client/components/ParticipantList.module.css` | Sidebar styles |
-| `src/client/components/RevealBoard.tsx` | Post-reveal results |
-| `src/client/components/RevealBoard.module.css` | Reveal animation styles |
-| `src/client/components/StoryCard.tsx` | Current story display |
-| `src/client/components/StoryCard.module.css` | Story card styles |
-| `src/client/lib/ws.ts` | WebSocket client with reconnection |
-| `src/client/store/room.ts` | Zustand room state store |
-| `src/shared/dictionary.ts` | ~2000 curated words for room codes |
+| File                                               | Responsibility                     |
+| -------------------------------------------------- | ---------------------------------- |
+| `src/client/App.tsx`                               | Root component, router             |
+| `src/client/pages/Landing.tsx`                     | Create/join room                   |
+| `src/client/pages/Room.tsx`                        | Estimation room                    |
+| `src/client/components/CardGrid.tsx`               | 3D Fibonacci card selection        |
+| `src/client/components/CardGrid.module.css`        | 3D card table styles               |
+| `src/client/components/ParticipantList.tsx`        | Sidebar with participants          |
+| `src/client/components/ParticipantList.module.css` | Sidebar styles                     |
+| `src/client/components/RevealBoard.tsx`            | Post-reveal results                |
+| `src/client/components/RevealBoard.module.css`     | Reveal animation styles            |
+| `src/client/components/StoryCard.tsx`              | Current story display              |
+| `src/client/components/StoryCard.module.css`       | Story card styles                  |
+| `src/client/lib/ws.ts`                             | WebSocket client with reconnection |
+| `src/client/store/room.ts`                         | Zustand room state store           |
+| `src/shared/dictionary.ts`                         | ~2000 curated words for room codes |
 
 ### Config
 
-| File | Responsibility |
-|------|---------------|
+| File             | Responsibility                     |
+| ---------------- | ---------------------------------- |
 | `wrangler.jsonc` | Worker + DO + static assets config |
-| `vite.config.ts` | Vite + React + CSS Modules |
-| `tsconfig.json` | TypeScript config |
-| `package.json` | Dependencies |
+| `vite.config.ts` | Vite + React + CSS Modules         |
+| `tsconfig.json`  | TypeScript config                  |
+| `package.json`   | Dependencies                       |
 
 ---
 
 ### Task 1: Project Scaffold
 
 **Files:**
+
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `vite.config.ts`
@@ -153,22 +154,22 @@ export default defineConfig({
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
   },
   "durable_objects": {
     "bindings": [
       {
         "name": "ROOM",
-        "class_name": "Room"
-      }
-    ]
+        "class_name": "Room",
+      },
+    ],
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["Room"]
-    }
-  ]
+      "new_sqlite_classes": ["Room"],
+    },
+  ],
 }
 ```
 
@@ -183,7 +184,10 @@ export default defineConfig({
     <title>estimate.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>
@@ -203,7 +207,7 @@ import "./index.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 ```
 
@@ -255,6 +259,7 @@ git commit -m "chore: scaffold project with Vite + React + Cloudflare Workers"
 ### Task 2: Shared Types & Word Dictionary
 
 **Files:**
+
 - Create: `src/shared/types.ts`
 - Create: `src/shared/dictionary.ts`
 
@@ -263,7 +268,16 @@ git commit -m "chore: scaffold project with Vite + React + Cloudflare Workers"
 ```typescript
 // src/shared/types.ts
 
-export const FIBONACCI_VALUES = ["1", "2", "3", "5", "8", "13", "21", "☕"] as const;
+export const FIBONACCI_VALUES = [
+  "1",
+  "2",
+  "3",
+  "5",
+  "8",
+  "13",
+  "21",
+  "☕",
+] as const;
 
 export type FibonacciValue = (typeof FIBONACCI_VALUES)[number];
 
@@ -341,54 +355,354 @@ export type ServerMessage =
 // Curated word list — no ambiguous characters, easy to pronounce
 // Categories: animals, nature, colors, celestial
 const WORDS = [
-  "ace", "ant", "ape", "arc", "ash", "asp", "awe",
-  "badger", "bark", "bay", "bear", "bee", "bell", "bird", "blade", "bloom", "bluff",
-  "bolt", "bond", "bone", "breeze", "brook", "brush", "buck", "bug", "bulb",
-  "calm", "cave", "cedar", "cloud", "cobalt", "cove", "crane", "crest", "crown",
-  "dawn", "deer", "dew", "dove", "drift", "dune", "dusk",
-  "eagle", "earth", "echo", "ember", "fawn", "fern", "finch", "flame", "flint",
-  "flora", "fog", "forge", "fox", "frost", "gale", "gem", "glade", "glen", "glow",
-  "gold", "goose", "grain", "grove", "gulf", "gust",
-  "hare", "hawk", "haze", "heath", "helm", "herb", "hill", "hive", "hollow", "honey",
-  "hope", "hull", "ivy",
-  "jade", "jay", "jet", "kelp", "kite", "knoll", "lake", "lamb", "leaf", "lily",
-  "lime", "lynx", "magma", "maple", "marsh", "mist", "moon", "moss", "mote", "muse",
-  "nest", "nimbus", "nova", "oak", "oasis", "ocean", "onyx", "opal", "orca", "owl",
-  "palm", "peak", "pearl", "pine", "plume", "pond", "prism", "pulse", "quartz",
-  "raven", "reef", "ridge", "rift", "river", "robin", "rock", "root", "rose", "ruby",
-  "sage", "sand", "sea", "shade", "shell", "shore", "sky", "slate", "snow", "sol",
-  "spark", "spruce", "star", "stem", "stone", "storm", "stream", "summit", "sun",
-  "swan", "talon", "teal", "thorn", "tide", "timber", "topaz", "tree", "tulip",
-  "vale", "vault", "vigor", "vine", "void", "wasp", "wave", "willow", "wind",
-  "wing", "wolf", "wood", "wren", "yarrow", "zenith",
-  "amber", "basil", "birch", "blaze", "branch", "briar", "brine", "bronze",
-  "canyon", "carbon", "cherry", "clay", "cliff", "clover", "coral", "crystal",
-  "dahlia", "delta", "ember", "falcon", "field", "flora", "frost", "garlic",
-  "geode", "gravel", "harbor", "hazel", "indigo", "jasmine", "juniper", "karma",
-  "lagoon", "lantern", "lavender", "lichen", "lotus", "magnolia", "meadow",
-  "nebula", "obsidian", "orchid", "oyster", "pebble", "pelican", "penguin",
-  "peony", "phoenix", "quartz", "rain", "rapids", "raven", "salmon", "sapphire",
-  "sequoia", "sparrow", "steel", "sunset", "tangerine", "terra", "thistle",
-  "thunder", "titan", "tundra", "turtle", "urchin", "valley", "vermillion",
-  "volcano", "vortex", "walnut", "wren", "zephyr",
+  "ace",
+  "ant",
+  "ape",
+  "arc",
+  "ash",
+  "asp",
+  "awe",
+  "badger",
+  "bark",
+  "bay",
+  "bear",
+  "bee",
+  "bell",
+  "bird",
+  "blade",
+  "bloom",
+  "bluff",
+  "bolt",
+  "bond",
+  "bone",
+  "breeze",
+  "brook",
+  "brush",
+  "buck",
+  "bug",
+  "bulb",
+  "calm",
+  "cave",
+  "cedar",
+  "cloud",
+  "cobalt",
+  "cove",
+  "crane",
+  "crest",
+  "crown",
+  "dawn",
+  "deer",
+  "dew",
+  "dove",
+  "drift",
+  "dune",
+  "dusk",
+  "eagle",
+  "earth",
+  "echo",
+  "ember",
+  "fawn",
+  "fern",
+  "finch",
+  "flame",
+  "flint",
+  "flora",
+  "fog",
+  "forge",
+  "fox",
+  "frost",
+  "gale",
+  "gem",
+  "glade",
+  "glen",
+  "glow",
+  "gold",
+  "goose",
+  "grain",
+  "grove",
+  "gulf",
+  "gust",
+  "hare",
+  "hawk",
+  "haze",
+  "heath",
+  "helm",
+  "herb",
+  "hill",
+  "hive",
+  "hollow",
+  "honey",
+  "hope",
+  "hull",
+  "ivy",
+  "jade",
+  "jay",
+  "jet",
+  "kelp",
+  "kite",
+  "knoll",
+  "lake",
+  "lamb",
+  "leaf",
+  "lily",
+  "lime",
+  "lynx",
+  "magma",
+  "maple",
+  "marsh",
+  "mist",
+  "moon",
+  "moss",
+  "mote",
+  "muse",
+  "nest",
+  "nimbus",
+  "nova",
+  "oak",
+  "oasis",
+  "ocean",
+  "onyx",
+  "opal",
+  "orca",
+  "owl",
+  "palm",
+  "peak",
+  "pearl",
+  "pine",
+  "plume",
+  "pond",
+  "prism",
+  "pulse",
+  "quartz",
+  "raven",
+  "reef",
+  "ridge",
+  "rift",
+  "river",
+  "robin",
+  "rock",
+  "root",
+  "rose",
+  "ruby",
+  "sage",
+  "sand",
+  "sea",
+  "shade",
+  "shell",
+  "shore",
+  "sky",
+  "slate",
+  "snow",
+  "sol",
+  "spark",
+  "spruce",
+  "star",
+  "stem",
+  "stone",
+  "storm",
+  "stream",
+  "summit",
+  "sun",
+  "swan",
+  "talon",
+  "teal",
+  "thorn",
+  "tide",
+  "timber",
+  "topaz",
+  "tree",
+  "tulip",
+  "vale",
+  "vault",
+  "vigor",
+  "vine",
+  "void",
+  "wasp",
+  "wave",
+  "willow",
+  "wind",
+  "wing",
+  "wolf",
+  "wood",
+  "wren",
+  "yarrow",
+  "zenith",
+  "amber",
+  "basil",
+  "birch",
+  "blaze",
+  "branch",
+  "briar",
+  "brine",
+  "bronze",
+  "canyon",
+  "carbon",
+  "cherry",
+  "clay",
+  "cliff",
+  "clover",
+  "coral",
+  "crystal",
+  "dahlia",
+  "delta",
+  "ember",
+  "falcon",
+  "field",
+  "flora",
+  "frost",
+  "garlic",
+  "geode",
+  "gravel",
+  "harbor",
+  "hazel",
+  "indigo",
+  "jasmine",
+  "juniper",
+  "karma",
+  "lagoon",
+  "lantern",
+  "lavender",
+  "lichen",
+  "lotus",
+  "magnolia",
+  "meadow",
+  "nebula",
+  "obsidian",
+  "orchid",
+  "oyster",
+  "pebble",
+  "pelican",
+  "penguin",
+  "peony",
+  "phoenix",
+  "quartz",
+  "rain",
+  "rapids",
+  "raven",
+  "salmon",
+  "sapphire",
+  "sequoia",
+  "sparrow",
+  "steel",
+  "sunset",
+  "tangerine",
+  "terra",
+  "thistle",
+  "thunder",
+  "titan",
+  "tundra",
+  "turtle",
+  "urchin",
+  "valley",
+  "vermillion",
+  "volcano",
+  "vortex",
+  "walnut",
+  "wren",
+  "zephyr",
   // Extended set for more variety
-  "agate", "alpaca", "anemone", "argonaut", "aurora", "avocado",
-  "barnacle", "bison", "blizzard", "bonsai", "boulder", "buffalo",
-  "camel", "canary", "cascade", "catalyst", "caterpillar", "chameleon",
-  "cheetah", "chinchilla", "cicada", "cinnamon", "cobra", "condor",
-  "coyote", "cricket", "crimson", "dandelion", "dragonfly", "elephant",
-  "eucalyptus", "falcon", "firefly", "flamingo", "galaxy", "geyser",
-  "giraffe", "gorilla", "grasshopper", "hamster", "heron", "horizon",
-  "hurricane", "iguana", "jaguar", "jellyfish", "kangaroo", "kingfisher",
-  "koala", "komodo", "labyrinth", "ladybug", "leopard", "lightning",
-  "llama", "lobster", "mammoth", "manatee", "mantis", "meerkat",
-  "mercury", "mongoose", "monsoon", "narwhal", "nautilus", "octopus",
-  "osprey", "ostrich", "panther", "parrot", "peacock", "pelican",
-  "peregrine", "piranha", "platypus", "polaris", "primate", "python",
-  "quokka", "raccoon", "rhinoceros", "rosetta", "salamander", "scorpion",
-  "seahorse", "serpent", "shark", "sloth", "stallion", "starfish",
-  "stingray", "sunflower", "tardigrade", "termite", "toucan", "trident",
-  "vulture", "walrus", "warrior", "waterfall", "wolverine", "zebra",
+  "agate",
+  "alpaca",
+  "anemone",
+  "argonaut",
+  "aurora",
+  "avocado",
+  "barnacle",
+  "bison",
+  "blizzard",
+  "bonsai",
+  "boulder",
+  "buffalo",
+  "camel",
+  "canary",
+  "cascade",
+  "catalyst",
+  "caterpillar",
+  "chameleon",
+  "cheetah",
+  "chinchilla",
+  "cicada",
+  "cinnamon",
+  "cobra",
+  "condor",
+  "coyote",
+  "cricket",
+  "crimson",
+  "dandelion",
+  "dragonfly",
+  "elephant",
+  "eucalyptus",
+  "falcon",
+  "firefly",
+  "flamingo",
+  "galaxy",
+  "geyser",
+  "giraffe",
+  "gorilla",
+  "grasshopper",
+  "hamster",
+  "heron",
+  "horizon",
+  "hurricane",
+  "iguana",
+  "jaguar",
+  "jellyfish",
+  "kangaroo",
+  "kingfisher",
+  "koala",
+  "komodo",
+  "labyrinth",
+  "ladybug",
+  "leopard",
+  "lightning",
+  "llama",
+  "lobster",
+  "mammoth",
+  "manatee",
+  "mantis",
+  "meerkat",
+  "mercury",
+  "mongoose",
+  "monsoon",
+  "narwhal",
+  "nautilus",
+  "octopus",
+  "osprey",
+  "ostrich",
+  "panther",
+  "parrot",
+  "peacock",
+  "pelican",
+  "peregrine",
+  "piranha",
+  "platypus",
+  "polaris",
+  "primate",
+  "python",
+  "quokka",
+  "raccoon",
+  "rhinoceros",
+  "rosetta",
+  "salamander",
+  "scorpion",
+  "seahorse",
+  "serpent",
+  "shark",
+  "sloth",
+  "stallion",
+  "starfish",
+  "stingray",
+  "sunflower",
+  "tardigrade",
+  "termite",
+  "toucan",
+  "trident",
+  "vulture",
+  "walrus",
+  "warrior",
+  "waterfall",
+  "wolverine",
+  "zebra",
 ] as const;
 
 export type Word = (typeof WORDS)[number];
@@ -411,8 +725,14 @@ export function generateRoomCode(): string {
  */
 export function assignColor(index: number): string {
   const palette = [
-    "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b",
-    "#10b981", "#06b6d4", "#f43f5e", "#84cc16",
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+    "#f59e0b",
+    "#10b981",
+    "#06b6d4",
+    "#f43f5e",
+    "#84cc16",
   ];
   return palette[index % palette.length];
 }
@@ -435,6 +755,7 @@ git commit -m "feat: add shared types and word dictionary"
 ### Task 3: Room Durable Object
 
 **Files:**
+
 - Create: `src/worker/room.ts`
 
 - [ ] **Step 1: Create the Room Durable Object**
@@ -557,13 +878,13 @@ export class RoomDO extends DurableObject<Env> {
     ws: WebSocket,
     _code: number,
     _reason: string,
-    _wasClean: boolean
+    _wasClean: boolean,
   ): Promise<void> {
     const data = ws.deserializeAttachment() as ConnectionData | null;
     if (data) {
       this.ctx.storage.sql.exec(
         "DELETE FROM participant WHERE id = ?",
-        data.participantId
+        data.participantId,
       );
       this.broadcast({
         type: "participant_left",
@@ -572,10 +893,7 @@ export class RoomDO extends DurableObject<Env> {
     }
   }
 
-  private async handleJoin(
-    ws: WebSocket,
-    displayName: string
-  ): Promise<void> {
+  private async handleJoin(ws: WebSocket, displayName: string): Promise<void> {
     const participantCount = this.ctx.storage.sql
       .exec("SELECT COUNT(*) as count FROM participant")
       .one<{ count: number }>().count;
@@ -588,7 +906,7 @@ export class RoomDO extends DurableObject<Env> {
       participantId,
       displayName,
       color,
-      Date.now()
+      Date.now(),
     );
 
     // Attach participant data to the WebSocket (survives hibernation)
@@ -604,7 +922,7 @@ export class RoomDO extends DurableObject<Env> {
         "INSERT INTO room (id, name, created_at) VALUES (?, ?, ?)",
         this.roomId,
         this.roomId,
-        Date.now()
+        Date.now(),
       );
       roomRow = { id: this.roomId, name: this.roomId, created_at: Date.now() };
     }
@@ -619,7 +937,7 @@ export class RoomDO extends DurableObject<Env> {
       ? this.ctx.storage.sql
           .exec(
             "SELECT COUNT(*) as count FROM estimate WHERE story_id = ?",
-            activeStoryId
+            activeStoryId,
           )
           .one<{ count: number }>().count
       : 0;
@@ -627,12 +945,16 @@ export class RoomDO extends DurableObject<Env> {
     ws.send(
       JSON.stringify({
         type: "room_state",
-        room: { id: this.roomId, name: roomRow.name, createdAt: roomRow.created_at },
+        room: {
+          id: this.roomId,
+          name: roomRow.name,
+          createdAt: roomRow.created_at,
+        },
         participants,
         stories,
         currentEstimates: estimateCount,
         totalParticipants: participants.length,
-      } satisfies ServerMessage)
+      } satisfies ServerMessage),
     );
 
     // Broadcast join to others
@@ -646,13 +968,13 @@ export class RoomDO extends DurableObject<Env> {
           hasEstimated: false,
         },
       },
-      ws
+      ws,
     );
   }
 
   private async handleEstimate(
     participantId: string,
-    value: FibonacciValue
+    value: FibonacciValue,
   ): Promise<void> {
     const activeStoryId = this.getActiveStoryId();
     if (!activeStoryId) return;
@@ -667,7 +989,7 @@ export class RoomDO extends DurableObject<Env> {
       value,
       Date.now(),
       value,
-      Date.now()
+      Date.now(),
     );
 
     // Broadcast that someone estimated (no value!)
@@ -682,10 +1004,10 @@ export class RoomDO extends DurableObject<Env> {
     if (!activeStoryId) return;
 
     const estimates = this.ctx.storage.sql
-      .exec<{ participant_id: string; value: string }>(
-        "SELECT participant_id, value FROM estimate WHERE story_id = ?",
-        activeStoryId
-      )
+      .exec<{
+        participant_id: string;
+        value: string;
+      }>("SELECT participant_id, value FROM estimate WHERE story_id = ?", activeStoryId)
       .toArray();
 
     // Calculate consensus (most common value)
@@ -710,7 +1032,7 @@ export class RoomDO extends DurableObject<Env> {
     // Update story status
     this.ctx.storage.sql.exec(
       "UPDATE story SET status = 'revealed' WHERE id = ?",
-      activeStoryId
+      activeStoryId,
     );
 
     this.broadcast({
@@ -730,21 +1052,21 @@ export class RoomDO extends DurableObject<Env> {
     if (activeStoryId) {
       this.ctx.storage.sql.exec(
         "UPDATE story SET status = 'done' WHERE id = ?",
-        activeStoryId
+        activeStoryId,
       );
     }
 
     // Find next pending story
     const nextStory = this.ctx.storage.sql
       .exec<Story>(
-        "SELECT id, title, description, position, status FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1"
+        "SELECT id, title, description, position, status FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1",
       )
       .one();
 
     if (nextStory) {
       this.ctx.storage.sql.exec(
         "UPDATE story SET status = 'active' WHERE id = ?",
-        nextStory.id
+        nextStory.id,
       );
     }
 
@@ -764,13 +1086,13 @@ export class RoomDO extends DurableObject<Env> {
     // Clear estimates
     this.ctx.storage.sql.exec(
       "DELETE FROM estimate WHERE story_id = ?",
-      activeStoryId
+      activeStoryId,
     );
 
     // Set story back to active
     this.ctx.storage.sql.exec(
       "UPDATE story SET status = 'active' WHERE id = ?",
-      activeStoryId
+      activeStoryId,
     );
 
     this.broadcast({ type: "re_vote_started" });
@@ -778,24 +1100,24 @@ export class RoomDO extends DurableObject<Env> {
 
   private async handleAddStory(
     title: string,
-    description: string
+    description: string,
   ): Promise<void> {
     const maxPos = this.ctx.storage.sql
-      .exec<{ max_pos: number }>(
-        "SELECT COALESCE(MAX(position), 0) as max_pos FROM story"
-      )
+      .exec<{
+        max_pos: number;
+      }>("SELECT COALESCE(MAX(position), 0) as max_pos FROM story")
       .one().max_pos;
 
     this.ctx.storage.sql.exec(
       "INSERT INTO story (title, description, position, status) VALUES (?, ?, ?, 'pending')",
       title,
       description,
-      maxPos + 1
+      maxPos + 1,
     );
 
     const story = this.ctx.storage.sql
       .exec<Story>(
-        "SELECT id, title, description, position, status FROM story WHERE rowid = last_insert_rowid()"
+        "SELECT id, title, description, position, status FROM story WHERE rowid = last_insert_rowid()",
       )
       .one();
 
@@ -808,7 +1130,9 @@ export class RoomDO extends DurableObject<Env> {
         id: string;
         display_name: string;
         color: string;
-      }>("SELECT id, display_name, color FROM participant ORDER BY joined_at ASC")
+      }>(
+        "SELECT id, display_name, color FROM participant ORDER BY joined_at ASC",
+      )
       .toArray()
       .map((row) => {
         const activeStoryId = this.getActiveStoryId();
@@ -817,7 +1141,7 @@ export class RoomDO extends DurableObject<Env> {
               .exec(
                 "SELECT 1 FROM estimate WHERE story_id = ? AND participant_id = ?",
                 activeStoryId,
-                row.id
+                row.id,
               )
               .one() !== null
           : false;
@@ -834,16 +1158,16 @@ export class RoomDO extends DurableObject<Env> {
   private getStories(): Story[] {
     return this.ctx.storage.sql
       .exec<Story>(
-        "SELECT id, title, description, position, status FROM story ORDER BY position ASC"
+        "SELECT id, title, description, position, status FROM story ORDER BY position ASC",
       )
       .toArray();
   }
 
   private getActiveStoryId(): number | null {
     const row = this.ctx.storage.sql
-      .exec<{ id: number }>(
-        "SELECT id FROM story WHERE status = 'active' LIMIT 1"
-      )
+      .exec<{
+        id: number;
+      }>("SELECT id FROM story WHERE status = 'active' LIMIT 1")
       .one();
     return row?.id ?? null;
   }
@@ -871,6 +1195,7 @@ git commit -m "feat: add Room Durable Object with WebSocket hibernation"
 ### Task 4: Worker Entry Point
 
 **Files:**
+
 - Create: `src/worker/index.ts`
 
 - [ ] **Step 1: Create the Worker entry point**
@@ -940,6 +1265,7 @@ git commit -m "feat: add Worker entry point with WebSocket routing"
 ### Task 5: WebSocket Client & Zustand Store
 
 **Files:**
+
 - Create: `src/client/lib/ws.ts`
 - Create: `src/client/store/room.ts`
 
@@ -962,7 +1288,7 @@ export class RoomSocket {
   constructor(
     roomId: string,
     onMessage: MessageHandler,
-    onConnectionChange: (connected: boolean) => void
+    onConnectionChange: (connected: boolean) => void,
   ) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     this.url = `${protocol}//${window.location.host}/ws/${roomId}`;
@@ -1103,7 +1429,9 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
       case "participant_left":
         set((s) => ({
-          participants: s.participants.filter((p) => p.id !== msg.participantId),
+          participants: s.participants.filter(
+            (p) => p.id !== msg.participantId,
+          ),
           totalParticipants: s.totalParticipants - 1,
         }));
         break;
@@ -1111,7 +1439,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       case "estimate_received":
         set((s) => {
           const participants = s.participants.map((p) =>
-            p.id === msg.participantId ? { ...p, hasEstimated: true } : p
+            p.id === msg.participantId ? { ...p, hasEstimated: true } : p,
           );
           return {
             participants,
@@ -1135,7 +1463,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       case "story_changed":
         set((s) => ({
           stories: s.stories.map((st) =>
-            st.id === msg.story.id ? msg.story : st
+            st.id === msg.story.id ? msg.story : st,
           ),
         }));
         break;
@@ -1164,6 +1492,7 @@ git commit -m "feat: add WebSocket client and Zustand room store"
 ### Task 6: Landing Page
 
 **Files:**
+
 - Create: `src/client/pages/Landing.tsx`
 - Create: `src/client/pages/Landing.module.css`
 
@@ -1422,6 +1751,7 @@ git commit -m "feat: add landing page with create/join room flow"
 ### Task 7: Card Grid Component (3D CSS)
 
 **Files:**
+
 - Create: `src/client/components/CardGrid.tsx`
 - Create: `src/client/components/CardGrid.module.css`
 
@@ -1439,7 +1769,11 @@ interface CardGridProps {
   disabled: boolean;
 }
 
-export default function CardGrid({ selected, onSelect, disabled }: CardGridProps) {
+export default function CardGrid({
+  selected,
+  onSelect,
+  disabled,
+}: CardGridProps) {
   return (
     <div className={styles.wrapper}>
       <h3 className={styles.label}>Your Estimate</h3>
@@ -1599,7 +1933,8 @@ export default function CardGrid({ selected, onSelect, disabled }: CardGridProps
 
 /* Glow on selected */
 .card.selected .cardFace {
-  box-shadow: 0 0 20px rgba(96, 165, 250, 0.2),
+  box-shadow:
+    0 0 20px rgba(96, 165, 250, 0.2),
     0 0 40px rgba(96, 165, 250, 0.1);
 }
 ```
@@ -1616,6 +1951,7 @@ git commit -m "feat: add 3D Fibonacci card grid with CSS perspective"
 ### Task 8: Participant Sidebar
 
 **Files:**
+
 - Create: `src/client/components/ParticipantList.tsx`
 - Create: `src/client/components/ParticipantList.module.css`
 
@@ -1631,7 +1967,9 @@ interface ParticipantListProps {
   participants: Participant[];
 }
 
-export default function ParticipantList({ participants }: ParticipantListProps) {
+export default function ParticipantList({
+  participants,
+}: ParticipantListProps) {
   return (
     <div className={styles.sidebar}>
       <h3 className={styles.heading}>
@@ -1649,7 +1987,9 @@ export default function ParticipantList({ participants }: ParticipantListProps) 
             </div>
             <div className={styles.info}>
               <div className={styles.name}>{p.displayName}</div>
-              <div className={`${styles.status} ${p.hasEstimated ? styles.voted : ""}`}>
+              <div
+                className={`${styles.status} ${p.hasEstimated ? styles.voted : ""}`}
+              >
                 {p.hasEstimated ? "✓ estimated" : "picking..."}
               </div>
             </div>
@@ -1749,6 +2089,7 @@ git commit -m "feat: add real-time participant sidebar"
 ### Task 9: Reveal Board with Spring Animation
 
 **Files:**
+
 - Create: `src/client/components/RevealBoard.tsx`
 - Create: `src/client/components/RevealBoard.module.css`
 
@@ -1786,7 +2127,7 @@ export default function RevealBoard({
   // Sort estimates by value for visual clarity
   const fibOrder = ["1", "2", "3", "5", "8", "13", "21", "☕"];
   const sorted = [...estimates].sort(
-    (a, b) => fibOrder.indexOf(a.value) - fibOrder.indexOf(b.value)
+    (a, b) => fibOrder.indexOf(a.value) - fibOrder.indexOf(b.value),
   );
 
   return (
@@ -1996,6 +2337,7 @@ git commit -m "feat: add reveal board with spring animation"
 ### Task 10: Story Card Component
 
 **Files:**
+
 - Create: `src/client/components/StoryCard.tsx`
 - Create: `src/client/components/StoryCard.module.css`
 
@@ -2081,6 +2423,7 @@ git commit -m "feat: add story card component"
 ### Task 11: Room Page (wires everything together)
 
 **Files:**
+
 - Create: `src/client/pages/Room.tsx`
 - Create: `src/client/pages/Room.module.css`
 
@@ -2163,13 +2506,13 @@ export default function Room() {
           estimate<span className={styles.dot}>.</span>
         </h1>
         <div className={styles.roomInfo}>
-          {room?.name && (
-            <span className={styles.roomName}>{room.name}</span>
-          )}
+          {room?.name && <span className={styles.roomName}>{room.name}</span>}
           <span className={styles.code}>{roomId}</span>
           <div className={styles.copyHint}>click to copy</div>
         </div>
-        <div className={`${styles.status} ${connected ? styles.online : styles.offline}`}>
+        <div
+          className={`${styles.status} ${connected ? styles.online : styles.offline}`}
+        >
           {connected ? "connected" : "reconnecting..."}
         </div>
       </header>
@@ -2186,10 +2529,7 @@ export default function Room() {
                 disabled={!activeStory}
               />
               <div className={styles.revealArea}>
-                <button
-                  className={styles.revealBtn}
-                  onClick={handleReveal}
-                >
+                <button className={styles.revealBtn} onClick={handleReveal}>
                   Reveal Estimates
                 </button>
               </div>
@@ -2344,6 +2684,7 @@ git commit -m "feat: add Room page wiring all components together"
 ### Task 12: Story Management UI & Final Polish
 
 **Files:**
+
 - Create: `src/client/components/AddStory.tsx`
 - Create: `src/client/components/AddStory.module.css`
 - Modify: `src/client/pages/Room.tsx` (add story management)
@@ -2512,14 +2853,17 @@ Modify `src/client/pages/Room.tsx` — add story queue and add-story button in t
 import AddStory from "../components/AddStory";
 
 // In the content area, after <StoryCard>:
-<AddStory onAdd={handleAddStory} />
+<AddStory onAdd={handleAddStory} />;
 
 // Add story queue indicator (show count of remaining stories)
-{stories.length > 1 && (
-  <div className={styles.storyQueue}>
-    {stories.filter(s => s.status === "done").length + 1} / {stories.length} stories
-  </div>
-)}
+{
+  stories.length > 1 && (
+    <div className={styles.storyQueue}>
+      {stories.filter((s) => s.status === "done").length + 1} / {stories.length}{" "}
+      stories
+    </div>
+  );
+}
 ```
 
 - [ ] **Step 4: Add responsive styles for mobile**
@@ -2557,20 +2901,20 @@ git commit -m "feat: add story management UI and responsive polish"
 
 ## Spec Coverage Checklist
 
-| Spec Requirement | Task |
-|-----------------|------|
-| Create/join room via word code | Task 6 (Landing) |
-| Fibonacci card selection (3D CSS) | Task 7 (CardGrid) |
-| Real-time participant list | Task 8 (ParticipantList) |
-| Reveal with spring animation | Task 9 (RevealBoard) |
-| Story queue (optional, manual) | Task 12 (AddStory) |
-| Re-vote | Task 3 (Room DO), Task 9 (RevealBoard) |
-| WebSocket protocol | Task 3 (Room DO), Task 5 (WS client) |
-| Durable Object + SQLite | Task 3 (Room DO) |
-| Worker routing + static assets | Task 4 (Worker) |
-| CSS Modules | All component tasks |
-| No AI in MVP | Confirmed — no AI tasks |
-| No auth in MVP | Confirmed — no auth tasks |
+| Spec Requirement                  | Task                                   |
+| --------------------------------- | -------------------------------------- |
+| Create/join room via word code    | Task 6 (Landing)                       |
+| Fibonacci card selection (3D CSS) | Task 7 (CardGrid)                      |
+| Real-time participant list        | Task 8 (ParticipantList)               |
+| Reveal with spring animation      | Task 9 (RevealBoard)                   |
+| Story queue (optional, manual)    | Task 12 (AddStory)                     |
+| Re-vote                           | Task 3 (Room DO), Task 9 (RevealBoard) |
+| WebSocket protocol                | Task 3 (Room DO), Task 5 (WS client)   |
+| Durable Object + SQLite           | Task 3 (Room DO)                       |
+| Worker routing + static assets    | Task 4 (Worker)                        |
+| CSS Modules                       | All component tasks                    |
+| No AI in MVP                      | Confirmed — no AI tasks                |
+| No auth in MVP                    | Confirmed — no auth tasks              |
 
 ---
 

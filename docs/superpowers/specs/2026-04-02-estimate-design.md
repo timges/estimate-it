@@ -9,14 +9,14 @@ A real-time, bias-free story estimation tool for dev teams. Participants join a 
 
 ## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React + Vite + CSS Modules |
-| Backend | Cloudflare Workers + Durable Objects |
-| Real-time | WebSocket via Durable Object |
-| Storage | DO SQLite (per-room) |
-| AI (future) | Workers AI — not in MVP |
-| Auth/Billing (future) | Clerk/Stripe — not in MVP |
+| Layer                 | Technology                           |
+| --------------------- | ------------------------------------ |
+| Frontend              | React + Vite + CSS Modules           |
+| Backend               | Cloudflare Workers + Durable Objects |
+| Real-time             | WebSocket via Durable Object         |
+| Storage               | DO SQLite (per-room)                 |
+| AI (future)           | Workers AI — not in MVP              |
+| Auth/Billing (future) | Clerk/Stripe — not in MVP            |
 
 ## Architecture
 
@@ -50,12 +50,14 @@ Dictionary: ~2000 curated words (animals, nature). No ambiguous characters (no `
 Single page, state-driven by WebSocket messages. Three visual states:
 
 **Waiting:**
+
 - Story card (optional) with title/description
 - Fibonacci card grid on 3D tilted table (perspective CSS)
 - Participant sidebar (names + voted/not-voted status, never values)
 - "Reveal Estimates" button — available to all participants (not creator-only)
 
 **Revealed:**
+
 - Cards drop in one by one with spring bounce animation
 - Height proportional to Fibonacci value
 - Outliers visually obvious
@@ -63,6 +65,7 @@ Single page, state-driven by WebSocket messages. Three visual states:
 - "Revote" / "Next Story" buttons — available to all participants
 
 **No story:**
+
 - Same estimation flow, just no story card displayed
 - Participants estimate from verbal discussion elsewhere
 
@@ -162,15 +165,15 @@ CREATE TABLE participant (
 
 ## MVP Scope
 
-| Feature | Status |
-|---------|--------|
-| Create/join room via word code | ✅ |
-| Fibonacci card selection (3D CSS) | ✅ |
-| Real-time participant list | ✅ |
-| Reveal with spring animation | ✅ |
-| Story queue (optional, manual) | ✅ |
-| Re-vote | ✅ |
-| AI estimation | ❌ future |
-| AI story refinement | ❌ future |
-| Jira/GitHub import | ❌ future |
-| Auth/billing | ❌ future |
+| Feature                           | Status    |
+| --------------------------------- | --------- |
+| Create/join room via word code    | ✅        |
+| Fibonacci card selection (3D CSS) | ✅        |
+| Real-time participant list        | ✅        |
+| Reveal with spring animation      | ✅        |
+| Story queue (optional, manual)    | ✅        |
+| Re-vote                           | ✅        |
+| AI estimation                     | ❌ future |
+| AI story refinement               | ❌ future |
+| Jira/GitHub import                | ❌ future |
+| Auth/billing                      | ❌ future |

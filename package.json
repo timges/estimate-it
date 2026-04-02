@@ -10,7 +10,10 @@
     "cf-typegen": "wrangler types",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:ci": "pnpm lint && pnpm build && pnpm test && pnpm vitest run --project components",
+    "test:vrt": "playwright test",
+    "test:vrt:update": "playwright test --update-snapshots"
   },
   "dependencies": {
     "framer-motion": "^12.0.0",
@@ -24,9 +27,14 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.0",
     "@cloudflare/workers-types": "^4.0.0",
+    "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "jsdom": "^29.0.1",
     "typescript": "^5.0.0",
     "vite": "^6.0.0",
     "vitest": "^3.0.0",

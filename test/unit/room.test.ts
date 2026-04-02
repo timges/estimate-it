@@ -284,4 +284,129 @@ describe("Room", () => {
       });
     });
   });
+
+  describe("edge cases", () => {
+    it("should handle reveal with no estimates", async () => {
+      const stub = getStub("edge-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.join("Alice");
+
+        const result = instance.reveal();
+
+        expect(result).not.toBeNull();
+        expect(result!.estimates).toHaveLength(0);
+        expect(result!.consensus).toBeNull();
+      });
+    });
+
+    it("should handle estimate without any story", async () => {
+      const stub = getStub("edge-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const { participant } = instance.join("Alice");
+
+        instance.estimate(participant.id, "1");
+
+        const state = instance.getRoomState();
+        expect(state.currentEstimates).toBe(1);
+      });
+    });
+
+    it("should handle reVote without stories", async () => {
+      const stub = getStub("edge-test-3");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const { participant } = instance.join("Alice");
+
+        instance.estimate(participant.id, "5");
+        instance.reveal();
+        instance.reVote();
+
+        const state = instance.getRoomState();
+        expect(state.currentEstimates).toBe(0);
+      });
+    });
+
+    it("should handle nextStory when no stories exist", async () => {
+      const stub = getStub("edge-test-4");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.join("Alice");
+
+        const stories = instance.nextStory();
+
+        expect(stories).toHaveLength(0);
+      });
+    });
+
+    it("should handle addStory with empty description", async () => {
+      const stub = getStub("edge-test-5");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.join("Alice");
+
+        const story = instance.addStory("Quick fix", "");
+
+        expect(story.description).toBe("");
+      });
+    });
+
+    it("should handle all Fibonacci values", async () => {
+      const stub = getStub("edge-test-6");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const values = ["1", "2", "3", "5", "8", "13", "21", "☕"] as const;
+
+        const ids: string[] = [];
+        for (let i = 0; i < values.length; i++) {
+          const { participant } = instance.join(`User${i}`);
+          ids.push(participant.id);
+        }
+
+        for (let i = 0; i < values.length; i++) {
+          instance.estimate(ids[i], values[i]);
+        }
+
+        const result = instance.reveal();
+
+        expect(result!.estimates).toHaveLength(8);
+      });
+    });
+
+    it("should handle participant leaving and rejoining", async () => {
+      const stub = getStub("edge-test-7");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const first = instance.join("Alice");
+        expect(instance.getRoomState().totalParticipants).toBe(1);
+
+        instance.removeParticipant(first.participant.id);
+        expect(instance.getRoomState().totalParticipants).toBe(0);
+
+        const second = instance.join("Alice");
+        expect(instance.getRoomState().totalParticipants).toBe(1);
+        expect(second.participant.id).not.toBe(first.participant.id);
+      });
+    });
+
+    it("should handle estimate change after reveal then revote", async () => {
+      const stub = getStub("edge-test-8");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const { participant } = instance.join("Alice");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+
+        instance.estimate(participant.id, "5");
+        const first = instance.reveal();
+        expect(first!.estimates[0].value).toBe("5");
+
+        instance.reVote();
+        instance.estimate(participant.id, "8");
+        const second = instance.reveal();
+        expect(second!.estimates[0].value).toBe("8");
+      });
+    });
+  });
 });
