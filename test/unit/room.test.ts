@@ -157,14 +157,17 @@ describe("Room", () => {
       });
     });
 
-    it("should return null if no active story", async () => {
+    it("should work without a story (round 0)", async () => {
       const stub = getStub("reveal-test-3");
 
       await runInDurableObject(stub, async (instance: Room) => {
-        instance.join("Alice");
+        const a = instance.join("Alice");
+        instance.estimate(a.participant.id, "3");
 
         const result = instance.reveal();
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        expect(result!.estimates).toHaveLength(1);
+        expect(result!.estimates[0].value).toBe("3");
       });
     });
 

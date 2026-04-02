@@ -204,14 +204,13 @@ export class Room extends DurableObject<Env> {
   }
 
   estimate(participantId: string, value: FibonacciValue): void {
-    const activeStoryId = this.getActiveStoryId();
-    if (!activeStoryId) return;
+    const roundId = this.getActiveStoryId() ?? 0;
 
     this.ctx.storage.sql.exec(
       `INSERT INTO estimate (story_id, participant_id, value, created_at)
        VALUES (?, ?, ?, ?)
        ON CONFLICT(story_id, participant_id) DO UPDATE SET value = excluded.value, created_at = excluded.created_at`,
-      activeStoryId,
+      roundId,
       participantId,
       value,
       Date.now()
@@ -222,13 +221,12 @@ export class Room extends DurableObject<Env> {
     estimates: { participantId: string; value: FibonacciValue }[];
     consensus: Consensus | null;
   } | null {
-    const activeStoryId = this.getActiveStoryId();
-    if (!activeStoryId) return null;
+    const roundId = this.getActiveStoryId() ?? 0;
 
     const estimateRows = this.ctx.storage.sql
       .exec(
         "SELECT participant_id, value FROM estimate WHERE story_id = ?",
-        activeStoryId
+        roundId
       )
       .toArray();
 
@@ -251,10 +249,14 @@ export class Room extends DurableObject<Env> {
       }
     }
 
-    this.ctx.storage.sql.exec(
-      "UPDATE story SET status = 'revealed' WHERE id = ?",
-      activeStoryId
-    );
+    // Only update story status if there's an actual story
+    const activeStoryId = this.getActiveStoryId();
+    if (activeStoryId) {
+      this.ctx.storage.sql.exec(
+        "UPDATE story SET status = 'revealed' WHERE id = ?",
+        activeStoryId
+      );
+    }
 
     return {
       estimates: estimateRows.map((row) => ({
@@ -292,18 +294,21 @@ export class Room extends DurableObject<Env> {
   }
 
   reVote(): void {
-    const activeStoryId = this.getActiveStoryId();
-    if (!activeStoryId) return;
+    const roundId = this.getActiveStoryId() ?? 0;
 
     this.ctx.storage.sql.exec(
       "DELETE FROM estimate WHERE story_id = ?",
-      activeStoryId
+      roundId
     );
 
-    this.ctx.storage.sql.exec(
-      "UPDATE story SET status = 'active' WHERE id = ?",
-      activeStoryId
-    );
+    // Only update story status if there's an actual story
+    const activeStoryId = this.getActiveStoryId();
+    if (activeStoryId) {
+      this.ctx.storage.sql.exec(
+        "UPDATE story SET status = 'active' WHERE id = ?",
+        activeStoryId
+      );
+    }
   }
 
   addStory(title: string, description: string): Story {
@@ -386,20 +391,19 @@ export class Room extends DurableObject<Env> {
   }
 
   private getParticipants(): Participant[] {
-    const activeStoryId = this.getActiveStoryId();
+    const roundId = this.getActiveStoryId() ?? 0;
     return this.ctx.storage.sql
       .exec("SELECT id, display_name, color FROM participant ORDER BY joined_at ASC")
       .toArray()
       .map((row) => {
-        const hasEstimated = activeStoryId
-          ? this.ctx.storage.sql
-              .exec(
-                "SELECT 1 FROM estimate WHERE story_id = ? AND participant_id = ?",
-                activeStoryId,
-                row["id"]
-              )
-              .toArray().length > 0
-          : false;
+        const hasEstimated =
+          this.ctx.storage.sql
+            .exec(
+              "SELECT 1 FROM estimate WHERE story_id = ? AND participant_id = ?",
+              roundId,
+              row["id"]
+            )
+            .toArray().length > 0;
 
         return {
           id: String(row["id"]),
@@ -433,13 +437,12 @@ export class Room extends DurableObject<Env> {
   }
 
   private getEstimateCount(): number {
-    const activeStoryId = this.getActiveStoryId();
-    if (!activeStoryId) return 0;
+    const roundId = this.getActiveStoryId() ?? 0;
     return Number(
       this.ctx.storage.sql
         .exec(
           "SELECT COUNT(*) as count FROM estimate WHERE story_id = ?",
-          activeStoryId
+          roundId
         )
         .one()!["count"]
     );
