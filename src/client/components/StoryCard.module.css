@@ -1,0 +1,27 @@
+.card {
+  background: #171717;
+  border: 1px solid #262626;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 24px;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #737373;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.description {
+  color: #a3a3a3;
+  font-size: 14px;
+  line-height: 1.6;
+}

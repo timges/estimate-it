@@ -1,0 +1,101 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.dot {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.roomInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roomName {
+  color: #a3a3a3;
+  font-size: 14px;
+}
+
+.code {
+  color: #737373;
+  font-size: 13px;
+  background: #171717;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.online {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.offline {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  flex: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.revealArea {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.revealBtn {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.revealBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+}

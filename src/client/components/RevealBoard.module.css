@@ -1,0 +1,110 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4ade80;
+  margin-bottom: 24px;
+}
+
+.estimates {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  min-height: 120px;
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.estimateCard {
+  width: 64px;
+  border-radius: 10px;
+  border: 2px solid #333;
+  background: #171717;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: #a3a3a3;
+  transition: box-shadow 0.3s;
+}
+
+.consensusCard {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+.name {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.consensus {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.consensusValue {
+  font-size: 40px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.consensusLabel {
+  color: #737373;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btnPrimary,
+.btnSecondary {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  border: none;
+}
+
+.btnPrimary:hover {
+  opacity: 0.9;
+}
+
+.btnSecondary {
+  background: #171717;
+  color: #d4d4d4;
+  border: 1px solid #333;
+}
+
+.btnSecondary:hover {
+  background: #262626;
+}
