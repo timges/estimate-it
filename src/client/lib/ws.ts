@@ -9,6 +9,7 @@ export class RoomSocket {
   private onConnectionChange: (connected: boolean) => void;
   private delay = 1000;
   private closed = false;
+  private queue: ClientMessage[] = [];
 
   constructor(
     roomId: string,
@@ -27,6 +28,7 @@ export class RoomSocket {
     this.ws.onopen = () => {
       this.delay = 1000;
       this.onConnectionChange(true);
+      this.flushQueue();
     };
 
     this.ws.onmessage = (event) => {
@@ -51,6 +53,15 @@ export class RoomSocket {
 
   send(msg: ClientMessage) {
     if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(msg));
+    } else {
+      this.queue.push(msg);
+    }
+  }
+
+  private flushQueue() {
+    while (this.queue.length > 0 && this.ws?.readyState === WebSocket.OPEN) {
+      const msg = this.queue.shift()!;
       this.ws.send(JSON.stringify(msg));
     }
   }

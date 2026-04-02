@@ -75,9 +75,6 @@ export default function Room() {
           estimate<span className={styles.dot}>.</span>
         </h1>
         <div className={styles.roomInfo}>
-          {room?.name && (
-            <span className={styles.roomName}>{room.name}</span>
-          )}
           <span className={styles.code}>{roomId}</span>
         </div>
         <div

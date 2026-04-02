@@ -16,22 +16,17 @@ export default function CardGrid({
   return (
     <div className={styles.wrapper}>
       <h3 className={styles.label}>Your Estimate</h3>
-      <div className={styles.scene}>
-        <div className={styles.table}>
-          {FIBONACCI_VALUES.map((value) => (
-            <button
-              key={value}
-              className={`${styles.card} ${selected === value ? styles.selected : ""}`}
-              onClick={() => !disabled && onSelect(value)}
-              disabled={disabled}
-            >
-              <div className={styles.cardInner}>
-                <div className={styles.cardBack} />
-                <div className={styles.cardFace}>{value}</div>
-              </div>
-            </button>
-          ))}
-        </div>
+      <div className={styles.grid}>
+        {FIBONACCI_VALUES.map((value) => (
+          <button
+            key={value}
+            className={`${styles.card} ${selected === value ? styles.selected : ""}`}
+            onClick={() => !disabled && onSelect(value)}
+            disabled={disabled}
+          >
+            {value}
+          </button>
+        ))}
       </div>
     </div>
   );

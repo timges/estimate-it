@@ -5,21 +5,15 @@ import styles from "./Landing.module.css";
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [roomName, setRoomName] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [createName, setCreateName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
 
   const handleCreate = () => {
-    if (!roomName.trim() || !displayName.trim()) return;
+    if (!createName.trim()) return;
     const code = generateRoomCode();
-    const slug = roomName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    const roomId = `${slug}-${code}`;
-    localStorage.setItem("displayName", displayName.trim());
-    navigate(`/room/${roomId}`);
+    localStorage.setItem("displayName", createName.trim());
+    navigate(`/room/${code}`);
   };
 
   const handleJoin = () => {
@@ -39,22 +33,15 @@ export default function Landing() {
         <div className={styles.label}>Create a Room</div>
         <input
           className={styles.input}
-          placeholder="Room name (e.g. Sprint 42)"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-        />
-        <input
-          className={styles.input}
           placeholder="Your display name"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          value={createName}
+          onChange={(e) => setCreateName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
         />
         <button
           className={styles.btnPrimary}
           onClick={handleCreate}
-          disabled={!roomName.trim() || !displayName.trim()}
+          disabled={!createName.trim()}
         >
           Create Room
         </button>

@@ -14,118 +14,48 @@
   font-weight: 500;
 }
 
-.scene {
-  perspective: 1000px;
-}
-
-.table {
+.grid {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
-  transform: rotateX(12deg);
-  transform-style: preserve-3d;
   max-width: 600px;
 }
 
 .card {
   width: 68px;
   height: 96px;
-  border: none;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  perspective: 600px;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.card:hover:not(:disabled) {
-  transform: translateZ(20px) translateY(-12px);
-}
-
-.card:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.cardInner {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.card.selected .cardInner {
-  transform: rotateY(180deg);
-}
-
-.card.selected {
-  transform: translateZ(36px) translateY(-16px);
-}
-
-.cardBack,
-.cardFace {
-  position: absolute;
-  inset: 0;
+  border: 2px solid #2a2a4a;
   border-radius: 12px;
-  backface-visibility: hidden;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  color: #a3a3a3;
+  font-size: 26px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.cardBack {
-  background: linear-gradient(145deg, #1a1a2e, #16213e);
-  border: 2px solid #2a2a4a;
-}
-
-.cardBack::after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border: 1px solid rgba(59, 130, 246, 0.1);
-  border-radius: 8px;
-}
-
-.cardFace {
-  background: linear-gradient(145deg, #0f2440, #1e3a5f);
-  border: 2px solid rgba(59, 130, 246, 0.4);
-  transform: rotateY(180deg);
-  font-size: 26px;
-  font-weight: 800;
+.card:hover:not(:disabled) {
+  transform: translateY(-8px);
+  border-color: #3b82f6;
   color: #60a5fa;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
 }
 
-.cardBack::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  background: conic-gradient(
-    from 0deg,
-    transparent,
-    rgba(139, 92, 246, 0.08),
-    transparent 30%
-  );
-  animation: holographic 4s linear infinite paused;
+.card:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
-.card:hover:not(:disabled) .cardBack::before {
-  animation-play-state: running;
-}
-
-@keyframes holographic {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.card.selected .cardBack {
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.3);
-}
-
-.card.selected .cardFace {
+.card.selected {
+  transform: translateY(-12px);
+  border-color: #3b82f6;
+  background: linear-gradient(145deg, #0f2440, #1e3a5f);
+  color: #60a5fa;
   box-shadow: 0 0 20px rgba(96, 165, 250, 0.2),
-    0 0 40px rgba(96, 165, 250, 0.1);
+    0 12px 32px rgba(59, 130, 246, 0.2);
 }
