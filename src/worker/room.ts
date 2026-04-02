@@ -385,6 +385,10 @@ export class Room extends DurableObject<Env> {
 
   removeParticipant(participantId: string): void {
     this.ctx.storage.sql.exec(
+      "DELETE FROM estimate WHERE participant_id = ?",
+      participantId
+    );
+    this.ctx.storage.sql.exec(
       "DELETE FROM participant WHERE id = ?",
       participantId
     );

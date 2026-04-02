@@ -258,13 +258,29 @@ describe("Room", () => {
         let state = instance.getRoomState();
         expect(state.totalParticipants).toBe(2);
 
-        // Simulate WebSocket close by calling the RPC methods directly
-        // In real usage, webSocketClose handles this
         instance.removeParticipant(a.participant.id);
 
         state = instance.getRoomState();
         expect(state.totalParticipants).toBe(1);
         expect(state.participants[0].displayName).toBe("Bob");
+      });
+    });
+
+    it("should also remove their estimates when participant leaves", async () => {
+      const stub = getStub("remove-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        instance.estimate(a.participant.id, "5");
+
+        let state = instance.getRoomState();
+        expect(state.currentEstimates).toBe(1);
+
+        instance.removeParticipant(a.participant.id);
+
+        state = instance.getRoomState();
+        expect(state.currentEstimates).toBe(0);
+        expect(state.totalParticipants).toBe(0);
       });
     });
   });
