@@ -13,19 +13,21 @@ export default function Landing() {
     if (!createName.trim()) return;
     const code = generateRoomCode();
     localStorage.setItem("displayName", createName.trim());
+    localStorage.setItem("roomAction", "create");
     navigate(`/room/${code}`);
   };
 
   const handleJoin = () => {
     if (!joinCode.trim() || !joinName.trim()) return;
     localStorage.setItem("displayName", joinName.trim());
+    localStorage.setItem("roomAction", "join");
     navigate(`/room/${joinCode.trim().toLowerCase()}`);
   };
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
-        estimate<span className={styles.dot}>.</span>
+        estimate-it<span className={styles.dot}>.</span>
       </h1>
       <p className={styles.subtitle}>Bias-free story estimation</p>
 

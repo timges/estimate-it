@@ -14,5 +14,5 @@
     "noEmit": true,
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["src/**/*", ".wrangler/types/**/*.ts"]
+  "include": ["src/**/*", ".wrangler/types/**/*.ts", "public"]
 }

@@ -37,19 +37,21 @@ export interface Estimate {
   value: FibonacciValue;
 }
 
-export interface Consensus {
-  value: FibonacciValue;
-  count: number;
-  total: number;
+export interface RevealResult {
+  average: number | null;
+  distribution: { value: FibonacciValue; count: number }[];
+  allAgree: boolean;
 }
 
 // WebSocket messages: Client → Server
 export type ClientMessage =
+  | { type: "create"; displayName: string }
   | { type: "join"; displayName: string }
   | { type: "estimate"; value: FibonacciValue }
   | { type: "reveal" }
   | { type: "next_story" }
   | { type: "re_vote" }
+  | { type: "rename"; displayName: string }
   | { type: "add_story"; title: string; description: string }
   | { type: "add_stories"; stories: { title: string; description: string }[] };
 
@@ -62,6 +64,7 @@ export type ServerMessage =
       stories: Story[];
       currentEstimates: number;
       totalParticipants: number;
+      myParticipantId: string;
     }
   | { type: "participant_joined"; participant: Participant }
   | { type: "participant_left"; participantId: string }
@@ -69,9 +72,10 @@ export type ServerMessage =
   | {
       type: "revealed";
       estimates: Estimate[];
-      consensus: Consensus | null;
+      revealResult: RevealResult | null;
     }
   | { type: "story_added"; story: Story }
   | { type: "story_changed"; story: Story }
   | { type: "re_vote_started" }
+  | { type: "participant_renamed"; participantId: string; displayName: string }
   | { type: "error"; message: string };

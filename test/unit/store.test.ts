@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { useRoomStore } from "../../src/client/store/room";
 import type {
   Room,
   Participant,
   Story,
   Estimate,
-  Consensus,
+  RevealResult,
   ServerMessage,
 } from "../../src/shared/types";
 
@@ -28,22 +28,31 @@ const makeStory = (overrides: Partial<Story> = {}): Story => ({
   ...overrides,
 });
 
+const makeRevealResult = (overrides: Partial<RevealResult> = {}): RevealResult => ({
+  average: 5,
+  distribution: [{ value: "5", count: 1 }],
+  allAgree: false,
+  ...overrides,
+});
+
 function getState() {
   return useRoomStore.getState();
 }
 
-beforeEach(() => {
+  beforeEach(() => {
   useRoomStore.setState({
     connected: false,
     room: null,
     participants: [],
+    myParticipantId: null,
     stories: [],
     currentEstimates: 0,
     totalParticipants: 0,
     revealed: false,
     estimates: [],
-    consensus: null,
+    revealResult: null,
     myEstimate: null,
+    error: null,
   });
 });
 
@@ -79,7 +88,7 @@ describe("useRoomStore", () => {
       useRoomStore.setState({
         revealed: true,
         estimates: [{ participantId: "p-1", value: "5" }],
-        consensus: { value: "5", count: 1, total: 1 },
+        revealResult: makeRevealResult(),
         myEstimate: "5",
         currentEstimates: 1,
       });
@@ -89,7 +98,7 @@ describe("useRoomStore", () => {
       const s = getState();
       expect(s.revealed).toBe(false);
       expect(s.estimates).toEqual([]);
-      expect(s.consensus).toBeNull();
+      expect(s.revealResult).toBeNull();
       expect(s.myEstimate).toBeNull();
       expect(s.currentEstimates).toBe(0);
     });
@@ -118,6 +127,7 @@ describe("useRoomStore", () => {
         stories,
         currentEstimates: 3,
         totalParticipants: 5,
+        myParticipantId: "p-1",
       });
 
       const s = getState();
@@ -167,33 +177,33 @@ describe("useRoomStore", () => {
       expect(s.currentEstimates).toBe(1);
     });
 
-    it("revealed sets revealed and estimates/consensus", () => {
+    it("revealed sets revealed and estimates/revealResult", () => {
       const estimates: Estimate[] = [
         { participantId: "p-1", value: "5" },
         { participantId: "p-2", value: "5" },
       ];
-      const consensus: Consensus = { value: "5", count: 2, total: 2 };
+      const revealResult = makeRevealResult();
 
       getState().handleMessage({
         type: "revealed",
         estimates,
-        consensus,
+        revealResult,
       });
 
       const s = getState();
       expect(s.revealed).toBe(true);
       expect(s.estimates).toEqual(estimates);
-      expect(s.consensus).toEqual(consensus);
+      expect(s.revealResult).toEqual(revealResult);
     });
 
-    it("revealed handles null consensus", () => {
+    it("revealed handles null revealResult", () => {
       getState().handleMessage({
         type: "revealed",
         estimates: [],
-        consensus: null,
+        revealResult: null,
       });
 
-      expect(getState().consensus).toBeNull();
+      expect(getState().revealResult).toBeNull();
     });
 
     it("story_added appends a story", () => {
@@ -220,11 +230,37 @@ describe("useRoomStore", () => {
       expect(stories[1].title).toBe("Other");
     });
 
-    it("re_vote_started resets reveal/estimates/consensus/myEstimate/currentEstimates", () => {
+    it("story_changed resets revealed state and estimates", () => {
+      useRoomStore.setState({
+        revealed: true,
+        estimates: [{ participantId: "p-1", value: "5" }],
+        revealResult: makeRevealResult(),
+        myEstimate: "5",
+        currentEstimates: 1,
+        participants: [
+          makeParticipant({ id: "p-1", hasEstimated: true }),
+          makeParticipant({ id: "p-2", displayName: "Bob", hasEstimated: true }),
+        ],
+        stories: [makeStory({ id: 1, status: "active" })],
+      });
+
+      const updated = makeStory({ id: 1, status: "done" });
+      getState().handleMessage({ type: "story_changed", story: updated });
+
+      const s = getState();
+      expect(s.revealed).toBe(false);
+      expect(s.estimates).toEqual([]);
+      expect(s.revealResult).toBeNull();
+      expect(s.myEstimate).toBeNull();
+      expect(s.currentEstimates).toBe(0);
+      expect(s.participants.every((p) => p.hasEstimated === false)).toBe(true);
+    });
+
+    it("re_vote_started resets reveal/estimates/revealResult/myEstimate/currentEstimates", () => {
       useRoomStore.setState({
         revealed: true,
         estimates: [{ participantId: "p-1", value: "3" }],
-        consensus: { value: "3", count: 1, total: 1 },
+        revealResult: makeRevealResult(),
         myEstimate: "3",
         currentEstimates: 1,
         participants: [
@@ -238,19 +274,55 @@ describe("useRoomStore", () => {
       const s = getState();
       expect(s.revealed).toBe(false);
       expect(s.estimates).toEqual([]);
-      expect(s.consensus).toBeNull();
+      expect(s.revealResult).toBeNull();
       expect(s.myEstimate).toBeNull();
       expect(s.currentEstimates).toBe(0);
       expect(s.participants.every((p) => p.hasEstimated === false)).toBe(true);
     });
 
-    it("error logs to console.error", () => {
-      const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    it("participant_renamed updates participant displayName", () => {
+      useRoomStore.setState({
+        participants: [
+          makeParticipant({ id: "p-1", displayName: "Alice" }),
+          makeParticipant({ id: "p-2", displayName: "Bob" }),
+        ],
+      });
 
+      getState().handleMessage({
+        type: "participant_renamed",
+        participantId: "p-1",
+        displayName: "Alice W.",
+      });
+
+      const s = getState();
+      expect(s.participants[0].displayName).toBe("Alice W.");
+      expect(s.participants[1].displayName).toBe("Bob");
+    });
+
+    it("error sets error state", () => {
+      getState().handleMessage({ type: "error", message: "Room not found" });
+
+      expect(getState().error).toBe("Room not found");
+    });
+
+    it("error can be cleared with setError", () => {
       getState().handleMessage({ type: "error", message: "Something broke" });
+      getState().setError(null);
 
-      expect(spy).toHaveBeenCalledWith("Room error:", "Something broke");
-      spy.mockRestore();
+      expect(getState().error).toBeNull();
+    });
+  });
+
+  describe("setError", () => {
+    it("sets error to a string", () => {
+      getState().setError("Some error");
+      expect(getState().error).toBe("Some error");
+    });
+
+    it("clears error with null", () => {
+      getState().setError("Some error");
+      getState().setError(null);
+      expect(getState().error).toBeNull();
     });
   });
 });

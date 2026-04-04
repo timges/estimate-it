@@ -74,12 +74,25 @@ function uid(): string {
 }
 
 describe("WebSocket flow integration", () => {
-  it("full flow: connect → join → estimate → reveal → verify revealed", async () => {
+  it("join to nonexistent room returns error", async () => {
+    const room = `flow-noexist-${uid()}`;
+    const conn = await connect(room);
+
+    // Try to join a room that hasn't been created
+    conn.ws.send(JSON.stringify({ type: "join", displayName: "Alice" }));
+    const msg = await conn.nextMessage();
+    expect(msg.type).toBe("error");
+    expect((msg as any).message).toBe("Room not found");
+
+    conn.close();
+  });
+
+  it("full flow: connect → create → estimate → reveal → verify revealed", async () => {
     const room = `flow-full-${uid()}`;
     const conn = await connect(room);
 
-    // Join
-    conn.ws.send(JSON.stringify({ type: "join", displayName: "Alice" }));
+    // Create
+    conn.ws.send(JSON.stringify({ type: "create", displayName: "Alice" }));
     const state = await conn.nextMessage();
     expect(state.type).toBe("room_state");
     expect((state as any).participants).toHaveLength(1);
@@ -96,17 +109,19 @@ describe("WebSocket flow integration", () => {
     const rev = revealed as any;
     expect(rev.estimates).toHaveLength(1);
     expect(rev.estimates[0].value).toBe("5");
-    expect(rev.consensus).toEqual({ value: "5", count: 1, total: 1 });
+    expect(rev.revealResult.average).toBe(5);
+    expect(rev.revealResult.allAgree).toBe(false);
+    expect(rev.revealResult.distribution).toEqual([{ value: "5", count: 1 }]);
 
     conn.close();
   });
 
-  it("two participants: connect both, join, verify both see each other", async () => {
+  it("two participants: connect both, first creates, second joins, verify both see each other", async () => {
     const room = `flow-two-${uid()}`;
     const alice = await connect(room);
 
-    // Alice joins first
-    alice.ws.send(JSON.stringify({ type: "join", displayName: "Alice" }));
+    // Alice creates the room first
+    alice.ws.send(JSON.stringify({ type: "create", displayName: "Alice" }));
     const aliceState = await alice.nextMessage();
     expect(aliceState.type).toBe("room_state");
     expect((aliceState as any).participants).toHaveLength(1);
@@ -145,9 +160,9 @@ describe("WebSocket flow integration", () => {
     expect(revealed.type).toBe("revealed");
     const rev = revealed as any;
     expect(rev.estimates).toHaveLength(2);
-    expect(rev.consensus).not.toBeNull();
-    expect(rev.consensus.count).toBe(1);
-    expect(rev.consensus.total).toBe(2);
+    expect(rev.revealResult).not.toBeNull();
+    expect(rev.revealResult.average).toBe(5.5);
+    expect(rev.revealResult.allAgree).toBe(false);
 
     // Bob also sees the reveal
     const bobRevealed = await bob.nextMessage();
@@ -157,11 +172,11 @@ describe("WebSocket flow integration", () => {
     bob.close();
   });
 
-  it("reVote flow: join → estimate → reveal → reVote → verify re_vote_started", async () => {
+  it("reVote flow: create → estimate → reveal → reVote → verify re_vote_started", async () => {
     const room = `flow-revote-${uid()}`;
     const conn = await connect(room);
 
-    conn.ws.send(JSON.stringify({ type: "join", displayName: "Alice" }));
+    conn.ws.send(JSON.stringify({ type: "create", displayName: "Alice" }));
     await conn.nextMessage(); // room_state
 
     conn.ws.send(JSON.stringify({ type: "estimate", value: "5" }));
@@ -189,11 +204,11 @@ describe("WebSocket flow integration", () => {
     conn.close();
   });
 
-  it("story flow: join → add_story → next_story → verify story_added and story_changed", async () => {
+  it("story flow: create → add_story → next_story → verify story_added and story_changed", async () => {
     const room = `flow-story-${uid()}`;
     const conn = await connect(room);
 
-    conn.ws.send(JSON.stringify({ type: "join", displayName: "Alice" }));
+    conn.ws.send(JSON.stringify({ type: "create", displayName: "Alice" }));
     await conn.nextMessage(); // room_state
 
     // Add two stories

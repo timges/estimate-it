@@ -1,4 +1,4 @@
-# `estimate.` — Design Spec
+# `estimate-it.` — Design Spec
 
 **Date:** 2026-04-02
 **Status:** Ready for implementation

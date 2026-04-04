@@ -4,9 +4,10 @@ import type {
   Room as RoomInfo,
   Story,
   Participant,
-  Consensus,
+  RevealResult,
   FibonacciValue,
 } from "../shared/types";
+import { FIBONACCI_VALUES } from "../shared/types";
 import { assignColor } from "../shared/dictionary";
 
 interface Env {
@@ -77,7 +78,8 @@ export class Room extends DurableObject<Env> {
     const msg = JSON.parse(message);
 
     switch (msg.type) {
-      case "join": {
+      case "create": {
+        this.createRoom();
         const result = this.join(msg.displayName);
         ws.serializeAttachment({ participantId: result.participant.id });
         this.sendToClient(ws, {
@@ -87,6 +89,35 @@ export class Room extends DurableObject<Env> {
           stories: result.stories,
           currentEstimates: result.currentEstimates,
           totalParticipants: result.totalParticipants,
+          myParticipantId: result.participant.id,
+        });
+        this.broadcast(
+          {
+            type: "participant_joined",
+            participant: result.participant,
+          },
+          ws
+        );
+        break;
+      }
+      case "join": {
+        if (!this.roomExists()) {
+          this.sendToClient(ws, {
+            type: "error",
+            message: "Room not found",
+          });
+          break;
+        }
+        const result = this.join(msg.displayName);
+        ws.serializeAttachment({ participantId: result.participant.id });
+        this.sendToClient(ws, {
+          type: "room_state",
+          room: result.room,
+          participants: result.participants,
+          stories: result.stories,
+          currentEstimates: result.currentEstimates,
+          totalParticipants: result.totalParticipants,
+          myParticipantId: result.participant.id,
         });
         this.broadcast(
           {
@@ -122,6 +153,16 @@ export class Room extends DurableObject<Env> {
         this.reVote();
         this.broadcast({ type: "re_vote_started" });
         break;
+      case "rename":
+        if (data) {
+          this.rename(data.participantId, msg.displayName);
+          this.broadcast({
+            type: "participant_renamed",
+            participantId: data.participantId,
+            displayName: msg.displayName,
+          });
+        }
+        break;
       case "add_story": {
         const story = this.addStory(msg.title, msg.description);
         this.broadcast({ type: "story_added", story });
@@ -145,6 +186,19 @@ export class Room extends DurableObject<Env> {
         participantId: data.participantId,
       });
     }
+  }
+
+  // --- Room existence ---
+
+  roomExists(): boolean {
+    const rows = this.ctx.storage.sql
+      .exec("SELECT 1 FROM room WHERE id = ?", this.roomId)
+      .toArray();
+    return rows.length > 0;
+  }
+
+  createRoom(): void {
+    this.ensureRoomExists();
   }
 
   // --- RPC methods (testable core logic) ---
@@ -219,7 +273,7 @@ export class Room extends DurableObject<Env> {
 
   reveal(): {
     estimates: { participantId: string; value: FibonacciValue }[];
-    consensus: Consensus | null;
+    revealResult: RevealResult | null;
   } | null {
     const roundId = this.getActiveStoryId() ?? 0;
 
@@ -230,24 +284,51 @@ export class Room extends DurableObject<Env> {
       )
       .toArray();
 
-    const valueCounts = new Map<string, number>();
-    for (const row of estimateRows) {
-      const value = String(row["value"]);
-      valueCounts.set(value, (valueCounts.get(value) ?? 0) + 1);
+    if (estimateRows.length === 0) {
+      const activeStoryId = this.getActiveStoryId();
+      if (activeStoryId) {
+        this.ctx.storage.sql.exec(
+          "UPDATE story SET status = 'revealed' WHERE id = ?",
+          activeStoryId
+        );
+      }
+      return { estimates: [], revealResult: null };
     }
 
-    let consensus: Consensus | null = null;
-    let maxCount = 0;
-    for (const [value, count] of valueCounts) {
-      if (count > maxCount) {
-        maxCount = count;
-        consensus = {
-          value: value as FibonacciValue,
-          count,
-          total: estimateRows.length,
-        };
-      }
+    const values = estimateRows.map((row) => String(row["value"]) as FibonacciValue);
+
+    // Distribution
+    const valueCounts = new Map<string, number>();
+    for (const v of values) {
+      valueCounts.set(v, (valueCounts.get(v) ?? 0) + 1);
     }
+
+    const fibNumbers: Record<string, number> = {
+      "1": 1, "2": 2, "3": 3, "5": 5, "8": 8, "13": 13, "21": 21,
+    };
+
+    const numericValues = values
+      .filter((v) => v !== "☕")
+      .map((v) => fibNumbers[v]);
+
+    const average = numericValues.length > 0
+      ? Math.round((numericValues.reduce((a, b) => a + b, 0) / numericValues.length) * 10) / 10
+      : null;
+
+    const nonCoffeeValues = values.filter((v) => v !== "☕");
+    const allAgree = nonCoffeeValues.length > 1 && new Set(nonCoffeeValues).size === 1;
+
+    const distribution: { value: FibonacciValue; count: number }[] = [];
+    for (const v of FIBONACCI_VALUES) {
+      const count = valueCounts.get(v) ?? 0;
+      if (count > 0) distribution.push({ value: v, count });
+    }
+
+    const revealResult: RevealResult = {
+      average,
+      distribution,
+      allAgree,
+    };
 
     // Only update story status if there's an actual story
     const activeStoryId = this.getActiveStoryId();
@@ -259,11 +340,11 @@ export class Room extends DurableObject<Env> {
     }
 
     return {
-      estimates: estimateRows.map((row) => ({
-        participantId: String(row["participant_id"]),
-        value: String(row["value"]) as FibonacciValue,
+      estimates: values.map((value, i) => ({
+        participantId: String(estimateRows[i]["participant_id"]),
+        value,
       })),
-      consensus,
+      revealResult,
     };
   }
 
@@ -365,6 +446,14 @@ export class Room extends DurableObject<Env> {
       currentEstimates: this.getEstimateCount(),
       totalParticipants: participants.length,
     };
+  }
+
+  rename(participantId: string, displayName: string): void {
+    this.ctx.storage.sql.exec(
+      "UPDATE participant SET display_name = ? WHERE id = ?",
+      displayName,
+      participantId
+    );
   }
 
   // --- Private helpers ---

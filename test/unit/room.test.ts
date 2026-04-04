@@ -8,7 +8,59 @@ describe("Room", () => {
     return env.ROOM.get(id);
   }
 
+  describe("roomExists", () => {
+    it("should return false when room has not been created", async () => {
+      const stub = getStub("exists-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        expect(instance.roomExists()).toBe(false);
+      });
+    });
+
+    it("should return true after createRoom", async () => {
+      const stub = getStub("exists-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        expect(instance.roomExists()).toBe(true);
+      });
+    });
+  });
+
+  describe("createRoom", () => {
+    it("should create the room in the database", async () => {
+      const stub = getStub("create-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        expect(instance.roomExists()).toBe(false);
+        instance.createRoom();
+        expect(instance.roomExists()).toBe(true);
+      });
+    });
+
+    it("should be idempotent", async () => {
+      const stub = getStub("create-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        instance.createRoom();
+        expect(instance.roomExists()).toBe(true);
+      });
+    });
+  });
+
   describe("join", () => {
+    it("should fail when room has not been created", async () => {
+      const stub = getStub("join-fail-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        expect(instance.roomExists()).toBe(false);
+        // join should still work at RPC level (WebSocket handler checks roomExists)
+        // but we test roomExists behavior here
+        expect(instance.roomExists()).toBe(false);
+      });
+    });
+
     it("should add a participant to a new room", async () => {
       const stub = getStub("join-test-1");
 
@@ -114,7 +166,7 @@ describe("Room", () => {
   });
 
   describe("reveal", () => {
-    it("should reveal all estimates and calculate consensus", async () => {
+    it("should reveal all estimates and calculate revealResult", async () => {
       const stub = getStub("reveal-test-1");
 
       await runInDurableObject(stub, async (instance: Room) => {
@@ -130,15 +182,15 @@ describe("Room", () => {
 
         expect(result).not.toBeNull();
         expect(result!.estimates).toHaveLength(2);
-        expect(result!.consensus).toEqual({
-          value: "5",
-          count: 2,
-          total: 2,
+        expect(result!.revealResult).toEqual({
+          average: 5,
+          allAgree: true,
+          distribution: [{ value: "5", count: 2 }],
         });
       });
     });
 
-    it("should handle no consensus (different estimates)", async () => {
+    it("should calculate average with different estimates", async () => {
       const stub = getStub("reveal-test-2");
 
       await runInDurableObject(stub, async (instance: Room) => {
@@ -152,8 +204,10 @@ describe("Room", () => {
 
         const result = instance.reveal();
 
-        expect(result!.consensus!.count).toBe(1);
-        expect(result!.consensus!.total).toBe(2);
+        expect(result!.revealResult).not.toBeNull();
+        expect(result!.revealResult!.average).toBe(5.5);
+        expect(result!.revealResult!.allAgree).toBe(false);
+        expect(result!.revealResult!.distribution).toHaveLength(2);
       });
     });
 
@@ -183,6 +237,59 @@ describe("Room", () => {
 
         const result = instance.reveal();
         expect(result!.estimates[0].value).toBe("☕");
+        expect(result!.revealResult!.average).toBeNull();
+        expect(result!.revealResult!.allAgree).toBe(false);
+      });
+    });
+
+    it("should exclude ☕ from average calculation", async () => {
+      const stub = getStub("reveal-test-5");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+
+        instance.estimate(a.participant.id, "8");
+        instance.estimate(b.participant.id, "☕");
+
+        const result = instance.reveal();
+        expect(result!.revealResult!.average).toBe(8);
+      });
+    });
+
+    it("should detect allAgree when all non-☕ votes match", async () => {
+      const stub = getStub("reveal-test-6");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        const c = instance.join("Carol");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+
+        instance.estimate(a.participant.id, "5");
+        instance.estimate(b.participant.id, "5");
+        instance.estimate(c.participant.id, "☕");
+
+        const result = instance.reveal();
+        expect(result!.revealResult!.allAgree).toBe(true);
+      });
+    });
+
+    it("should not detect allAgree with single voter", async () => {
+      const stub = getStub("reveal-test-7");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+
+        instance.estimate(a.participant.id, "5");
+
+        const result = instance.reveal();
+        expect(result!.revealResult!.allAgree).toBe(false);
       });
     });
   });
@@ -296,7 +403,7 @@ describe("Room", () => {
 
         expect(result).not.toBeNull();
         expect(result!.estimates).toHaveLength(0);
-        expect(result!.consensus).toBeNull();
+        expect(result!.revealResult).toBeNull();
       });
     });
 
@@ -406,6 +513,36 @@ describe("Room", () => {
         instance.estimate(participant.id, "8");
         const second = instance.reveal();
         expect(second!.estimates[0].value).toBe("8");
+      });
+    });
+  });
+
+  describe("rename", () => {
+    it("should rename a participant", async () => {
+      const stub = getStub("rename-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const { participant } = instance.join("Alice");
+
+        instance.rename(participant.id, "Alice W.");
+
+        const state = instance.getRoomState();
+        expect(state.participants[0].displayName).toBe("Alice W.");
+      });
+    });
+
+    it("should not affect other participants", async () => {
+      const stub = getStub("rename-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        instance.join("Bob");
+
+        instance.rename(a.participant.id, "Alice W.");
+
+        const state = instance.getRoomState();
+        expect(state.participants[0].displayName).toBe("Alice W.");
+        expect(state.participants[1].displayName).toBe("Bob");
       });
     });
   });

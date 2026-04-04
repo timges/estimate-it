@@ -1,4 +1,4 @@
-# estimate. Implementation Plan
+# estimate-it. Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -68,7 +68,7 @@
 
 ```json
 {
-  "name": "estimate",
+  "name": "estimate-it",
   "private": true,
   "type": "module",
   "scripts": {
@@ -148,7 +148,7 @@ export default defineConfig({
 ```jsonc
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "estimate",
+  "name": "estimate-it",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-04-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -181,7 +181,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>estimate.</title>
+    <title>estimate-it.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -217,7 +217,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 export default function App() {
   return (
     <div style={{ color: "white", background: "#060606", minHeight: "100vh" }}>
-      estimate.
+      estimate-it.
     </div>
   );
 }
@@ -1534,7 +1534,7 @@ export default function Landing() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
-        estimate<span className={styles.dot}>.</span>
+        estimate-it<span className={styles.dot}>.</span>
       </h1>
       <p className={styles.subtitle}>Bias-free story estimation</p>
 
@@ -1776,7 +1776,7 @@ export default function CardGrid({
 }: CardGridProps) {
   return (
     <div className={styles.wrapper}>
-      <h3 className={styles.label}>Your Estimate</h3>
+      <h3 className={styles.label}>Your estimate-it</h3>
       <div className={styles.scene}>
         <div className={styles.table}>
           {FIBONACCI_VALUES.map((value) => (
@@ -2371,7 +2371,7 @@ export default function StoryCard({ story, onAddStory }: StoryCardProps) {
       <div className={styles.label}>No Story</div>
       <div className={styles.title}>Estimating...</div>
       <div className={styles.description}>
-        Discuss the story verbally, then pick your estimate.
+        Discuss the story verbally, then pick your estimate-it.
       </div>
     </div>
   );
@@ -2503,7 +2503,7 @@ export default function Room() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.logo}>
-          estimate<span className={styles.dot}>.</span>
+          estimate-it<span className={styles.dot}>.</span>
         </h1>
         <div className={styles.roomInfo}>
           {room?.name && <span className={styles.roomName}>{room.name}</span>}

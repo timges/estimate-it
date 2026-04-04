@@ -70,6 +70,11 @@
   flex-direction: column;
 }
 
+.sidebar {
+  border-left: 1px solid #1f1f1f;
+  overflow-y: auto;
+}
+
 .revealArea {
   display: flex;
   justify-content: center;
@@ -90,6 +95,47 @@
 }
 
 .revealBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.errorContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.errorTitle {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.errorDescription {
+  color: #a3a3a3;
+  font-size: 15px;
+  max-width: 360px;
+}
+
+.errorLink {
+  margin-top: 8px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.errorLink:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }

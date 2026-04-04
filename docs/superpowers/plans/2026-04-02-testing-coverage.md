@@ -686,7 +686,7 @@ function renderLanding() {
 describe("Landing", () => {
   it("renders title", () => {
     renderLanding();
-    expect(screen.getByText("estimate.")).toBeTruthy();
+    expect(screen.getByText("estimate-it.")).toBeTruthy();
   });
 
   it("renders create room section", () => {

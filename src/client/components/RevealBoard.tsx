@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import type {
   Estimate,
-  Consensus,
+  RevealResult,
   Participant,
+  FibonacciValue,
 } from "../../shared/types";
 import styles from "./RevealBoard.module.css";
 
 interface RevealBoardProps {
   estimates: Estimate[];
-  consensus: Consensus | null;
+  revealResult: RevealResult | null;
   participants: Participant[];
   onReVote: () => void;
   onNextStory: () => void;
@@ -17,9 +18,20 @@ interface RevealBoardProps {
 
 const FIB_ORDER = ["1", "2", "3", "5", "8", "13", "21", "☕"];
 
+const SEGMENT_COLORS = [
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#f59e0b",
+  "#10b981",
+  "#06b6d4",
+  "#f43f5e",
+  "#64748b",
+];
+
 export default function RevealBoard({
   estimates,
-  consensus,
+  revealResult,
   participants,
   onReVote,
   onNextStory,
@@ -35,6 +47,10 @@ export default function RevealBoard({
     (a, b) => FIB_ORDER.indexOf(a.value) - FIB_ORDER.indexOf(b.value)
   );
 
+  const totalCount = revealResult
+    ? revealResult.distribution.reduce((sum, d) => sum + d.count, 0)
+    : 0;
+
   return (
     <div className={styles.board}>
       <motion.h3
@@ -49,8 +65,6 @@ export default function RevealBoard({
       <div className={styles.estimates}>
         {sorted.map((est, i) => {
           const color = getColor(est.participantId);
-          const isConsensus =
-            consensus && est.value === consensus.value;
           return (
             <motion.div
               key={est.participantId}
@@ -65,7 +79,7 @@ export default function RevealBoard({
               }}
             >
               <div
-                className={`${styles.estimateCard} ${isConsensus ? styles.consensusCard : ""}`}
+                className={styles.estimateCard}
                 style={{
                   borderColor: color,
                   height: `${60 + FIB_ORDER.indexOf(est.value) * 12}px`,
@@ -81,17 +95,41 @@ export default function RevealBoard({
         })}
       </div>
 
-      {consensus && (
+      {revealResult && (
         <motion.div
-          className={styles.consensus}
+          className={styles.stats}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 + sorted.length * 0.12 + 0.3 }}
         >
-          <div className={styles.consensusValue}>{consensus.value}</div>
-          <div className={styles.consensusLabel}>
-            consensus ({consensus.count} of {consensus.total})
-          </div>
+          {revealResult.average !== null && (
+            <div className={styles.average}>
+              <div className={styles.averageValue}>{revealResult.average}</div>
+              <div className={styles.averageLabel}>average</div>
+            </div>
+          )}
+
+          {revealResult.allAgree ? (
+            <div className={styles.consensus}>All agree!</div>
+          ) : (
+            <div className={styles.distributionBar}>
+              {revealResult.distribution.map((d, i) => {
+                const width = totalCount > 0 ? (d.count / totalCount) * 100 : 0;
+                return (
+                  <div
+                    key={d.value}
+                    className={styles.distSegment}
+                    style={{
+                      width: `${width}%`,
+                      backgroundColor: SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+                    }}
+                  >
+                    <span className={styles.distSegmentLabel}>{d.value}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -106,7 +144,7 @@ export default function RevealBoard({
         </button>
         {hasNextStory && (
           <button className={styles.btnPrimary} onClick={onNextStory}>
-            Next Story →
+            Next Story
           </button>
         )}
       </motion.div>

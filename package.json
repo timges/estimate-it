@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:worker": "wrangler dev",
     "build": "vite build",
     "preview": "wrangler dev",
     "deploy": "vite build && wrangler deploy",
