@@ -322,18 +322,6 @@ export class Room extends DurableObject<Env> {
       valueCounts.set(v, (valueCounts.get(v) ?? 0) + 1);
     }
 
-    const fibNumbers: Record<string, number> = {
-      "1": 1, "2": 2, "3": 3, "5": 5, "8": 8, "13": 13, "21": 21,
-    };
-
-    const numericValues = values
-      .filter((v) => v !== "☕")
-      .map((v) => fibNumbers[v]);
-
-    const average = numericValues.length > 0
-      ? Math.round((numericValues.reduce((a, b) => a + b, 0) / numericValues.length) * 10) / 10
-      : null;
-
     const nonCoffeeValues = values.filter((v) => v !== "☕");
     const allAgree = nonCoffeeValues.length > 1 && new Set(nonCoffeeValues).size === 1;
 
@@ -344,7 +332,6 @@ export class Room extends DurableObject<Env> {
     }
 
     const revealResult: RevealResult = {
-      average,
       distribution,
       allAgree,
     };

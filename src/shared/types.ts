@@ -38,7 +38,6 @@ export interface Estimate {
 }
 
 export interface RevealResult {
-  average: number | null;
   distribution: { value: FibonacciValue; count: number }[];
   allAgree: boolean;
 }

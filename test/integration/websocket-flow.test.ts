@@ -109,7 +109,6 @@ describe("WebSocket flow integration", () => {
     const rev = revealed as any;
     expect(rev.estimates).toHaveLength(1);
     expect(rev.estimates[0].value).toBe("5");
-    expect(rev.revealResult.average).toBe(5);
     expect(rev.revealResult.allAgree).toBe(false);
     expect(rev.revealResult.distribution).toEqual([{ value: "5", count: 1 }]);
 
@@ -161,8 +160,8 @@ describe("WebSocket flow integration", () => {
     const rev = revealed as any;
     expect(rev.estimates).toHaveLength(2);
     expect(rev.revealResult).not.toBeNull();
-    expect(rev.revealResult.average).toBe(5.5);
     expect(rev.revealResult.allAgree).toBe(false);
+    expect(rev.revealResult.distribution).toHaveLength(2);
 
     // Bob also sees the reveal
     const bobRevealed = await bob.nextMessage();

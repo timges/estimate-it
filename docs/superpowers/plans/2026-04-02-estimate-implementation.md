@@ -2196,7 +2196,7 @@ export default function RevealBoard({
         transition={{ delay: 0.2 + sorted.length * 0.12 + 0.5 }}
       >
         <button className={styles.btnSecondary} onClick={onReVote}>
-          Revote
+          New Vote
         </button>
         {hasNextStory && (
           <button className={styles.btnPrimary} onClick={onNextStory}>

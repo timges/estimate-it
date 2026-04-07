@@ -29,7 +29,6 @@ const makeStory = (overrides: Partial<Story> = {}): Story => ({
 });
 
 const makeRevealResult = (overrides: Partial<RevealResult> = {}): RevealResult => ({
-  average: 5,
   distribution: [{ value: "5", count: 1 }],
   allAgree: false,
   ...overrides,

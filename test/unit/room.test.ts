@@ -225,14 +225,13 @@ describe("Room", () => {
         expect(result).not.toBeNull();
         expect(result!.estimates).toHaveLength(2);
         expect(result!.revealResult).toEqual({
-          average: 5,
           allAgree: true,
           distribution: [{ value: "5", count: 2 }],
         });
       });
     });
 
-    it("should calculate average with different estimates", async () => {
+    it("should calculate stats with different estimates", async () => {
       const stub = getStub("reveal-test-2");
 
       await runInDurableObject(stub, async (instance: Room) => {
@@ -247,7 +246,6 @@ describe("Room", () => {
         const result = instance.reveal();
 
         expect(result!.revealResult).not.toBeNull();
-        expect(result!.revealResult!.average).toBe(5.5);
         expect(result!.revealResult!.allAgree).toBe(false);
         expect(result!.revealResult!.distribution).toHaveLength(2);
       });
@@ -279,12 +277,11 @@ describe("Room", () => {
 
         const result = instance.reveal();
         expect(result!.estimates[0].value).toBe("☕");
-        expect(result!.revealResult!.average).toBeNull();
         expect(result!.revealResult!.allAgree).toBe(false);
       });
     });
 
-    it("should exclude ☕ from average calculation", async () => {
+    it("should exclude ☕ from allAgree determination", async () => {
       const stub = getStub("reveal-test-5");
 
       await runInDurableObject(stub, async (instance: Room) => {
@@ -297,7 +294,8 @@ describe("Room", () => {
         instance.estimate(b.participant.id, "☕");
 
         const result = instance.reveal();
-        expect(result!.revealResult!.average).toBe(8);
+        // Only 1 non-☕ voter, so allAgree is false (needs >1)
+        expect(result!.revealResult!.allAgree).toBe(false);
       });
     });
 

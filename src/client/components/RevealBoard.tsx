@@ -102,13 +102,6 @@ export default function RevealBoard({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 + sorted.length * 0.12 + 0.3 }}
         >
-          {revealResult.average !== null && (
-            <div className={styles.average}>
-              <div className={styles.averageValue}>{revealResult.average}</div>
-              <div className={styles.averageLabel}>average</div>
-            </div>
-          )}
-
           {revealResult.allAgree ? (
             <div className={styles.consensus}>All agree!</div>
           ) : (
@@ -124,7 +117,9 @@ export default function RevealBoard({
                       backgroundColor: SEGMENT_COLORS[i % SEGMENT_COLORS.length],
                     }}
                   >
-                    <span className={styles.distSegmentLabel}>{d.value}</span>
+                    <span className={styles.distSegmentLabel}>
+                      {d.value} <span className={styles.distCount}>×{d.count}</span>
+                    </span>
                   </div>
                 );
               })}
