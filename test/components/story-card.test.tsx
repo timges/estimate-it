@@ -6,7 +6,7 @@ describe("StoryCard", () => {
   it("shows 'No Story' and 'Estimating...' when story is null", () => {
     render(<StoryCard story={null} />);
     expect(screen.getByText("No Story")).toBeInTheDocument();
-    expect(screen.getByText("Estimating...")).toBeInTheDocument();
+    expect(screen.getByText("Estimating…")).toBeInTheDocument();
   });
 
   it("shows story title when provided", () => {

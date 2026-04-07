@@ -21,7 +21,7 @@ export default function StoryCard({ story }: StoryCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.label}>No Story</div>
-      <div className={styles.title}>Estimating...</div>
+      <div className={styles.title}>Estimating…</div>
       <div className={styles.description}>
         Discuss the story verbally, then pick your estimate.
       </div>

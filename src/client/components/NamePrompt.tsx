@@ -56,7 +56,7 @@ export default function NamePrompt({ roomId, onSubmit }: NamePromptProps) {
         <input
           ref={inputRef}
           className={styles.input}
-          placeholder="Your display name"
+          placeholder="Your display name…"
           aria-label="Display name"
           maxLength={30}
           value={name}
