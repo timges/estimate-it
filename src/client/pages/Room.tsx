@@ -154,7 +154,11 @@ export default function Room() {
         </h1>
         <div className={styles.roomInfo}>
           {copied && <span className={styles.copiedLabel}>copied</span>}
-          <button onClick={handleRoomClick} className={styles.code}>
+          <button
+            onClick={handleRoomClick}
+            className={styles.code}
+            aria-label={`Copy room code ${roomId}`}
+          >
             {roomId}
           </button>
         </div>

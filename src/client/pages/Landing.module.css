@@ -99,6 +99,12 @@
   background: #333;
 }
 
+.btnPrimary:focus-visible,
+.btnSecondary:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 .btnPrimary:disabled,
 .btnSecondary:disabled {
   opacity: 0.4;

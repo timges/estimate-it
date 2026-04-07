@@ -49,6 +49,11 @@
     cursor: pointer;
 }
 
+.code:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
 .copiedLabel {
     font-size: 12px;
     color: #4ade80;
@@ -117,6 +122,11 @@
 .revealBtn:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+}
+
+.revealBtn:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
 }
 
 .errorContainer {
