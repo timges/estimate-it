@@ -46,11 +46,6 @@
   color: #e5e5e5;
   font-size: 14px;
   font-family: inherit;
-.input:focus,
-.textarea:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
   margin-bottom: 8px;
   resize: vertical;
 }
@@ -58,6 +53,8 @@
 .input:focus,
 .textarea:focus {
   border-color: #3b82f6;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 
 .actions {

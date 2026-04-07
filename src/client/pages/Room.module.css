@@ -54,6 +54,11 @@
     outline-offset: 2px;
 }
 
+.code:hover {
+  background: #262626;
+  color: #a3a3a3;
+}
+
 .copiedLabel {
     font-size: 12px;
     color: #4ade80;

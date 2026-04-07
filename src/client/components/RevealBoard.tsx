@@ -98,7 +98,7 @@ export default function RevealBoard({
           }
         >
           {revealResult.allAgree ? (
-            <div className={styles.consensus}>All agree!</div>
+            <div className={styles.consensus}>All Agree!</div>
           ) : (
             <div className={styles.distribution}>
               {revealResult.distribution.map((d) => {

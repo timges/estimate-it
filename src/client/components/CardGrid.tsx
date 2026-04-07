@@ -40,7 +40,7 @@ export default function CardGrid({
 
   return (
     <div className={styles.wrapper}>
-      <h3 className={styles.label}>Your estimate</h3>
+      <h3 className={styles.label}>Your Estimate</h3>
       <div className={styles.grid}>
         {FIBONACCI_VALUES.map((value) => (
           <button

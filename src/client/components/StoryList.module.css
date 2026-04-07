@@ -59,4 +59,7 @@
 .title {
   font-size: 13px;
   color: #d4d4d4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
