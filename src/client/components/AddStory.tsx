@@ -28,16 +28,24 @@ export default function AddStory({ onAdd }: AddStoryProps) {
 
   return (
     <div className={styles.form}>
+      <label className={styles.label} htmlFor="story-title">
+        Story Title
+      </label>
       <input
+        id="story-title"
         className={styles.input}
-        placeholder="Story title"
+        placeholder="Story title…"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         autoFocus
       />
+      <label className={styles.label} htmlFor="story-description">
+        Description
+      </label>
       <textarea
+        id="story-description"
         className={styles.textarea}
-        placeholder="Description (optional)"
+        placeholder="Description (optional)…"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={3}

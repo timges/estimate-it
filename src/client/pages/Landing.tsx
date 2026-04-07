@@ -33,9 +33,13 @@ export default function Landing() {
 
       <div className={styles.card}>
         <div className={styles.label}>Create a Room</div>
+        <label className={styles.label} htmlFor="create-name">
+          Your Display Name
+        </label>
         <input
+          id="create-name"
           className={styles.input}
-          placeholder="Your display name"
+          placeholder="Your display name…"
           value={createName}
           onChange={(e) => setCreateName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -53,16 +57,24 @@ export default function Landing() {
 
       <div className={styles.card}>
         <div className={styles.label}>Join a Room</div>
+        <label className={styles.label} htmlFor="join-code">
+          Room Code
+        </label>
         <input
+          id="join-code"
           className={styles.input}
-          placeholder="Room code (e.g. coral-falcon)"
+          placeholder="Room code (e.g. coral-falcon)…"
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleJoin()}
         />
+        <label className={styles.label} htmlFor="join-name">
+          Your Display Name
+        </label>
         <input
+          id="join-name"
           className={styles.input}
-          placeholder="Your display name"
+          placeholder="Your display name…"
           value={joinName}
           onChange={(e) => setJoinName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleJoin()}
