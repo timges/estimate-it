@@ -53,10 +53,10 @@ describe("Room copied feedback", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
-    expect(screen.getByText("copied")).toBeInTheDocument();
+    expect(screen.getByText("Copied")).toBeInTheDocument();
   });
 
-  it("hides 'copied' text after 1.5 seconds", async () => {
+  it("hides 'Copied' text after 1.5 seconds", async () => {
     renderRoom();
 
     const codeButton = screen.getByText("test-room");
@@ -65,11 +65,11 @@ describe("Room copied feedback", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
-    expect(screen.getByText("copied")).toBeInTheDocument();
+    expect(screen.getByText("Copied")).toBeInTheDocument();
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1500);
     });
-    expect(screen.queryByText("copied")).not.toBeInTheDocument();
+    expect(screen.queryByText("Copied")).not.toBeInTheDocument();
   });
 });
