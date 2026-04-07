@@ -153,10 +153,10 @@ export default function Room() {
           </a>
         </h1>
         <div className={styles.roomInfo}>
+          {copied && <span className={styles.copiedLabel}>copied</span>}
           <button onClick={handleRoomClick} className={styles.code}>
             {roomId}
           </button>
-          {copied && <span className={styles.copiedLabel}>copied</span>}
         </div>
       </header>
 
