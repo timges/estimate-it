@@ -11,7 +11,9 @@ export default function NamePrompt({ roomId, onSubmit }: NamePromptProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
+    if (window.matchMedia("(pointer: fine)").matches) {
+      inputRef.current?.focus();
+    }
   }, []);
 
   const handleSubmit = () => {

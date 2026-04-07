@@ -37,7 +37,7 @@ export default function AddStory({ onAdd }: AddStoryProps) {
         placeholder="Story title…"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        autoFocus
+        autoFocus={window.matchMedia("(pointer: fine)").matches}
       />
       <label className={styles.label} htmlFor="story-description">
         Description
