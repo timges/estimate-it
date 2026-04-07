@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type {
   Estimate,
   RevealResult,
@@ -26,6 +26,8 @@ export default function RevealBoard({
   onNextStory,
   hasNextStory,
 }: RevealBoardProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   const getName = (participantId: string) =>
     participants.find((p) => p.id === participantId)?.displayName ?? "?";
 
@@ -40,9 +42,9 @@ export default function RevealBoard({
     <div className={styles.board}>
       <motion.h3
         className={styles.title}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        initial={shouldReduceMotion ? {} : { opacity: 0, y: -10 }}
+        animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+        transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.1 }}
       >
         All Estimates Revealed
       </motion.h3>
@@ -54,14 +56,18 @@ export default function RevealBoard({
             <motion.div
               key={est.participantId}
               className={styles.slot}
-              initial={{ opacity: 0, y: -60, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                delay: 0.2 + i * 0.12,
-                type: "spring",
-                stiffness: 400,
-                damping: 15,
-              }}
+              initial={shouldReduceMotion ? {} : { opacity: 0, y: -60, scale: 0.8 }}
+              animate={shouldReduceMotion ? {} : { opacity: 1, y: 0, scale: 1 }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : {
+                      delay: 0.2 + i * 0.12,
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 15,
+                    }
+              }
             >
               <div
                 className={styles.estimateCard}
@@ -83,9 +89,13 @@ export default function RevealBoard({
       {revealResult && (
         <motion.div
           className={styles.stats}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 + sorted.length * 0.12 + 0.3 }}
+          initial={shouldReduceMotion ? {} : { opacity: 0, y: 10 }}
+          animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { delay: 0.2 + sorted.length * 0.12 + 0.3 }
+          }
         >
           {revealResult.allAgree ? (
             <div className={styles.consensus}>All agree!</div>
@@ -116,9 +126,13 @@ export default function RevealBoard({
 
       <motion.div
         className={styles.actions}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 + sorted.length * 0.12 + 0.5 }}
+        initial={shouldReduceMotion ? {} : { opacity: 0 }}
+        animate={shouldReduceMotion ? {} : { opacity: 1 }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { delay: 0.2 + sorted.length * 0.12 + 0.5 }
+        }
       >
         <button className={styles.btnSecondary} onClick={onReVote}>
           New Vote
