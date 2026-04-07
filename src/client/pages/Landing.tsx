@@ -43,6 +43,9 @@ export default function Landing() {
           value={createName}
           onChange={(e) => setCreateName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          name="displayName"
+          autoComplete="name"
+          spellCheck={false}
         />
         <button
           className={styles.btnPrimary}
@@ -67,6 +70,9 @@ export default function Landing() {
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+          name="roomCode"
+          autoComplete="off"
+          spellCheck={false}
         />
         <label className={styles.label} htmlFor="join-name">
           Your Display Name
@@ -78,6 +84,9 @@ export default function Landing() {
           value={joinName}
           onChange={(e) => setJoinName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+          name="displayName"
+          autoComplete="name"
+          spellCheck={false}
         />
         <button
           className={styles.btnSecondary}

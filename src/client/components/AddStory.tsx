@@ -38,6 +38,8 @@ export default function AddStory({ onAdd }: AddStoryProps) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         autoFocus={window.matchMedia("(pointer: fine)").matches}
+        name="storyTitle"
+        autoComplete="off"
       />
       <label className={styles.label} htmlFor="story-description">
         Description
@@ -49,6 +51,8 @@ export default function AddStory({ onAdd }: AddStoryProps) {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={3}
+        name="storyDescription"
+        autoComplete="off"
       />
       <div className={styles.actions}>
         <button className={styles.cancel} onClick={() => setOpen(false)}>

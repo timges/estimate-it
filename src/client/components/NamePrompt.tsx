@@ -64,6 +64,9 @@ export default function NamePrompt({ roomId, onSubmit }: NamePromptProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={handleKeyDown}
+          name="displayName"
+          autoComplete="name"
+          spellCheck={false}
         />
         <button
           ref={joinBtnRef}
