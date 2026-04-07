@@ -35,7 +35,7 @@ describe("ParticipantList", () => {
     expect(screen.getByText("✓ estimated")).toBeInTheDocument();
   });
 
-  it("shows 'picking...' for hasEstimated=false", () => {
+  it("shows 'picking…' for hasEstimated=false", () => {
     render(
       <ParticipantList
         participants={[makeParticipant({ hasEstimated: false })]}
@@ -43,7 +43,7 @@ describe("ParticipantList", () => {
         onRename={noop}
       />,
     );
-    expect(screen.getByText("picking...")).toBeInTheDocument();
+    expect(screen.getByText("picking…")).toBeInTheDocument();
   });
 
   it("shows pencil icon next to the current user's name", () => {

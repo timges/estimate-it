@@ -119,7 +119,7 @@ export default function ParticipantList({
               <div
                 className={`${styles.status} ${p.hasEstimated ? styles.voted : ""}`}
               >
-                {p.hasEstimated ? "✓ estimated" : "picking..."}
+                {p.hasEstimated ? "✓ estimated" : "picking…"}
               </div>
             </div>
           </div>
