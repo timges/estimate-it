@@ -49,6 +49,19 @@
     cursor: pointer;
 }
 
+.copiedLabel {
+    font-size: 12px;
+    color: #4ade80;
+    animation: fadeInOut 1.5s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
 .status {
     font-size: 12px;
     padding: 4px 10px;

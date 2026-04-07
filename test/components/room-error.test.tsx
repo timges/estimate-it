@@ -28,6 +28,7 @@ function renderRoom(error: string | null = null) {
 describe("Room error screen", () => {
   beforeEach(() => {
     useRoomStore.setState({ error: null, connected: false });
+    localStorage.setItem("displayName", "TestUser");
   });
 
   it("renders error screen when error is set", () => {

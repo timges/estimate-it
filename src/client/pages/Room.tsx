@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { FibonacciValue } from "../../shared/types";
 import CardGrid from "../components/CardGrid";
+import NamePrompt from "../components/NamePrompt";
 import ParticipantList from "../components/ParticipantList";
 import RevealBoard from "../components/RevealBoard";
 import StoryList from "../components/StoryList";
@@ -12,6 +13,10 @@ import styles from "./Room.module.css";
 export default function Room() {
   const { roomId } = useParams<{ roomId: string }>();
   const wsRef = useRef<RoomSocket | null>(null);
+  const [hasName, setHasName] = useState(() => {
+    const stored = localStorage.getItem("displayName");
+    return !!stored;
+  });
 
   const {
     connected,
@@ -30,26 +35,43 @@ export default function Room() {
     setError,
   } = useRoomStore();
 
-  useEffect(() => {
-    if (!roomId) return;
+  const connectAndJoin = useCallback(
+    (displayName: string) => {
+      if (!roomId) return;
 
-    const ws = new RoomSocket(roomId, handleMessage, setConnected);
-    ws.connect();
-    wsRef.current = ws;
+      const ws = new RoomSocket(roomId, handleMessage, setConnected);
+      ws.connect();
+      wsRef.current = ws;
+
+      const roomAction = localStorage.getItem("roomAction") || "join";
+      localStorage.removeItem("roomAction");
+      ws.send({
+        type: roomAction === "create" ? "create" : "join",
+        displayName,
+      });
+    },
+    [roomId, handleMessage, setConnected],
+  );
+
+  useEffect(() => {
+    if (!hasName || !roomId) return;
 
     const storedName = localStorage.getItem("displayName") || "Anonymous";
-    const roomAction = localStorage.getItem("roomAction") || "join";
-    localStorage.removeItem("roomAction");
-    ws.send({
-      type: roomAction === "create" ? "create" : "join",
-      displayName: storedName,
-    });
+    connectAndJoin(storedName);
 
     return () => {
-      ws.close();
+      wsRef.current?.close();
       setError(null);
     };
-  }, [roomId]);
+  }, [hasName, roomId, connectAndJoin, setError]);
+
+  const handleNameSubmit = useCallback(
+    (name: string) => {
+      localStorage.setItem("displayName", name);
+      setHasName(true);
+    },
+    [],
+  );
 
   const handleEstimate = useCallback(
     (value: FibonacciValue) => {
@@ -85,8 +107,21 @@ export default function Room() {
     localStorage.setItem("displayName", newName);
   }, []);
 
+  const [copied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    };
+  }, []);
+
   const activeStory = stories.find((s) => s.status === "active") ?? null;
   const hasNextStory = stories.some((s) => s.status === "pending");
+
+  if (!hasName && roomId) {
+    return <NamePrompt roomId={roomId} onSubmit={handleNameSubmit} />;
+  }
 
   if (error) {
     return (
@@ -104,6 +139,9 @@ export default function Room() {
 
   async function handleRoomClick() {
     await navigator.clipboard.writeText(roomId ?? "");
+    setCopied(true);
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    copiedTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   }
 
   return (
@@ -118,6 +156,7 @@ export default function Room() {
           <button onClick={handleRoomClick} className={styles.code}>
             {roomId}
           </button>
+          {copied && <span className={styles.copiedLabel}>copied</span>}
         </div>
       </header>
 
