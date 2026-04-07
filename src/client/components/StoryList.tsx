@@ -24,7 +24,7 @@ export default function StoryList({ stories }: StoryListProps) {
 
   return (
     <div className={styles.list}>
-      <div className={styles.heading}>Stories</div>
+      <h3 className={styles.heading}>Stories</h3>
       {STATUS_ORDER.map((status) => {
         const group = grouped.get(status);
         if (!group || group.length === 0) return null;

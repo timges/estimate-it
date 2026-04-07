@@ -68,25 +68,14 @@ export default function ParticipantList({
                 />
               ) : (
                 <div className={styles.nameRow}>
-                  <div
-                    role={p.id === currentParticipantId ? "button" : undefined}
-                    tabIndex={p.id === currentParticipantId ? 0 : undefined}
+                  <button
+                    type="button"
                     className={`${styles.name} ${p.id === currentParticipantId ? styles.clickable : ""}`}
                     onClick={p.id === currentParticipantId ? () => handleStartEdit(p) : undefined}
-                    onKeyDown={
-                      p.id === currentParticipantId
-                        ? (e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              handleStartEdit(p);
-                            }
-                          }
-                        : undefined
-                    }
                     title={p.id === currentParticipantId ? "Click to rename" : undefined}
                   >
                     {p.displayName}
-                  </div>
+                  </button>
                   {p.id === currentParticipantId && (
                     <svg
                       data-pencil-icon

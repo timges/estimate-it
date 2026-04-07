@@ -65,6 +65,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  cursor: default;
+  text-align: left;
 }
 
 .pencilIcon {
@@ -110,9 +116,10 @@
   border: 1px solid #3b82f6;
   border-radius: 4px;
   padding: 2px 6px;
+  width: 100%;
+}
+
 .renameInput:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
-}
-  width: 100%;
 }
