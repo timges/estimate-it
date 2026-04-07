@@ -89,9 +89,9 @@
 
 .distBarTrack {
   flex: 1;
-  height: 10px;
+  height: 14px;
   background: #1a1a1a;
-  border-radius: 5px;
+  border-radius: 7px;
   overflow: hidden;
 }
 
