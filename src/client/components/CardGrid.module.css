@@ -33,7 +33,7 @@
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,9 +41,7 @@
 
 .card:hover:not(:disabled) {
   transform: translateY(-8px);
-  border-color: #3b82f6;
-  color: #60a5fa;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+  opacity: 0.9;
 }
 
 .card:disabled {
@@ -53,11 +51,7 @@
 
 .card.selected {
   transform: translateY(-12px);
-  border-color: #3b82f6;
-  background: linear-gradient(145deg, #0f2440, #1e3a5f);
-  color: #60a5fa;
-  box-shadow: 0 0 20px rgba(96, 165, 250, 0.2),
-    0 12px 32px rgba(59, 130, 246, 0.2);
+  opacity: 0.9;
 }
 
 .card:focus-visible {
