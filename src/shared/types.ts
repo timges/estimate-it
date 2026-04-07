@@ -48,6 +48,7 @@ export type ClientMessage =
   | { type: "create"; displayName: string }
   | { type: "join"; displayName: string }
   | { type: "estimate"; value: FibonacciValue }
+  | { type: "clear_estimate" }
   | { type: "reveal" }
   | { type: "next_story" }
   | { type: "re_vote" }
@@ -69,6 +70,7 @@ export type ServerMessage =
   | { type: "participant_joined"; participant: Participant }
   | { type: "participant_left"; participantId: string }
   | { type: "estimate_received"; participantId: string }
+  | { type: "estimate_cleared"; participantId: string }
   | {
       type: "revealed";
       estimates: Estimate[];

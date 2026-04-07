@@ -1,147 +1,154 @@
 .container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
-  border-bottom: 1px solid #1f1f1f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid #1f1f1f;
 }
 
 .logo {
-  font-size: 18px;
-  font-weight: 700;
+    font-size: 18px;
+    font-weight: 700;
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
 }
 
 .dot {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .roomInfo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .roomName {
-  color: #a3a3a3;
-  font-size: 14px;
+    color: #a3a3a3;
+    font-size: 14px;
 }
 
 .code {
-  color: #737373;
-  font-size: 13px;
-  background: #171717;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
+    all: unset;
+    color: #737373;
+    font-size: 13px;
+    background: #171717;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 .status {
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
 }
 
 .online {
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
 }
 
 .offline {
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
 }
 
 .main {
-  display: grid;
-  grid-template-columns: 1fr 240px;
-  flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    flex: 1;
 }
 
 .content {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .sidebar {
-  border-left: 1px solid #1f1f1f;
-  overflow-y: auto;
+    border-left: 1px solid #1f1f1f;
+    overflow-y: auto;
 }
 
 .revealArea {
-  display: flex;
-  justify-content: center;
-  padding: 16px;
+    display: flex;
+    justify-content: center;
+    padding: 16px;
 }
 
 .revealBtn {
-  padding: 12px 32px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
 }
 
 .revealBtn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .errorContainer {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px;
-  text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    text-align: center;
 }
 
 .errorTitle {
-  font-size: 24px;
-  font-weight: 700;
+    font-size: 24px;
+    font-weight: 700;
 }
 
 .errorDescription {
-  color: #a3a3a3;
-  font-size: 15px;
-  max-width: 360px;
+    color: #a3a3a3;
+    font-size: 15px;
+    max-width: 360px;
 }
 
 .errorLink {
-  margin-top: 8px;
-  padding: 10px 24px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.15s;
+    margin-top: 8px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s;
 }
 
 .errorLink:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
-  .main {
-    grid-template-columns: 1fr;
-  }
+    .main {
+        grid-template-columns: 1fr;
+    }
 }

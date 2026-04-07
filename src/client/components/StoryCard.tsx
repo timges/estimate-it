@@ -23,7 +23,7 @@ export default function StoryCard({ story }: StoryCardProps) {
       <div className={styles.label}>No Story</div>
       <div className={styles.title}>Estimating...</div>
       <div className={styles.description}>
-        Discuss the story verbally, then pick your estimate-it.
+        Discuss the story verbally, then pick your estimate.
       </div>
     </div>
   );

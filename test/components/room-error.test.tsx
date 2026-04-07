@@ -50,6 +50,6 @@ describe("Room error screen", () => {
   it("renders normal room UI when no error", () => {
     renderRoom(null);
     expect(screen.queryByText("Back to Home")).not.toBeInTheDocument();
-    expect(screen.getByText("reconnecting...")).toBeInTheDocument();
+    expect(screen.getByText("test-room")).toBeInTheDocument();
   });
 });

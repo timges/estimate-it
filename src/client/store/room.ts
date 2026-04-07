@@ -105,6 +105,18 @@ export const useRoomStore = create<RoomState>((set) => ({
         });
         break;
 
+      case "estimate_cleared":
+        set((s) => {
+          const participants = s.participants.map((p) =>
+            p.id === msg.participantId ? { ...p, hasEstimated: false } : p
+          );
+          return {
+            participants,
+            currentEstimates: Math.max(0, s.currentEstimates - 1),
+          };
+        });
+        break;
+
       case "revealed":
         set({
           revealed: true,

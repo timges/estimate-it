@@ -1,14 +1,12 @@
-import { useEffect, useRef, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useRoomStore } from "../store/room";
-import { RoomSocket } from "../lib/ws";
+import { useCallback, useEffect, useRef } from "react";
+import { Link, useParams } from "react-router-dom";
 import type { FibonacciValue } from "../../shared/types";
 import CardGrid from "../components/CardGrid";
 import ParticipantList from "../components/ParticipantList";
 import RevealBoard from "../components/RevealBoard";
-import StoryCard from "../components/StoryCard";
 import StoryList from "../components/StoryList";
-import AddStory from "../components/AddStory";
+import { RoomSocket } from "../lib/ws";
+import { useRoomStore } from "../store/room";
 import styles from "./Room.module.css";
 
 export default function Room() {
@@ -42,7 +40,10 @@ export default function Room() {
     const storedName = localStorage.getItem("displayName") || "Anonymous";
     const roomAction = localStorage.getItem("roomAction") || "join";
     localStorage.removeItem("roomAction");
-    ws.send({ type: roomAction === "create" ? "create" : "join", displayName: storedName });
+    ws.send({
+      type: roomAction === "create" ? "create" : "join",
+      displayName: storedName,
+    });
 
     return () => {
       ws.close();
@@ -55,8 +56,13 @@ export default function Room() {
       setMyEstimate(value);
       wsRef.current?.send({ type: "estimate", value });
     },
-    [setMyEstimate]
+    [setMyEstimate],
   );
+
+  const handleDeselect = useCallback(() => {
+    setMyEstimate(null);
+    wsRef.current?.send({ type: "clear_estimate" });
+  }, [setMyEstimate]);
 
   const handleReveal = useCallback(() => {
     wsRef.current?.send({ type: "reveal" });
@@ -96,32 +102,36 @@ export default function Room() {
     );
   }
 
+  async function handleRoomClick() {
+    await navigator.clipboard.writeText(roomId ?? "");
+  }
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.logo}>
-          estimate-it<span className={styles.dot}>.</span>
+          <a href="/">
+            estimate-it<span className={styles.dot}>.</span>
+          </a>
         </h1>
         <div className={styles.roomInfo}>
-          <span className={styles.code}>{roomId}</span>
-        </div>
-        <div
-          className={`${styles.status} ${connected ? styles.online : styles.offline}`}
-        >
-          {connected ? "connected" : "reconnecting..."}
+          <button onClick={handleRoomClick} className={styles.code}>
+            {roomId}
+          </button>
         </div>
       </header>
 
       <div className={styles.main}>
         <div className={styles.content}>
-          <StoryCard story={activeStory} />
-          <AddStory onAdd={handleAddStory} />
+          {/*<StoryCard story={activeStory} />*/}
+          {/*<AddStory onAdd={handleAddStory} />*/}
 
           {!revealed ? (
             <>
               <CardGrid
                 selected={myEstimate}
                 onSelect={handleEstimate}
+                onDeselect={handleDeselect}
                 disabled={false}
               />
               <div className={styles.revealArea}>

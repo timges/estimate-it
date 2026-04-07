@@ -34,4 +34,46 @@ describe("CardGrid", () => {
     await user.click(screen.getByText("5"));
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  it("calls onDeselect when clicking the already-selected card", async () => {
+    const user = userEvent.setup();
+    const onDeselect = vi.fn();
+    render(
+      <CardGrid selected="8" onSelect={() => {}} onDeselect={onDeselect} disabled={false} />,
+    );
+    await user.click(screen.getByText("8"));
+    expect(onDeselect).toHaveBeenCalledOnce();
+  });
+
+  it("does not call onDeselect when clicking a different card", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onDeselect = vi.fn();
+    render(
+      <CardGrid selected="8" onSelect={onSelect} onDeselect={onDeselect} disabled={false} />,
+    );
+    await user.click(screen.getByText("5"));
+    expect(onSelect).toHaveBeenCalledWith("5");
+    expect(onDeselect).not.toHaveBeenCalled();
+  });
+
+  it("calls onDeselect when pressing Escape", async () => {
+    const user = userEvent.setup();
+    const onDeselect = vi.fn();
+    render(
+      <CardGrid selected="3" onSelect={() => {}} onDeselect={onDeselect} disabled={false} />,
+    );
+    await user.keyboard("{Escape}");
+    expect(onDeselect).toHaveBeenCalledOnce();
+  });
+
+  it("does not call onDeselect on Escape when nothing is selected", async () => {
+    const user = userEvent.setup();
+    const onDeselect = vi.fn();
+    render(
+      <CardGrid selected={null} onSelect={() => {}} onDeselect={onDeselect} disabled={false} />,
+    );
+    await user.keyboard("{Escape}");
+    expect(onDeselect).not.toHaveBeenCalled();
+  });
 });

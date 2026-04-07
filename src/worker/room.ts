@@ -137,6 +137,15 @@ export class Room extends DurableObject<Env> {
           });
         }
         break;
+      case "clear_estimate":
+        if (data) {
+          this.clearEstimate(data.participantId);
+          this.broadcast({
+            type: "estimate_cleared",
+            participantId: data.participantId,
+          });
+        }
+        break;
       case "reveal": {
         const result = this.reveal();
         if (result) this.broadcast({ type: "revealed", ...result });
@@ -268,6 +277,16 @@ export class Room extends DurableObject<Env> {
       participantId,
       value,
       Date.now()
+    );
+  }
+
+  clearEstimate(participantId: string): void {
+    const roundId = this.getActiveStoryId() ?? 0;
+
+    this.ctx.storage.sql.exec(
+      "DELETE FROM estimate WHERE story_id = ? AND participant_id = ?",
+      roundId,
+      participantId
     );
   }
 

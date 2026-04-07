@@ -1776,7 +1776,7 @@ export default function CardGrid({
 }: CardGridProps) {
   return (
     <div className={styles.wrapper}>
-      <h3 className={styles.label}>Your estimate-it</h3>
+      <h3 className={styles.label}>Your estimate</h3>
       <div className={styles.scene}>
         <div className={styles.table}>
           {FIBONACCI_VALUES.map((value) => (
@@ -2371,7 +2371,7 @@ export default function StoryCard({ story, onAddStory }: StoryCardProps) {
       <div className={styles.label}>No Story</div>
       <div className={styles.title}>Estimating...</div>
       <div className={styles.description}>
-        Discuss the story verbally, then pick your estimate-it.
+        Discuss the story verbally, then pick your estimate.
       </div>
     </div>
   );

@@ -165,6 +165,48 @@ describe("Room", () => {
     });
   });
 
+  describe("clearEstimate", () => {
+    it("should remove estimate and reset hasEstimated", async () => {
+      const stub = getStub("clear-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const { participant } = instance.join("Alice");
+        instance.join("Bob");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+
+        instance.estimate(participant.id, "5");
+        let state = instance.getRoomState();
+        expect(state.participants[0].hasEstimated).toBe(true);
+
+        instance.clearEstimate(participant.id);
+        state = instance.getRoomState();
+        expect(state.participants[0].hasEstimated).toBe(false);
+        expect(state.currentEstimates).toBe(0);
+      });
+    });
+
+    it("should not affect other participants' estimates", async () => {
+      const stub = getStub("clear-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+
+        instance.estimate(a.participant.id, "5");
+        instance.estimate(b.participant.id, "8");
+
+        instance.clearEstimate(a.participant.id);
+        const state = instance.getRoomState();
+        expect(state.participants[0].hasEstimated).toBe(false);
+        expect(state.participants[1].hasEstimated).toBe(true);
+        expect(state.currentEstimates).toBe(1);
+      });
+    });
+  });
+
   describe("reveal", () => {
     it("should reveal all estimates and calculate revealResult", async () => {
       const stub = getStub("reveal-test-1");
