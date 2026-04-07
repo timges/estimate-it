@@ -19,7 +19,7 @@ describe("NamePrompt", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<NamePrompt roomId="test-room" onSubmit={onSubmit} />);
-    const input = screen.getByPlaceholderText("Your display name…");
+    const input = screen.getByPlaceholderText("John Doe");
     await user.type(input, "Alice");
     await user.click(screen.getByRole("button", { name: /join/i }));
     expect(onSubmit).toHaveBeenCalledWith("Alice");
@@ -29,7 +29,7 @@ describe("NamePrompt", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<NamePrompt roomId="test-room" onSubmit={onSubmit} />);
-    const input = screen.getByPlaceholderText("Your display name…");
+    const input = screen.getByPlaceholderText("John Doe");
     await user.type(input, "Bob{Enter}");
     expect(onSubmit).toHaveBeenCalledWith("Bob");
   });
@@ -37,7 +37,7 @@ describe("NamePrompt", () => {
   it("Join button is disabled when input contains only whitespace", async () => {
     const user = userEvent.setup();
     render(<NamePrompt roomId="test-room" onSubmit={() => {}} />);
-    const input = screen.getByPlaceholderText("Your display name…");
+    const input = screen.getByPlaceholderText("John Doe");
     await user.type(input, "   ");
     const button = screen.getByRole("button", { name: /join/i });
     expect(button).toBeDisabled();
@@ -45,7 +45,7 @@ describe("NamePrompt", () => {
 
   it("focuses the input on mount", () => {
     render(<NamePrompt roomId="test-room" onSubmit={() => {}} />);
-    const input = screen.getByPlaceholderText("Your display name…");
+    const input = screen.getByPlaceholderText("John Doe");
     expect(input).toHaveFocus();
   });
 });

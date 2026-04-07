@@ -39,7 +39,7 @@ export default function Landing() {
         <input
           id="create-name"
           className={styles.input}
-          placeholder="Your display name…"
+          placeholder="John Doe"
           value={createName}
           onChange={(e) => setCreateName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -80,7 +80,7 @@ export default function Landing() {
         <input
           id="join-name"
           className={styles.input}
-          placeholder="Your display name…"
+          placeholder="John Doe"
           value={joinName}
           onChange={(e) => setJoinName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleJoin()}

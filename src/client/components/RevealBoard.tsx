@@ -40,15 +40,6 @@ export default function RevealBoard({
 
   return (
     <div className={styles.board}>
-      <motion.h3
-        className={styles.title}
-        initial={shouldReduceMotion ? {} : { opacity: 0, y: -10 }}
-        animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
-        transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.1 }}
-      >
-        All Estimates Revealed
-      </motion.h3>
-
       <div className={styles.estimates}>
         {sorted.map((est, i) => {
           const color = getColor(est.participantId);

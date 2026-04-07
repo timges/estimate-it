@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "estimate",
+  "workers_dev": false,
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-04-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -20,6 +21,12 @@
     {
       "tag": "v1",
       "new_sqlite_classes": ["Room"]
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "estimate-it.app",
+      "custom_domain": true
     }
   ]
 }
