@@ -32,7 +32,7 @@ describe("ParticipantList", () => {
         onRename={noop}
       />,
     );
-    expect(screen.getByText("✓ estimated")).toBeInTheDocument();
+    expect(screen.getByText("✓ Estimated")).toBeInTheDocument();
   });
 
   it("shows 'picking…' for hasEstimated=false", () => {
@@ -43,7 +43,7 @@ describe("ParticipantList", () => {
         onRename={noop}
       />,
     );
-    expect(screen.getByText("picking…")).toBeInTheDocument();
+    expect(screen.getByText("Picking…")).toBeInTheDocument();
   });
 
   it("shows pencil icon next to the current user's name", () => {
