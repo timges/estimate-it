@@ -18,17 +18,6 @@ interface RevealBoardProps {
 
 const FIB_ORDER = ["1", "2", "3", "5", "8", "13", "21", "☕"];
 
-const SEGMENT_COLORS = [
-  "#3b82f6",
-  "#8b5cf6",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#06b6d4",
-  "#f43f5e",
-  "#64748b",
-];
-
 export default function RevealBoard({
   estimates,
   revealResult,
@@ -46,10 +35,6 @@ export default function RevealBoard({
   const sorted = [...estimates].sort(
     (a, b) => FIB_ORDER.indexOf(a.value) - FIB_ORDER.indexOf(b.value)
   );
-
-  const totalCount = revealResult
-    ? revealResult.distribution.reduce((sum, d) => sum + d.count, 0)
-    : 0;
 
   return (
     <div className={styles.board}>
@@ -105,21 +90,22 @@ export default function RevealBoard({
           {revealResult.allAgree ? (
             <div className={styles.consensus}>All agree!</div>
           ) : (
-            <div className={styles.distributionBar}>
-              {revealResult.distribution.map((d, i) => {
-                const width = totalCount > 0 ? (d.count / totalCount) * 100 : 0;
+            <div className={styles.distribution}>
+              {revealResult.distribution.map((d) => {
+                const maxCount = Math.max(
+                  ...revealResult.distribution.map((x) => x.count)
+                );
+                const barWidth = maxCount > 0 ? (d.count / maxCount) * 100 : 0;
                 return (
-                  <div
-                    key={d.value}
-                    className={styles.distSegment}
-                    style={{
-                      width: `${width}%`,
-                      backgroundColor: SEGMENT_COLORS[i % SEGMENT_COLORS.length],
-                    }}
-                  >
-                    <span className={styles.distSegmentLabel}>
-                      {d.value} <span className={styles.distCount}>×{d.count}</span>
-                    </span>
+                  <div key={d.value} className={styles.distRow}>
+                    <span className={styles.distValue}>{d.value}</span>
+                    <div className={styles.distBarTrack}>
+                      <div
+                        className={styles.distBar}
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+                    <span className={styles.distCount}>{d.count}</span>
                   </div>
                 );
               })}
