@@ -116,7 +116,7 @@
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: opacity 0.15s, transform 0.15s;
 }
 
 .revealBtn:hover {
@@ -162,7 +162,7 @@
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: opacity 0.15s, transform 0.15s;
 }
 
 .errorLink:hover {

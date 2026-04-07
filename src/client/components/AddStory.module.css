@@ -10,7 +10,7 @@
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.15s, color 0.15s;
   margin: 0 24px 24px;
 }
 
