@@ -59,7 +59,7 @@
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: opacity 0.15s, transform 0.15s;
 }
 
 .joinBtn:hover:not(:disabled) {
