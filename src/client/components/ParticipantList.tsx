@@ -118,8 +118,9 @@ export default function ParticipantList({
               )}
               <div
                 className={`${styles.status} ${p.hasEstimated ? styles.voted : ""}`}
+                aria-live="polite"
               >
-                {p.hasEstimated ? "✓ estimated" : "picking…"}
+                {p.hasEstimated ? "✓ Estimated" : "Picking…"}
               </div>
             </div>
           </div>
