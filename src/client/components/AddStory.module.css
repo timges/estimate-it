@@ -3,10 +3,10 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #171717;
-  border: 1px dashed #333;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-default);
   border-radius: 8px;
-  color: #737373;
+  color: var(--text-muted);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -15,15 +15,15 @@
 }
 
 .trigger:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
 
 .form {
   margin: 0 24px 24px;
   padding: 16px;
-  background: #171717;
-  border: 1px solid #262626;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
 }
 
@@ -31,7 +31,7 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #737373;
+  color: var(--text-muted);
   margin-bottom: 16px;
   font-weight: 600;
 }
@@ -40,10 +40,10 @@
 .textarea {
   width: 100%;
   padding: 10px 12px;
-  background: #0a0a0a;
-  border: 1px solid #333;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
-  color: #e5e5e5;
+  color: var(--text-primary);
   font-size: 14px;
   font-family: inherit;
   margin-bottom: 8px;
@@ -52,8 +52,8 @@
 
 .input:focus,
 .textarea:focus {
-  border-color: #3b82f6;
-  outline: 2px solid #3b82f6;
+  border-color: var(--accent-primary);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
@@ -76,12 +76,12 @@
 
 .cancel {
   background: none;
-  border: 1px solid #333;
-  color: #a3a3a3;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
 }
 
 .submit {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   border: none;
   color: white;
 }

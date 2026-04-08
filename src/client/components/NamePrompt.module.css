@@ -10,8 +10,8 @@
 }
 
 .card {
-  background: #171717;
-  border: 1px solid #262626;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 32px;
   width: 100%;
@@ -26,7 +26,7 @@
 }
 
 .roomCode {
-  color: #a3a3a3;
+  color: var(--text-secondary);
   font-size: 15px;
   margin-bottom: 24px;
 }
@@ -34,10 +34,10 @@
 .input {
   width: 100%;
   padding: 10px 12px;
-  background: #0a0a0a;
-  border: 1px solid #333;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
-  color: #e5e5e5;
+  color: var(--text-primary);
   font-size: 14px;
   font-family: inherit;
   margin-bottom: 16px;
@@ -45,15 +45,15 @@
 }
 
 .input:focus {
-  border-color: #3b82f6;
-  outline: 2px solid #3b82f6;
+  border-color: var(--accent-primary);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
 .joinBtn {
   width: 100%;
   padding: 12px 32px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   border: none;
   border-radius: 10px;

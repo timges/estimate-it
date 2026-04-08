@@ -12,8 +12,8 @@ html {
 
 body {
   font-family: "Space Grotesk", system-ui, sans-serif;
-  background: #060606;
-  color: #e5e5e5;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   min-height: 100vh;
 }
 

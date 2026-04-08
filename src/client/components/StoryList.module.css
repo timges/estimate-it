@@ -1,12 +1,12 @@
 .list {
   padding: 16px;
-  border-top: 1px solid #222;
+  border-top: 1px solid var(--border-default);
 }
 
 .heading {
   font-size: 12px;
   font-weight: 600;
-  color: #737373;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 12px;
@@ -28,7 +28,7 @@
 }
 
 .active {
-  color: #4ade80;
+  color: var(--status-success);
   background: rgba(74, 222, 128, 0.1);
 }
 
@@ -38,18 +38,18 @@
 }
 
 .pending {
-  color: #a3a3a3;
+  color: var(--text-secondary);
   background: rgba(163, 163, 163, 0.1);
 }
 
 .done {
-  color: #737373;
+  color: var(--text-muted);
   background: rgba(115, 115, 115, 0.1);
 }
 
 .item {
   padding: 6px 0;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--border-default);
 }
 
 .item:last-child {
@@ -58,7 +58,7 @@
 
 .title {
   font-size: 13px;
-  color: #d4d4d4;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

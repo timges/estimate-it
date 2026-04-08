@@ -1,6 +1,6 @@
 .card {
-  background: #171717;
-  border: 1px solid #262626;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 20px;
   margin: 24px;
@@ -10,7 +10,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #737373;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .description {
-  color: #a3a3a3;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
   display: -webkit-box;
