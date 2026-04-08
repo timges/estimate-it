@@ -66,13 +66,10 @@ export default function Room() {
     };
   }, [hasName, roomId, connectAndJoin, setError]);
 
-  const handleNameSubmit = useCallback(
-    (name: string) => {
-      localStorage.setItem("displayName", name);
-      setHasName(true);
-    },
-    [],
-  );
+  const handleNameSubmit = useCallback((name: string) => {
+    localStorage.setItem("displayName", name);
+    setHasName(true);
+  }, []);
 
   const handleEstimate = useCallback(
     (value: FibonacciValue) => {
@@ -154,7 +151,11 @@ export default function Room() {
           </a>
         </h1>
         <div className={styles.roomInfo}>
-          {copied && <span className={styles.copiedLabel} aria-live="polite">Copied</span>}
+          {copied && (
+            <span className={styles.copiedLabel} aria-live="polite">
+              Copied
+            </span>
+          )}
           <button
             onClick={handleRoomClick}
             className={styles.code}
@@ -179,7 +180,11 @@ export default function Room() {
                 disabled={false}
               />
               <div className={styles.revealArea}>
-                <button className={styles.revealBtn} onClick={handleReveal} disabled={currentEstimates === 0}>
+                <button
+                  className={styles.revealBtn}
+                  onClick={handleReveal}
+                  disabled={currentEstimates === 0}
+                >
                   Reveal Estimates
                 </button>
               </div>

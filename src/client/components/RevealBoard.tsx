@@ -126,7 +126,7 @@ export default function RevealBoard({
         }
       >
         <button className={styles.btnSecondary} onClick={onReVote}>
-          New Vote
+          Reset
         </button>
         {hasNextStory && (
           <button className={styles.btnPrimary} onClick={onNextStory}>

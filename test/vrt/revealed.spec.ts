@@ -7,6 +7,6 @@ test("revealed state", async ({ page }) => {
   await page.waitForURL(/\/room\//);
   await page.getByRole("button", { name: "5" }).click();
   await page.getByRole("button", { name: "Reveal Estimates" }).click();
-  await expect(page.getByRole("button", { name: "New Vote" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reset" })).toBeVisible();
   await expect(page).toHaveScreenshot("revealed.png");
 });
