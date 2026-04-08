@@ -121,10 +121,16 @@
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    transition: opacity 0.15s, transform 0.15s;
+    transition: opacity 0.15s, transform 0.15s;    
 }
 
-.revealBtn:hover {
+.revealBtn:disabled {
+    background: var(--border-subtle);
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.revealBtn:hover:not(:disabled) {
     opacity: 0.9;
     transform: translateY(-1px);
 }

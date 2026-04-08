@@ -30,6 +30,7 @@ export default function Room() {
     revealResult,
     myEstimate,
     setMyEstimate,
+    currentEstimates,
     handleMessage,
     error,
     setError,
@@ -178,7 +179,7 @@ export default function Room() {
                 disabled={false}
               />
               <div className={styles.revealArea}>
-                <button className={styles.revealBtn} onClick={handleReveal}>
+                <button className={styles.revealBtn} onClick={handleReveal} disabled={currentEstimates === 0}>
                   Reveal Estimates
                 </button>
               </div>
