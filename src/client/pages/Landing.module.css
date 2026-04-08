@@ -21,14 +21,14 @@
 }
 
 .subtitle {
-  color: #737373;
+  color: var(--text-muted);
   font-size: 16px;
   margin-bottom: 40px;
 }
 
 .card {
-  background: #171717;
-  border: 1px solid #262626;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 28px;
   width: 100%;
@@ -40,7 +40,7 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #737373;
+  color: var(--text-muted);
   margin-bottom: 16px;
   font-weight: 600;
 }
@@ -48,10 +48,10 @@
 .input {
   width: 100%;
   padding: 12px 16px;
-  background: #0a0a0a;
-  border: 1px solid #333;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
-  color: #e5e5e5;
+  color: var(--text-primary);
   font-size: 15px;
   font-family: inherit;
   margin-bottom: 12px;
@@ -66,7 +66,7 @@
 }
 
 .input::placeholder {
-  color: #525252;
+  color: var(--text-placeholder);
 }
 
 .btnPrimary,
@@ -93,12 +93,12 @@
 }
 
 .btnSecondary {
-  background: #262626;
-  color: #d4d4d4;
+  background: var(--border-subtle);
+  color: var(--text-primary);
 }
 
 .btnSecondary:hover:not(:disabled) {
-  background: #333;
+  background: var(--border-default);
 }
 
 .btnPrimary:focus-visible,
@@ -115,7 +115,7 @@
 
 .divider {
   text-align: center;
-  color: #525252;
+  color: var(--text-placeholder);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
