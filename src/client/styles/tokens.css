@@ -1,0 +1,97 @@
+/* Backgrounds */
+:root {
+  --bg-primary: #171717;
+  --bg-secondary: #262626;
+  --bg-tertiary: #0a0a0a;
+  --bg-hover: #333333;
+  --bg-input: #0a0a0a;
+
+  /* Text */
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --text-placeholder: #525252;
+
+  /* Borders */
+  --border-default: #333333;
+  --border-subtle: #262626;
+  --border-strong: #404040;
+  --border-focus: #3b82f6;
+
+  /* Accent */
+  --accent-primary: #3b82f6;
+  --accent-secondary: #8b5cf6;
+  --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+
+  /* Status */
+  --status-success: #4ade80;
+  --status-warning: #f59e0b;
+  --status-error: #ef4444;
+
+  /* Gray Scale */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d3;
+  --gray-400: #a3a3a4;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  --gray-950: #0a0a0a;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-xs: 11px;
+  --font-sm: 12px;
+  --font-base: 13px;
+  --font-md: 14px;
+  --font-lg: 15px;
+  --font-xl: 16px;
+  --font-2xl: 18px;
+  --font-3xl: 24px;
+  --font-4xl: 32px;
+  --font-5xl: 42px;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+}
+
+/* Light theme (disabled by default) */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e5e5;
+  --bg-hover: #e5e5e5;
+  --bg-input: #fafafa;
+  
+  --text-primary: #171717;
+  --text-secondary: #404040;
+  --text-muted: #737373;
+  --text-placeholder: #a3a3a3;
+  
+  --border-default: #e5e5e5;
+  --border-subtle: #f5f5f5;
+  --border-strong: #d4d4d4;
+}
