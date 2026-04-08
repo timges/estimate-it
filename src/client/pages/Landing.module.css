@@ -21,13 +21,13 @@
 }
 
 .subtitle {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 16px;
   margin-bottom: 40px;
 }
 
 .card {
-  background: var(--bg-secondary);
+  background: #171717;
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 28px;
@@ -40,7 +40,7 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-bottom: 16px;
   font-weight: 600;
 }
@@ -115,7 +115,7 @@
 
 .divider {
   text-align: center;
-  color: var(--text-placeholder);
+  color: var(--text-secondary);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;

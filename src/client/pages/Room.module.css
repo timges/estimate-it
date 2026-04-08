@@ -41,7 +41,7 @@
 
 .code {
     all: unset;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-size: 13px;
     background: var(--bg-secondary);
     padding: 4px 10px;
