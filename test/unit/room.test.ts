@@ -122,7 +122,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const first = instance.join("Alice", "client-a");
         instance.addStory("Feature", "");
-        instance.nextStory();
         instance.estimate(first.participant.id, "5");
 
         const rejoined = instance.join("Alice", "client-a");
@@ -166,7 +165,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const { participant } = instance.join("Alice");
         instance.addStory("Login page", "Implement login");
-        instance.nextStory();
 
         instance.estimate(participant.id, "5");
 
@@ -181,7 +179,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const { participant } = instance.join("Alice");
         instance.addStory("Login page", "");
-        instance.nextStory();
 
         instance.estimate(participant.id, "3");
         instance.estimate(participant.id, "8");
@@ -197,7 +194,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const { participant } = instance.join("Alice");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         let state = instance.getRoomState();
         expect(state.participants[0].hasEstimated).toBe(false);
@@ -216,7 +212,6 @@ describe("Room", () => {
         const { participant } = instance.join("Alice");
         instance.join("Bob");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(participant.id, "13");
 
@@ -239,7 +234,6 @@ describe("Room", () => {
         const { participant } = instance.join("Alice");
         instance.join("Bob");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(participant.id, "5");
         let state = instance.getRoomState();
@@ -259,7 +253,6 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const b = instance.join("Bob");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "5");
         instance.estimate(b.participant.id, "8");
@@ -281,7 +274,6 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const b = instance.join("Bob");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "5");
         instance.estimate(b.participant.id, "5");
@@ -304,7 +296,6 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const b = instance.join("Bob");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "3");
         instance.estimate(b.participant.id, "8");
@@ -337,7 +328,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const a = instance.join("Alice");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "☕");
 
@@ -354,7 +344,6 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const b = instance.join("Bob");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "8");
         instance.estimate(b.participant.id, "☕");
@@ -373,7 +362,6 @@ describe("Room", () => {
         const b = instance.join("Bob");
         const c = instance.join("Carol");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "5");
         instance.estimate(b.participant.id, "5");
@@ -390,7 +378,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const a = instance.join("Alice");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "5");
 
@@ -413,14 +400,16 @@ describe("Room", () => {
         expect(s1.title).toBe("Login");
         expect(s1.description).toBe("Implement login page");
         expect(s1.position).toBe(1);
+        expect(s1.status).toBe("active"); // first story auto-activates
         expect(s2.position).toBe(2);
+        expect(s2.status).toBe("pending"); // second story is pending while first is active
 
         const state = instance.getRoomState();
         expect(state.stories).toHaveLength(2);
       });
     });
 
-    it("should advance to next story", async () => {
+    it("should auto-activate first story and advance to next on nextStory", async () => {
       const stub = getStub("story-test-2");
 
       await runInDurableObject(stub, async (instance: Room) => {
@@ -428,10 +417,12 @@ describe("Room", () => {
         instance.addStory("Story 1", "");
         instance.addStory("Story 2", "");
 
-        instance.nextStory();
+        // First story auto-activates; second is pending
         let state = instance.getRoomState();
         expect(state.stories[0].status).toBe("active");
+        expect(state.stories[1].status).toBe("pending");
 
+        // nextStory promotes story 2 to active, marks story 1 done
         instance.nextStory();
         state = instance.getRoomState();
         expect(state.stories[0].status).toBe("done");
@@ -447,7 +438,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const a = instance.join("Alice");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(a.participant.id, "5");
         instance.reveal();
@@ -609,7 +599,6 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         const { participant } = instance.join("Alice");
         instance.addStory("Feature", "");
-        instance.nextStory();
 
         instance.estimate(participant.id, "5");
         const first = instance.reveal();
@@ -628,8 +617,7 @@ describe("Room", () => {
       const stub = getStub("final-1");
       await runInDurableObject(stub, async (instance: Room) => {
         instance.createRoom();
-        const story = instance.addStory("Story A", "");
-        instance.nextStory(); // make it active
+        const story = instance.addStory("Story A", ""); // auto-activates as first story
         const updated = instance.setFinalEstimate("8");
         expect(updated?.id).toBe(story.id);
         expect(updated?.finalEstimate).toBe("8");
@@ -654,7 +642,6 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const b = instance.join("Bob");
         instance.addStory("Story A", "");
-        instance.nextStory();
         instance.estimate(a.participant.id, "5");
         instance.estimate(b.participant.id, "5");
         instance.reveal();
@@ -669,7 +656,6 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const b = instance.join("Bob");
         instance.addStory("Story A", "");
-        instance.nextStory();
         instance.estimate(a.participant.id, "5");
         instance.estimate(b.participant.id, "8");
         instance.reveal();
@@ -683,7 +669,6 @@ describe("Room", () => {
         instance.createRoom();
         instance.join("Alice");
         instance.addStory("Story A", "");
-        instance.nextStory();
         instance.reveal();
         expect(instance.getRoomState().stories[0].unanimous).toBe(false);
       });
@@ -709,8 +694,7 @@ describe("Room", () => {
       await runInDurableObject(stub, async (instance: Room) => {
         instance.createRoom();
         const a = instance.join("Alice");
-        const s = instance.addStory("Story A", "");
-        instance.nextStory();
+        const s = instance.addStory("Story A", ""); // auto-activates
         instance.estimate(a.participant.id, "5");
         instance.deleteStory(s.id);
         const state = instance.getRoomState();

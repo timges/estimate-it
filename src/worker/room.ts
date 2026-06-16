@@ -557,11 +557,14 @@ export class Room extends DurableObject<Env> {
         .one()!["max_pos"]
     );
 
+    const initialStatus = this.getActiveStoryId() === null ? "active" : "pending";
+
     this.ctx.storage.sql.exec(
-      "INSERT INTO story (title, description, position, status) VALUES (?, ?, ?, 'pending')",
+      "INSERT INTO story (title, description, position, status) VALUES (?, ?, ?, ?)",
       title,
       description,
-      maxPos + 1
+      maxPos + 1,
+      initialStatus
     );
 
     const row = this.ctx.storage.sql
