@@ -218,21 +218,22 @@ export default function Room() {
         <div className={styles.content}>
           {sessionComplete ? (
             <SessionSummary stories={stories} />
-          ) : !currentStory ? (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyTitle}>No story to estimate yet</p>
-              <p className={styles.emptyHint}>
-                Add a story to start the round.
-              </p>
-              <AddStory onAdd={handleAddStory} />
-            </div>
           ) : !revealed ? (
             <>
-              <StorySpotlight
-                story={currentStory}
-                position={doneCount + 1}
-                total={stories.length}
-              />
+              {currentStory ? (
+                <StorySpotlight
+                  story={currentStory}
+                  position={doneCount + 1}
+                  total={stories.length}
+                />
+              ) : (
+                <div className={styles.storyPrompt}>
+                  <span className={styles.storyPromptText}>
+                    No story — add one for context, or just vote.
+                  </span>
+                  <AddStory onAdd={handleAddStory} />
+                </div>
+              )}
               <CardGrid
                 selected={myEstimate}
                 onSelect={handleEstimate}
@@ -251,11 +252,13 @@ export default function Room() {
             </>
           ) : (
             <>
-              <StorySpotlight
-                story={currentStory}
-                position={doneCount + 1}
-                total={stories.length}
-              />
+              {currentStory && (
+                <StorySpotlight
+                  story={currentStory}
+                  position={doneCount + 1}
+                  total={stories.length}
+                />
+              )}
               <RevealBoard
                 estimates={estimates}
                 revealResult={revealResult}

@@ -127,27 +127,20 @@
     margin: 0 0 4px;
 }
 
-.emptyState {
+.storyPrompt {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 64px 24px;
+    gap: 10px;
+    max-width: 640px;
+    margin: 24px auto 8px;
+    padding: 16px 18px;
     text-align: center;
 }
 
-.emptyTitle {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.emptyHint {
+.storyPromptText {
     font-size: 14px;
     color: var(--text-muted);
-    margin: 0 0 8px;
 }
 
 .revealArea {
