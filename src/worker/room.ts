@@ -79,6 +79,21 @@ export class Room extends DurableObject<Env> {
           status TEXT DEFAULT 'pending'
         )
       `);
+      // Migrate story rows created before the result columns existed.
+      const storyColumns = this.ctx.storage.sql
+        .exec("PRAGMA table_info(story)")
+        .toArray()
+        .map((row) => String(row["name"]));
+      if (!storyColumns.includes("final_estimate")) {
+        this.ctx.storage.sql.exec(
+          "ALTER TABLE story ADD COLUMN final_estimate TEXT"
+        );
+      }
+      if (!storyColumns.includes("unanimous")) {
+        this.ctx.storage.sql.exec(
+          "ALTER TABLE story ADD COLUMN unanimous INTEGER"
+        );
+      }
       this.ctx.storage.sql.exec(`
         CREATE TABLE IF NOT EXISTS estimate (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -217,6 +232,11 @@ export class Room extends DurableObject<Env> {
           this.broadcast({ type: "story_added", story });
         }
         break;
+      case "set_final_estimate": {
+        const story = this.setFinalEstimate(msg.value);
+        if (story) this.broadcast({ type: "story_updated", story });
+        break;
+      }
     }
   }
 
@@ -424,7 +444,7 @@ export class Room extends DurableObject<Env> {
       const activeStoryId = this.getActiveStoryId();
       if (activeStoryId) {
         this.ctx.storage.sql.exec(
-          "UPDATE story SET status = 'revealed' WHERE id = ?",
+          "UPDATE story SET status = 'revealed', unanimous = 0 WHERE id = ?",
           activeStoryId
         );
       }
@@ -453,11 +473,11 @@ export class Room extends DurableObject<Env> {
       allAgree,
     };
 
-    // Only update story status if there's an actual story
     const activeStoryId = this.getActiveStoryId();
     if (activeStoryId) {
       this.ctx.storage.sql.exec(
-        "UPDATE story SET status = 'revealed' WHERE id = ?",
+        "UPDATE story SET status = 'revealed', unanimous = ? WHERE id = ?",
+        allAgree ? 1 : 0,
         activeStoryId
       );
     }
@@ -497,6 +517,17 @@ export class Room extends DurableObject<Env> {
     return this.getStories();
   }
 
+  setFinalEstimate(value: FibonacciValue | null): Story | null {
+    const activeStoryId = this.getActiveStoryId();
+    if (!activeStoryId) return null;
+    this.ctx.storage.sql.exec(
+      "UPDATE story SET final_estimate = ? WHERE id = ?",
+      value,
+      activeStoryId
+    );
+    return this.getStoryById(activeStoryId);
+  }
+
   reVote(): void {
     const roundId = this.getActiveStoryId() ?? 0;
 
@@ -531,17 +562,11 @@ export class Room extends DurableObject<Env> {
 
     const row = this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status FROM story WHERE id = last_insert_rowid()"
+        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story WHERE id = last_insert_rowid()"
       )
       .one();
 
-    return {
-      id: Number(row["id"]),
-      title: String(row["title"]),
-      description: String(row["description"]),
-      position: Number(row["position"]),
-      status: String(row["status"]) as Story["status"],
-    };
+    return this.rowToStory(row);
   }
 
   getRoomState(): {
@@ -630,19 +655,43 @@ export class Room extends DurableObject<Env> {
       });
   }
 
+  private rowToStory(row: Record<string, SqlStorageValue>): Story {
+    const finalEstimate = row["final_estimate"];
+    const unanimous = row["unanimous"];
+    return {
+      id: Number(row["id"]),
+      title: String(row["title"]),
+      description: String(row["description"]),
+      position: Number(row["position"]),
+      status: String(row["status"]) as Story["status"],
+      finalEstimate:
+        finalEstimate === null || finalEstimate === undefined
+          ? null
+          : (String(finalEstimate) as FibonacciValue),
+      unanimous:
+        unanimous === null || unanimous === undefined
+          ? null
+          : Number(unanimous) === 1,
+    };
+  }
+
+  private getStoryById(id: number): Story | null {
+    const rows = this.ctx.storage.sql
+      .exec(
+        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story WHERE id = ?",
+        id
+      )
+      .toArray();
+    return rows.length > 0 ? this.rowToStory(rows[0]) : null;
+  }
+
   private getStories(): Story[] {
     return this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status FROM story ORDER BY position ASC"
+        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story ORDER BY position ASC"
       )
       .toArray()
-      .map((row) => ({
-        id: Number(row["id"]),
-        title: String(row["title"]),
-        description: String(row["description"]),
-        position: Number(row["position"]),
-        status: String(row["status"]) as Story["status"],
-      }));
+      .map((row) => this.rowToStory(row));
   }
 
   private getActiveStoryId(): number | null {

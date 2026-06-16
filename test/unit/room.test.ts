@@ -623,6 +623,61 @@ describe("Room", () => {
     });
   });
 
+  describe("setFinalEstimate", () => {
+    it("records a final estimate on the active story", async () => {
+      const stub = getStub("final-1");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const story = instance.addStory("Story A", "");
+        instance.nextStory(); // make it active
+        const updated = instance.setFinalEstimate("8");
+        expect(updated?.id).toBe(story.id);
+        expect(updated?.finalEstimate).toBe("8");
+        expect(instance.getRoomState().stories[0].finalEstimate).toBe("8");
+      });
+    });
+
+    it("returns null when there is no active story", async () => {
+      const stub = getStub("final-2");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        expect(instance.setFinalEstimate("5")).toBeNull();
+      });
+    });
+  });
+
+  describe("reveal unanimity", () => {
+    it("marks the story unanimous when all non-coffee votes agree", async () => {
+      const stub = getStub("unanimous-1");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        instance.addStory("Story A", "");
+        instance.nextStory();
+        instance.estimate(a.participant.id, "5");
+        instance.estimate(b.participant.id, "5");
+        instance.reveal();
+        expect(instance.getRoomState().stories[0].unanimous).toBe(true);
+      });
+    });
+
+    it("marks the story not unanimous when votes differ", async () => {
+      const stub = getStub("unanimous-2");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        instance.addStory("Story A", "");
+        instance.nextStory();
+        instance.estimate(a.participant.id, "5");
+        instance.estimate(b.participant.id, "8");
+        instance.reveal();
+        expect(instance.getRoomState().stories[0].unanimous).toBe(false);
+      });
+    });
+  });
+
   describe("rename", () => {
     it("should rename a participant", async () => {
       const stub = getStub("rename-test-1");

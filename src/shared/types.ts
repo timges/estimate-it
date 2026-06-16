@@ -55,7 +55,8 @@ export type ClientMessage =
   | { type: "re_vote" }
   | { type: "rename"; displayName: string }
   | { type: "add_story"; title: string; description: string }
-  | { type: "add_stories"; stories: { title: string; description: string }[] };
+  | { type: "add_stories"; stories: { title: string; description: string }[] }
+  | { type: "set_final_estimate"; value: FibonacciValue | null };
 
 // WebSocket messages: Server → Client
 export type ServerMessage =
@@ -81,4 +82,5 @@ export type ServerMessage =
   | { type: "story_changed"; story: Story }
   | { type: "re_vote_started" }
   | { type: "participant_renamed"; participantId: string; displayName: string }
+  | { type: "story_updated"; story: Story }
   | { type: "error"; message: string };
