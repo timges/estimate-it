@@ -169,6 +169,7 @@ export default function RevealBoard({
             {FIBONACCI_VALUES.map((value) => (
               <button
                 key={value}
+                type="button"
                 className={`${styles.finalCard} ${
                   selectedFinal === value ? styles.finalCardSelected : ""
                 }`}

@@ -195,18 +195,28 @@
 }
 
 .finalCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 36px;
   height: 44px;
   border-radius: 8px;
   border: 1.5px solid var(--border-strong);
-  background: var(--bg-raised);
+  background: var(--bg-raised, var(--bg-secondary));
   color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
 }
 
+.finalCard:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
 .finalCardSelected {
-  border-color: var(--accent-blue);
-  color: var(--accent-sky);
+  border-color: var(--accent-blue, var(--accent-primary));
+  color: var(--accent-sky, var(--accent-primary));
   background: var(--deck-navy-selected-top, #0f2440);
 }
