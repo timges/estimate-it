@@ -479,11 +479,21 @@ export class Room extends DurableObject<Env> {
 
     const activeStoryId = this.getActiveStoryId();
     if (activeStoryId) {
-      this.ctx.storage.sql.exec(
-        "UPDATE story SET status = 'revealed', unanimous = ? WHERE id = ?",
-        allAgree ? 1 : 0,
-        activeStoryId
-      );
+      if (allAgree) {
+        // A unanimous round (coffee abstains) has a single agreed value; record
+        // it as the final estimate so the team needn't re-pick it by hand.
+        const agreedValue = nonCoffeeValues[0];
+        this.ctx.storage.sql.exec(
+          "UPDATE story SET status = 'revealed', unanimous = 1, final_estimate = ? WHERE id = ?",
+          agreedValue,
+          activeStoryId
+        );
+      } else {
+        this.ctx.storage.sql.exec(
+          "UPDATE story SET status = 'revealed', unanimous = 0 WHERE id = ?",
+          activeStoryId
+        );
+      }
     }
 
     return {

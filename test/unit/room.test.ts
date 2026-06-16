@@ -663,6 +663,56 @@ describe("Room", () => {
       });
     });
 
+    it("records the agreed value as the final estimate when unanimous", async () => {
+      const stub = getStub("unanimous-final-1");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        instance.addStory("Story A", "");
+        instance.estimate(a.participant.id, "8");
+        instance.estimate(b.participant.id, "8");
+        instance.reveal();
+        const story = instance.getRoomState().stories[0];
+        expect(story.unanimous).toBe(true);
+        expect(story.finalEstimate).toBe("8");
+      });
+    });
+
+    it("treats coffee as an abstain and still records the agreed value", async () => {
+      const stub = getStub("unanimous-final-2");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        const c = instance.join("Carol");
+        instance.addStory("Story A", "");
+        instance.estimate(a.participant.id, "8");
+        instance.estimate(b.participant.id, "8");
+        instance.estimate(c.participant.id, "☕");
+        instance.reveal();
+        const story = instance.getRoomState().stories[0];
+        expect(story.unanimous).toBe(true);
+        expect(story.finalEstimate).toBe("8");
+      });
+    });
+
+    it("leaves the final estimate untouched when votes differ", async () => {
+      const stub = getStub("unanimous-final-3");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+        instance.addStory("Story A", "");
+        instance.estimate(a.participant.id, "5");
+        instance.estimate(b.participant.id, "8");
+        instance.reveal();
+        const story = instance.getRoomState().stories[0];
+        expect(story.unanimous).toBe(false);
+        expect(story.finalEstimate).toBeNull();
+      });
+    });
+
     it("marks the story not unanimous when revealed with no estimates", async () => {
       const stub = getStub("unanimous-3");
       await runInDurableObject(stub, async (instance: Room) => {
