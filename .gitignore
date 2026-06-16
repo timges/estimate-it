@@ -4,3 +4,6 @@ dist/
 .playwright-mcp/
 test-results/
 docs/
+
+# Visual brainstorming companion
+.superpowers/
