@@ -210,41 +210,33 @@ describe("WebSocket flow integration", () => {
     conn.ws.send(JSON.stringify({ type: "create", displayName: "Alice" }));
     await conn.nextMessage(); // room_state
 
-    // Add two stories
+    // First story auto-activates when added
     conn.ws.send(
       JSON.stringify({ type: "add_story", title: "Login", description: "Implement login" })
     );
     const storyAdded1 = await conn.nextMessage();
     expect(storyAdded1.type).toBe("story_added");
     expect((storyAdded1 as any).story.title).toBe("Login");
+    expect((storyAdded1 as any).story.status).toBe("active"); // auto-activated
 
+    // Second story is pending (first is already active)
     conn.ws.send(
       JSON.stringify({ type: "add_story", title: "Signup", description: "Implement signup" })
     );
     const storyAdded2 = await conn.nextMessage();
     expect(storyAdded2.type).toBe("story_added");
     expect((storyAdded2 as any).story.title).toBe("Signup");
+    expect((storyAdded2 as any).story.status).toBe("pending");
 
-    // Advance to first story - nextStory broadcasts story_changed for ALL stories
+    // Advance to second story - Login becomes done, Signup becomes active
     conn.ws.send(JSON.stringify({ type: "next_story" }));
     const msgs1 = await conn.collectMessages(2);
     const changed1 = msgs1.map((m) => (m as any).story);
     expect(msgs1.every((m) => m.type === "story_changed")).toBe(true);
-    // Login becomes active, Signup stays pending
     const login1 = changed1.find((s: any) => s.title === "Login");
     const signup1 = changed1.find((s: any) => s.title === "Signup");
-    expect(login1.status).toBe("active");
-    expect(signup1.status).toBe("pending");
-
-    // Advance to second story - Login becomes done, Signup becomes active
-    conn.ws.send(JSON.stringify({ type: "next_story" }));
-    const msgs2 = await conn.collectMessages(2);
-    const changed2 = msgs2.map((m) => (m as any).story);
-    expect(msgs2.every((m) => m.type === "story_changed")).toBe(true);
-    const login2 = changed2.find((s: any) => s.title === "Login");
-    const signup2 = changed2.find((s: any) => s.title === "Signup");
-    expect(login2.status).toBe("done");
-    expect(signup2.status).toBe("active");
+    expect(login1.status).toBe("done");
+    expect(signup1.status).toBe("active");
 
     conn.close();
   });
