@@ -43,6 +43,11 @@ describe("suggestFinalEstimate", () => {
   it("returns null for no votes", () => {
     expect(suggestFinalEstimate([])).toBeNull();
   });
+
+  it("breaks a three-way tie toward the highest card", () => {
+    const values: FibonacciValue[] = ["1", "2", "3"];
+    expect(suggestFinalEstimate(values)).toBe("3");
+  });
 });
 
 describe("summarize", () => {
@@ -54,6 +59,17 @@ describe("summarize", () => {
       story({ finalEstimate: null, unanimous: null }),
     ];
     expect(summarize(stories)).toEqual({ totalPoints: 13, unanimousCount: 1 });
+  });
+
+  it("returns zeroes for an empty list", () => {
+    expect(summarize([])).toEqual({ totalPoints: 0, unanimousCount: 0 });
+  });
+
+  it("counts a unanimous story even when no final estimate was recorded", () => {
+    expect(summarize([story({ finalEstimate: null, unanimous: true })])).toEqual({
+      totalPoints: 0,
+      unanimousCount: 1,
+    });
   });
 });
 

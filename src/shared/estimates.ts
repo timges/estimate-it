@@ -24,6 +24,7 @@ export function suggestFinalEstimate(
   let bestCount = 0;
   // FIBONACCI_VALUES is ascending; >= keeps the higher card on ties.
   for (const v of FIBONACCI_VALUES) {
+    if (v === "☕") continue;
     const c = counts.get(v) ?? 0;
     if (c > 0 && c >= bestCount) {
       best = v;
