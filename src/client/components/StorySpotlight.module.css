@@ -1,0 +1,61 @@
+.panel {
+  background: linear-gradient(160deg, var(--deck-navy-top, #1a1a2e), var(--deck-navy-bottom, #16213e));
+  border: 1px solid var(--deck-edge, #2a2a4a);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 24px 24px 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-sky, #60a5fa);
+  font-weight: 600;
+}
+
+.progress {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--deck-navy-selected-top, #0f2440);
+  border: 1px solid var(--deck-edge, #2a2a4a);
+  border-radius: 9999px;
+  padding: 2px 10px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 8px 0 4px;
+}
+
+.description {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.toggle {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: var(--accent-sky, #60a5fa);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
