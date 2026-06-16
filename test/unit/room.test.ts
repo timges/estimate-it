@@ -690,6 +690,36 @@ describe("Room", () => {
     });
   });
 
+  describe("editStory", () => {
+    it("updates title and description", async () => {
+      const stub = getStub("edit-1");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const s = instance.addStory("Old", "old desc");
+        const updated = instance.editStory(s.id, "New", "new desc");
+        expect(updated?.title).toBe("New");
+        expect(updated?.description).toBe("new desc");
+      });
+    });
+  });
+
+  describe("deleteStory", () => {
+    it("removes the story and its estimates", async () => {
+      const stub = getStub("delete-1");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const a = instance.join("Alice");
+        const s = instance.addStory("Story A", "");
+        instance.nextStory();
+        instance.estimate(a.participant.id, "5");
+        instance.deleteStory(s.id);
+        const state = instance.getRoomState();
+        expect(state.stories).toHaveLength(0);
+        expect(state.currentEstimates).toBe(0);
+      });
+    });
+  });
+
   describe("rename", () => {
     it("should rename a participant", async () => {
       const stub = getStub("rename-test-1");

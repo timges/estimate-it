@@ -237,6 +237,16 @@ export class Room extends DurableObject<Env> {
         if (story) this.broadcast({ type: "story_updated", story });
         break;
       }
+      case "edit_story": {
+        const story = this.editStory(msg.id, msg.title, msg.description);
+        if (story) this.broadcast({ type: "story_updated", story });
+        break;
+      }
+      case "delete_story": {
+        this.deleteStory(msg.id);
+        this.broadcast({ type: "story_deleted", storyId: msg.id });
+        break;
+      }
     }
   }
 
@@ -567,6 +577,21 @@ export class Room extends DurableObject<Env> {
       .one();
 
     return this.rowToStory(row);
+  }
+
+  editStory(id: number, title: string, description: string): Story | null {
+    this.ctx.storage.sql.exec(
+      "UPDATE story SET title = ?, description = ? WHERE id = ?",
+      title,
+      description,
+      id
+    );
+    return this.getStoryById(id);
+  }
+
+  deleteStory(id: number): void {
+    this.ctx.storage.sql.exec("DELETE FROM estimate WHERE story_id = ?", id);
+    this.ctx.storage.sql.exec("DELETE FROM story WHERE id = ?", id);
   }
 
   getRoomState(): {
