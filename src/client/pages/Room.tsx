@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { FibonacciValue } from "../../shared/types";
+import AddStory from "../components/AddStory";
 import CardGrid from "../components/CardGrid";
 import NamePrompt from "../components/NamePrompt";
 import ParticipantList from "../components/ParticipantList";
 import RevealBoard from "../components/RevealBoard";
+import SessionSummary from "../components/SessionSummary";
 import StoryList from "../components/StoryList";
+import StorySpotlight from "../components/StorySpotlight";
 import { RoomSocket } from "../lib/ws";
 import { useRoomStore } from "../store/room";
 import styles from "./Room.module.css";
@@ -120,6 +123,28 @@ export default function Room() {
     wsRef.current?.send({ type: "add_story", title, description });
   }, []);
 
+  const handleAddStories = useCallback((titles: string[]) => {
+    wsRef.current?.send({
+      type: "add_stories",
+      stories: titles.map((title) => ({ title, description: "" })),
+    });
+  }, []);
+
+  const handleEditStory = useCallback(
+    (id: number, title: string, description: string) => {
+      wsRef.current?.send({ type: "edit_story", id, title, description });
+    },
+    []
+  );
+
+  const handleDeleteStory = useCallback((id: number) => {
+    wsRef.current?.send({ type: "delete_story", id });
+  }, []);
+
+  const handleSetFinalEstimate = useCallback((value: FibonacciValue) => {
+    wsRef.current?.send({ type: "set_final_estimate", value });
+  }, []);
+
   const handleRename = useCallback((newName: string) => {
     wsRef.current?.send({ type: "rename", displayName: newName });
     wsRef.current?.updateName(newName);
@@ -137,6 +162,10 @@ export default function Room() {
 
   const activeStory = stories.find((s) => s.status === "active") ?? null;
   const hasNextStory = stories.some((s) => s.status === "pending");
+  const doneCount = stories.filter((s) => s.status === "done").length;
+  const sessionComplete =
+    stories.length > 0 &&
+    !stories.some((s) => s.status === "active" || s.status === "pending");
 
   if (!hasName && roomId) {
     return <NamePrompt roomId={roomId} onSubmit={handleNameSubmit} />;
@@ -189,11 +218,15 @@ export default function Room() {
 
       <div className={styles.main}>
         <div className={styles.content}>
-          {/*<StoryCard story={activeStory} />*/}
-          {/*<AddStory onAdd={handleAddStory} />*/}
-
-          {!revealed ? (
+          {sessionComplete ? (
+            <SessionSummary stories={stories} />
+          ) : !revealed ? (
             <>
+              <StorySpotlight
+                story={activeStory}
+                position={doneCount + 1}
+                total={stories.length}
+              />
               <CardGrid
                 selected={myEstimate}
                 onSelect={handleEstimate}
@@ -211,14 +244,24 @@ export default function Room() {
               </div>
             </>
           ) : (
-            <RevealBoard
-              estimates={estimates}
-              revealResult={revealResult}
-              participants={participants}
-              onReVote={handleReVote}
-              onNextStory={handleNextStory}
-              hasNextStory={hasNextStory}
-            />
+            <>
+              <StorySpotlight
+                story={activeStory}
+                position={doneCount + 1}
+                total={stories.length}
+              />
+              <RevealBoard
+                estimates={estimates}
+                revealResult={revealResult}
+                participants={participants}
+                onReVote={handleReVote}
+                onNextStory={handleNextStory}
+                hasNextStory={hasNextStory}
+                hasActiveStory={activeStory !== null}
+                finalEstimate={activeStory?.finalEstimate ?? null}
+                onSetFinalEstimate={handleSetFinalEstimate}
+              />
+            </>
           )}
         </div>
 
@@ -228,7 +271,12 @@ export default function Room() {
             currentParticipantId={myParticipantId}
             onRename={handleRename}
           />
-          <StoryList stories={stories} />
+          <AddStory onAdd={handleAddStory} onAddMany={handleAddStories} />
+          <StoryList
+            stories={stories}
+            onEditStory={handleEditStory}
+            onDeleteStory={handleDeleteStory}
+          />
         </div>
       </div>
     </div>
