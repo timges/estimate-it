@@ -503,7 +503,7 @@ export class Room extends DurableObject<Env> {
 
     const pendingRows = this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1"
+        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1"
       )
       .toArray();
 

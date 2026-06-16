@@ -676,6 +676,18 @@ describe("Room", () => {
         expect(instance.getRoomState().stories[0].unanimous).toBe(false);
       });
     });
+
+    it("marks the story not unanimous when revealed with no estimates", async () => {
+      const stub = getStub("unanimous-3");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        instance.join("Alice");
+        instance.addStory("Story A", "");
+        instance.nextStory();
+        instance.reveal();
+        expect(instance.getRoomState().stories[0].unanimous).toBe(false);
+      });
+    });
   });
 
   describe("rename", () => {
