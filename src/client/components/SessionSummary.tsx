@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Story } from "../../shared/types";
 import { summarize, summaryMarkdown } from "../../shared/estimates";
 import styles from "./SessionSummary.module.css";
@@ -10,11 +10,19 @@ interface SessionSummaryProps {
 export default function SessionSummary({ stories }: SessionSummaryProps) {
   const { totalPoints, unanimousCount } = summarize(stories);
   const [copied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    };
+  }, []);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(summaryMarkdown(stories));
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    copiedTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   };
 
   return (
@@ -41,7 +49,7 @@ export default function SessionSummary({ stories }: SessionSummaryProps) {
             <span className={styles.rowTitle}>{s.title}</span>
             <span
               className={`${styles.rowValue} ${
-                s.unanimous ? "" : styles.rowValueContested
+                s.unanimous === false ? styles.rowValueContested : ""
               }`}
             >
               {s.finalEstimate ?? "—"}
@@ -50,7 +58,7 @@ export default function SessionSummary({ stories }: SessionSummaryProps) {
         ))}
       </div>
 
-      <button className={styles.copyBtn} onClick={handleCopy}>
+      <button type="button" className={styles.copyBtn} onClick={handleCopy}>
         {copied ? "Copied" : "Copy summary"}
       </button>
     </div>
