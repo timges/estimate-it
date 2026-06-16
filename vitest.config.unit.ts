@@ -2,6 +2,11 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    include: ["test/unit/store.test.ts", "test/unit/dictionary.test.ts"],
+    include: [
+      "test/unit/store.test.ts",
+      "test/unit/dictionary.test.ts",
+      "test/unit/parse-stories.test.ts",
+      "test/unit/estimates.test.ts",
+    ],
   },
 });
