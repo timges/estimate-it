@@ -23,6 +23,8 @@ export interface Story {
   description: string;
   position: number;
   status: "pending" | "active" | "revealed" | "done";
+  finalEstimate: FibonacciValue | null;
+  unanimous: boolean | null;
 }
 
 export interface Participant {
