@@ -57,7 +57,8 @@ export type ClientMessage =
   | { type: "add_story"; title: string; description: string }
   | { type: "set_final_estimate"; value: FibonacciValue | null }
   | { type: "edit_story"; id: number; title: string; description: string }
-  | { type: "delete_story"; id: number };
+  | { type: "delete_story"; id: number }
+  | { type: "select_story"; id: number };
 
 // WebSocket messages: Server → Client
 export type ServerMessage =

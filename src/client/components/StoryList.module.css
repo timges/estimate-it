@@ -61,11 +61,34 @@
 }
 
 .title {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
   font-size: 13px;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.title:hover {
+  color: var(--accent-primary);
+}
+
+.title:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+.itemCurrent .title {
+  font-weight: 600;
+  color: var(--accent-primary);
 }
 
 .rowActions {

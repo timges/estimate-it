@@ -431,6 +431,43 @@ describe("Room", () => {
     });
   });
 
+  describe("setActiveStory", () => {
+    it("activates the chosen story and demotes the previous one to pending", async () => {
+      const stub = getStub("select-story-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.join("Alice");
+        const a = instance.addStory("Story A", ""); // auto-active
+        const b = instance.addStory("Story B", ""); // pending
+
+        instance.setActiveStory(b.id);
+
+        const state = instance.getRoomState();
+        const sa = state.stories.find((s) => s.id === a.id)!;
+        const sb = state.stories.find((s) => s.id === b.id)!;
+        expect(sb.status).toBe("active");
+        expect(sa.status).toBe("pending");
+      });
+    });
+
+    it("preserves estimates of the demoted story", async () => {
+      const stub = getStub("select-story-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const alice = instance.join("Alice");
+        const a = instance.addStory("Story A", ""); // auto-active
+        const b = instance.addStory("Story B", "");
+        instance.estimate(alice.participant.id, "5");
+
+        instance.setActiveStory(b.id);
+        // Switching back surfaces the preserved estimate for story A.
+        instance.setActiveStory(a.id);
+
+        expect(instance.getRoomState().currentEstimates).toBe(1);
+      });
+    });
+  });
+
   describe("reVote", () => {
     it("should clear estimates and reset to active", async () => {
       const stub = getStub("revote-test-1");

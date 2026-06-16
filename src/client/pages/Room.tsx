@@ -134,6 +134,10 @@ export default function Room() {
     wsRef.current?.send({ type: "delete_story", id });
   }, []);
 
+  const handleSelectStory = useCallback((id: number) => {
+    wsRef.current?.send({ type: "select_story", id });
+  }, []);
+
   const handleSetFinalEstimate = useCallback((value: FibonacciValue) => {
     wsRef.current?.send({ type: "set_final_estimate", value });
   }, []);
@@ -270,6 +274,7 @@ export default function Room() {
             stories={stories}
             onEditStory={handleEditStory}
             onDeleteStory={handleDeleteStory}
+            onSelectStory={handleSelectStory}
           />
         </div>
       </div>

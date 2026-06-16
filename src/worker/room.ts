@@ -241,6 +241,13 @@ export class Room extends DurableObject<Env> {
         this.broadcast({ type: "story_deleted", storyId: msg.id });
         break;
       }
+      case "select_story": {
+        const stories = this.setActiveStory(msg.id);
+        for (const s of stories) {
+          this.broadcast({ type: "story_changed", story: s });
+        }
+        break;
+      }
     }
   }
 
@@ -528,6 +535,20 @@ export class Room extends DurableObject<Env> {
       );
     }
 
+    return this.getStories();
+  }
+
+  setActiveStory(id: number): Story[] {
+    // Demote whichever story is currently in play back to pending; its
+    // estimates are preserved so the team can resume it later.
+    this.ctx.storage.sql.exec(
+      "UPDATE story SET status = 'pending' WHERE status IN ('active', 'revealed') AND id != ?",
+      id
+    );
+    this.ctx.storage.sql.exec(
+      "UPDATE story SET status = 'active' WHERE id = ?",
+      id
+    );
     return this.getStories();
   }
 

@@ -7,6 +7,7 @@ interface StoryListProps {
   stories: Story[];
   onEditStory: (id: number, title: string, description: string) => void;
   onDeleteStory: (id: number) => void;
+  onSelectStory: (id: number) => void;
 }
 
 const STATUS_ORDER: Story["status"][] = ["active", "revealed", "pending", "done"];
@@ -21,6 +22,7 @@ export default function StoryList({
   stories,
   onEditStory,
   onDeleteStory,
+  onSelectStory,
 }: StoryListProps) {
   const [editingStory, setEditingStory] = useState<Story | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -79,29 +81,52 @@ export default function StoryList({
               <div className={`${styles.statusBadge} ${styles[status]}`}>
                 {STATUS_LABELS[status]}
               </div>
-              {group.map((story) => (
-                <div key={story.id} className={styles.item}>
-                  <span className={styles.title}>{story.title}</span>
-                  <div className={styles.rowActions}>
+              {group.map((story) => {
+                const isCurrent =
+                  story.status === "active" || story.status === "revealed";
+                return (
+                  <div
+                    key={story.id}
+                    className={`${styles.item} ${
+                      isCurrent ? styles.itemCurrent : ""
+                    }`}
+                  >
                     <button
                       type="button"
-                      className={styles.iconBtn}
-                      aria-label={`Edit ${story.title}`}
-                      onClick={() => openEdit(story)}
+                      className={styles.title}
+                      aria-label={`Vote on ${story.title}`}
+                      aria-current={isCurrent ? "true" : undefined}
+                      onClick={() => onSelectStory(story.id)}
                     >
-                      Edit
+                      {story.title}
                     </button>
-                    <button
-                      type="button"
-                      className={styles.iconBtn}
-                      aria-label={`Delete ${story.title}`}
-                      onClick={() => openDelete(story)}
-                    >
-                      Delete
-                    </button>
+                    <div className={styles.rowActions}>
+                      <button
+                        type="button"
+                        className={styles.iconBtn}
+                        aria-label={`Edit ${story.title}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEdit(story);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.iconBtn}
+                        aria-label={`Delete ${story.title}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDelete(story);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           );
         })}

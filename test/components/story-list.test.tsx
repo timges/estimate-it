@@ -18,7 +18,12 @@ const makeStory = (overrides: Partial<Story> = {}): Story => ({
 describe("StoryList", () => {
   it("renders nothing when stories is empty", () => {
     const { container } = render(
-      <StoryList stories={[]} onEditStory={() => {}} onDeleteStory={() => {}} />
+      <StoryList
+        stories={[]}
+        onEditStory={() => {}}
+        onDeleteStory={() => {}}
+        onSelectStory={() => {}}
+      />
     );
     expect(container.querySelector("[class*='list']")).toBeNull();
   });
@@ -30,6 +35,7 @@ describe("StoryList", () => {
         stories={stories}
         onEditStory={() => {}}
         onDeleteStory={() => {}}
+        onSelectStory={() => {}}
       />
     );
     expect(screen.getByText("Login")).toBeInTheDocument();
@@ -42,6 +48,7 @@ describe("StoryList", () => {
         stories={stories}
         onEditStory={() => {}}
         onDeleteStory={() => {}}
+        onSelectStory={() => {}}
       />
     );
     expect(screen.getByText("Signup")).toBeInTheDocument();
@@ -58,6 +65,7 @@ describe("StoryList", () => {
         stories={stories}
         onEditStory={() => {}}
         onDeleteStory={() => {}}
+        onSelectStory={() => {}}
       />
     );
     expect(screen.getByText("Login")).toBeInTheDocument();
@@ -75,6 +83,7 @@ describe("StoryList", () => {
         stories={stories}
         onEditStory={() => {}}
         onDeleteStory={() => {}}
+        onSelectStory={() => {}}
       />
     );
     expect(screen.getByText("Active")).toBeInTheDocument();
@@ -104,6 +113,7 @@ describe("StoryList edit and delete", () => {
         stories={stories}
         onEditStory={vi.fn()}
         onDeleteStory={onDeleteStory}
+        onSelectStory={vi.fn()}
       />
     );
     await user.click(screen.getByRole("button", { name: /delete add login/i }));
@@ -120,6 +130,7 @@ describe("StoryList edit and delete", () => {
         stories={stories}
         onEditStory={onEditStory}
         onDeleteStory={vi.fn()}
+        onSelectStory={vi.fn()}
       />
     );
     await user.click(screen.getByRole("button", { name: /edit add login/i }));
@@ -129,5 +140,43 @@ describe("StoryList edit and delete", () => {
     await user.type(input, "Add SSO login");
     await user.click(screen.getByRole("button", { name: /^save$/i }));
     expect(onEditStory).toHaveBeenCalledWith(1, "Add SSO login", "");
+  });
+});
+
+describe("StoryList selection", () => {
+  const stories = [
+    makeStory({ id: 7, title: "Add login", status: "pending" }),
+  ];
+
+  it("calls onSelectStory when a story row is clicked", async () => {
+    const user = userEvent.setup();
+    const onSelectStory = vi.fn();
+    render(
+      <StoryList
+        stories={stories}
+        onEditStory={vi.fn()}
+        onDeleteStory={vi.fn()}
+        onSelectStory={onSelectStory}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /vote on add login/i }));
+    expect(onSelectStory).toHaveBeenCalledWith(7);
+  });
+
+  it("does not call onSelectStory when Edit or Delete is clicked", async () => {
+    const user = userEvent.setup();
+    const onSelectStory = vi.fn();
+    render(
+      <StoryList
+        stories={stories}
+        onEditStory={vi.fn()}
+        onDeleteStory={vi.fn()}
+        onSelectStory={onSelectStory}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /edit add login/i }));
+    await user.click(screen.getByRole("button", { name: /^cancel$/i }));
+    await user.click(screen.getByRole("button", { name: /delete add login/i }));
+    expect(onSelectStory).not.toHaveBeenCalled();
   });
 });
