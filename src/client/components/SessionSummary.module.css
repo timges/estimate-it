@@ -1,0 +1,96 @@
+.summary {
+  padding: 24px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.totals {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  flex: 1;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.statValueGreen {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--status-success);
+}
+
+.statLabel {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rows {
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.rowTitle {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.rowValue {
+  color: var(--accent-sky);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowValueContested {
+  color: var(--status-warning);
+}
+
+.copyBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-blue);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
