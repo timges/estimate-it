@@ -169,6 +169,55 @@ describe("RevealBoard final estimate", () => {
     expect(onSetFinalEstimate).toHaveBeenCalledWith("5");
   });
 
+  it("hides the picker when the vote is unanimous", () => {
+    render(
+      <RevealBoard
+        estimates={[
+          { participantId: "p1", value: "5" },
+          { participantId: "p2", value: "5" },
+        ]}
+        revealResult={{
+          distribution: [{ value: "5", count: 2 }],
+          allAgree: true,
+        }}
+        participants={participants}
+        onReVote={vi.fn()}
+        onNextStory={vi.fn()}
+        hasNextStory={false}
+        hasActiveStory={true}
+        finalEstimate={null}
+        onSetFinalEstimate={vi.fn()}
+      />
+    );
+    expect(screen.queryByText(/final estimate/i)).toBeNull();
+  });
+
+  it("shows the picker when the votes are split", () => {
+    render(
+      <RevealBoard
+        estimates={[
+          { participantId: "p1", value: "5" },
+          { participantId: "p2", value: "8" },
+        ]}
+        revealResult={{
+          distribution: [
+            { value: "5", count: 1 },
+            { value: "8", count: 1 },
+          ],
+          allAgree: false,
+        }}
+        participants={participants}
+        onReVote={vi.fn()}
+        onNextStory={vi.fn()}
+        hasNextStory={false}
+        hasActiveStory={true}
+        finalEstimate={null}
+        onSetFinalEstimate={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/final estimate/i)).toBeInTheDocument();
+  });
+
   it("hides the picker when there is no active story", () => {
     render(
       <RevealBoard
