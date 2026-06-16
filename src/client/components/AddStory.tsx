@@ -38,7 +38,7 @@ export default function AddStory({ onAdd, onAddMany }: AddStoryProps) {
 
   if (mode === "closed") {
     return (
-      <button className={styles.trigger} onClick={() => setMode("single")}>
+      <button type="button" className={styles.trigger} onClick={() => setMode("single")}>
         + Add Story
       </button>
     );

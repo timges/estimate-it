@@ -25,6 +25,8 @@ const makeStory = (overrides: Partial<Story> = {}): Story => ({
   description: "desc",
   position: 1,
   status: "pending",
+  finalEstimate: null,
+  unanimous: null,
   ...overrides,
 });
 
