@@ -39,7 +39,7 @@
 .statValue {
   font-size: 26px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+  background: linear-gradient(135deg, var(--accent-blue, var(--accent-primary)), var(--accent-violet, var(--accent-secondary)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -75,7 +75,7 @@
 }
 
 .rowValue {
-  color: var(--accent-sky);
+  color: var(--accent-sky, var(--accent-primary));
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -89,7 +89,7 @@
   padding: 12px;
   border-radius: 10px;
   border: none;
-  background: var(--accent-blue);
+  background: var(--accent-blue, var(--accent-primary));
   color: #fff;
   font-weight: 600;
   cursor: pointer;

@@ -95,10 +95,15 @@
 
 .editInput {
   flex: 1;
-  background: var(--bg-void);
+  background: var(--bg-void, var(--bg-input));
   color: var(--text-primary);
   border: 1px solid var(--border-strong);
   border-radius: 6px;
   padding: 4px 8px;
   font-size: 13px;
+}
+
+.iconBtn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
 }

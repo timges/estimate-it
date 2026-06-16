@@ -48,12 +48,14 @@ export default function AddStory({ onAdd, onAddMany }: AddStoryProps) {
     <div className={styles.form}>
       <div className={styles.modeTabs}>
         <button
+          type="button"
           className={mode === "single" ? styles.tabActive : styles.tab}
           onClick={() => setMode("single")}
         >
           Single
         </button>
         <button
+          type="button"
           className={mode === "bulk" ? styles.tabActive : styles.tab}
           onClick={() => setMode("bulk")}
         >

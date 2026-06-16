@@ -70,12 +70,14 @@ export default function StoryList({
                   />
                   <div className={styles.rowActions}>
                     <button
+                      type="button"
                       className={styles.iconBtn}
                       onClick={() => saveEdit(story.id)}
                     >
                       Save
                     </button>
                     <button
+                      type="button"
                       className={styles.iconBtn}
                       onClick={() => setEditingId(null)}
                     >
@@ -89,6 +91,7 @@ export default function StoryList({
                   {confirmingId === story.id ? (
                     <div className={styles.rowActions}>
                       <button
+                        type="button"
                         className={styles.iconBtn}
                         aria-label={`Confirm delete ${story.title}`}
                         onClick={() => {
@@ -99,6 +102,7 @@ export default function StoryList({
                         Delete?
                       </button>
                       <button
+                        type="button"
                         className={styles.iconBtn}
                         aria-label={`Cancel delete ${story.title}`}
                         onClick={() => setConfirmingId(null)}
@@ -109,6 +113,7 @@ export default function StoryList({
                   ) : (
                     <div className={styles.rowActions}>
                       <button
+                        type="button"
                         className={styles.iconBtn}
                         aria-label={`Edit ${story.title}`}
                         onClick={() => startEdit(story)}
@@ -116,6 +121,7 @@ export default function StoryList({
                         Edit
                       </button>
                       <button
+                        type="button"
                         className={styles.iconBtn}
                         aria-label={`Delete ${story.title}`}
                         onClick={() => setConfirmingId(story.id)}
