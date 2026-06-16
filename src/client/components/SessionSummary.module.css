@@ -83,19 +83,3 @@
 .rowValueContested {
   color: var(--status-warning);
 }
-
-.copyBtn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent-blue, var(--accent-primary));
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.copyBtn:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}

@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { Story, FibonacciValue } from "../../src/shared/types";
-import {
-  suggestFinalEstimate,
-  summarize,
-  summaryMarkdown,
-} from "../../src/shared/estimates";
+import { suggestFinalEstimate, summarize } from "../../src/shared/estimates";
 
 function story(partial: Partial<Story>): Story {
   return {
@@ -70,17 +66,5 @@ describe("summarize", () => {
       totalPoints: 0,
       unanimousCount: 1,
     });
-  });
-});
-
-describe("summaryMarkdown", () => {
-  it("renders a list with a totals line", () => {
-    const stories = [
-      story({ id: 1, title: "Add login", finalEstimate: "5" }),
-      story({ id: 2, title: "Export CSV", finalEstimate: null }),
-    ];
-    expect(summaryMarkdown(stories)).toBe(
-      "- Add login — 5\n- Export CSV — —\nTotal: 5 points across 2 stories"
-    );
   });
 });

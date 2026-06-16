@@ -50,11 +50,3 @@ export function summarize(stories: Story[]): {
   }
   return { totalPoints, unanimousCount };
 }
-
-/** Markdown recap suitable for pasting into GitHub/Jira/Slack. */
-export function summaryMarkdown(stories: Story[]): string {
-  const lines = stories.map((s) => `- ${s.title} — ${s.finalEstimate ?? "—"}`);
-  const { totalPoints } = summarize(stories);
-  lines.push(`Total: ${totalPoints} points across ${stories.length} stories`);
-  return lines.join("\n");
-}
