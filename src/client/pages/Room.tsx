@@ -153,12 +153,13 @@ export default function Room() {
     };
   }, []);
 
-  const activeStory = stories.find((s) => s.status === "active") ?? null;
+  const currentStory =
+    stories.find((s) => s.status === "active" || s.status === "revealed") ??
+    null;
   const hasNextStory = stories.some((s) => s.status === "pending");
   const doneCount = stories.filter((s) => s.status === "done").length;
   const sessionComplete =
-    stories.length > 0 &&
-    !stories.some((s) => s.status === "active" || s.status === "pending");
+    stories.length > 0 && stories.every((s) => s.status === "done");
 
   if (!hasName && roomId) {
     return <NamePrompt roomId={roomId} onSubmit={handleNameSubmit} />;
@@ -216,7 +217,7 @@ export default function Room() {
           ) : !revealed ? (
             <>
               <StorySpotlight
-                story={activeStory}
+                story={currentStory}
                 position={doneCount + 1}
                 total={stories.length}
               />
@@ -239,7 +240,7 @@ export default function Room() {
           ) : (
             <>
               <StorySpotlight
-                story={activeStory}
+                story={currentStory}
                 position={doneCount + 1}
                 total={stories.length}
               />
@@ -250,8 +251,8 @@ export default function Room() {
                 onReVote={handleReVote}
                 onNextStory={handleNextStory}
                 hasNextStory={hasNextStory}
-                hasActiveStory={activeStory !== null}
-                finalEstimate={activeStory?.finalEstimate ?? null}
+                hasActiveStory={currentStory !== null}
+                finalEstimate={currentStory?.finalEstimate ?? null}
                 onSetFinalEstimate={handleSetFinalEstimate}
               />
             </>

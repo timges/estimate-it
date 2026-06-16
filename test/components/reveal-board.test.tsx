@@ -210,10 +210,10 @@ describe("RevealBoard advance button", () => {
       />
     );
     expect(screen.getByRole("button", { name: "Next Story" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /finish session/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /wrap up/i })).toBeNull();
   });
 
-  it("shows 'Finish Session' on the last story (active, none pending)", async () => {
+  it("shows 'Wrap up' on the last story (active, none pending)", async () => {
     const user = userEvent.setup();
     const onNextStory = vi.fn();
     render(
@@ -224,7 +224,7 @@ describe("RevealBoard advance button", () => {
         hasActiveStory={true}
       />
     );
-    const btn = screen.getByRole("button", { name: /finish session/i });
+    const btn = screen.getByRole("button", { name: /wrap up/i });
     await user.click(btn);
     expect(onNextStory).toHaveBeenCalled();
   });
@@ -239,6 +239,6 @@ describe("RevealBoard advance button", () => {
       />
     );
     expect(screen.queryByRole("button", { name: "Next Story" })).toBeNull();
-    expect(screen.queryByRole("button", { name: /finish session/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /wrap up/i })).toBeNull();
   });
 });

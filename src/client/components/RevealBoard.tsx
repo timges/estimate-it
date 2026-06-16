@@ -199,7 +199,7 @@ export default function RevealBoard({
         </button>
         {(hasNextStory || hasActiveStory) && (
           <button className={styles.btnPrimary} onClick={onNextStory}>
-            {hasNextStory ? "Next Story" : "Finish Session"}
+            {hasNextStory ? "Next Story" : "Wrap up"}
           </button>
         )}
       </motion.div>
