@@ -237,8 +237,9 @@ export class Room extends DurableObject<Env> {
         break;
       }
       case "delete_story": {
-        this.deleteStory(msg.id);
+        const promoted = this.deleteStory(msg.id);
         this.broadcast({ type: "story_deleted", storyId: msg.id });
+        if (promoted) this.broadcast({ type: "story_changed", story: promoted });
         break;
       }
       case "select_story": {
@@ -617,9 +618,29 @@ export class Room extends DurableObject<Env> {
     return this.getStoryById(id);
   }
 
-  deleteStory(id: number): void {
+  deleteStory(id: number): Story | null {
+    const wasCurrent = this.getActiveStoryId() === id;
+
     this.ctx.storage.sql.exec("DELETE FROM estimate WHERE story_id = ?", id);
     this.ctx.storage.sql.exec("DELETE FROM story WHERE id = ?", id);
+
+    if (!wasCurrent) return null;
+
+    // The current round was deleted; promote the next pending story so the
+    // team keeps moving instead of landing on an empty spotlight.
+    const pendingRows = this.ctx.storage.sql
+      .exec(
+        "SELECT id FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1"
+      )
+      .toArray();
+    if (pendingRows.length === 0) return null;
+
+    const newId = Number(pendingRows[0]["id"]);
+    this.ctx.storage.sql.exec(
+      "UPDATE story SET status = 'active' WHERE id = ?",
+      newId
+    );
+    return this.getStoryById(newId);
   }
 
   getRoomState(): {

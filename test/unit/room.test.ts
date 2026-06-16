@@ -783,10 +783,63 @@ describe("Room", () => {
         const a = instance.join("Alice");
         const s = instance.addStory("Story A", ""); // auto-activates
         instance.estimate(a.participant.id, "5");
-        instance.deleteStory(s.id);
+        const promoted = instance.deleteStory(s.id);
+        expect(promoted).toBeNull(); // no pending story to promote
         const state = instance.getRoomState();
         expect(state.stories).toHaveLength(0);
         expect(state.currentEstimates).toBe(0);
+      });
+    });
+
+    it("promotes the next pending story when the active one is deleted", async () => {
+      const stub = getStub("delete-2");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        instance.join("Alice");
+        const a = instance.addStory("Story A", ""); // auto-activates
+        const b = instance.addStory("Story B", ""); // pending
+
+        const promoted = instance.deleteStory(a.id);
+        expect(promoted?.id).toBe(b.id);
+        expect(promoted?.status).toBe("active");
+
+        const state = instance.getRoomState();
+        expect(state.stories).toHaveLength(1);
+        expect(state.stories[0].id).toBe(b.id);
+        expect(state.stories[0].status).toBe("active");
+      });
+    });
+
+    it("leaves the current round unchanged when a non-current story is deleted", async () => {
+      const stub = getStub("delete-3");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        instance.join("Alice");
+        const a = instance.addStory("Story A", ""); // auto-activates
+        const b = instance.addStory("Story B", ""); // pending
+
+        const promoted = instance.deleteStory(b.id);
+        expect(promoted).toBeNull();
+
+        const state = instance.getRoomState();
+        expect(state.stories).toHaveLength(1);
+        expect(state.stories[0].id).toBe(a.id);
+        expect(state.stories[0].status).toBe("active");
+      });
+    });
+
+    it("returns null and leaves no active story when the last active story is deleted", async () => {
+      const stub = getStub("delete-4");
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        instance.join("Alice");
+        const a = instance.addStory("Story A", ""); // auto-activates, only story
+
+        const promoted = instance.deleteStory(a.id);
+        expect(promoted).toBeNull();
+
+        const state = instance.getRoomState();
+        expect(state.stories).toHaveLength(0);
       });
     });
   });
