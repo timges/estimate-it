@@ -186,3 +186,59 @@ describe("RevealBoard final estimate", () => {
     expect(screen.queryByText(/final estimate/i)).toBeNull();
   });
 });
+
+describe("RevealBoard advance button", () => {
+  const participants = [
+    { id: "p1", displayName: "A", color: "#fff", hasEstimated: true },
+  ];
+  const baseProps = {
+    estimates: [{ participantId: "p1", value: "5" as const }],
+    revealResult: { distribution: [], allAgree: false },
+    participants,
+    onReVote: vi.fn(),
+    finalEstimate: null,
+    onSetFinalEstimate: vi.fn(),
+  };
+
+  it("shows 'Next Story' when a pending story exists", () => {
+    render(
+      <RevealBoard
+        {...baseProps}
+        onNextStory={vi.fn()}
+        hasNextStory={true}
+        hasActiveStory={true}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Next Story" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /finish session/i })).toBeNull();
+  });
+
+  it("shows 'Finish Session' on the last story (active, none pending)", async () => {
+    const user = userEvent.setup();
+    const onNextStory = vi.fn();
+    render(
+      <RevealBoard
+        {...baseProps}
+        onNextStory={onNextStory}
+        hasNextStory={false}
+        hasActiveStory={true}
+      />
+    );
+    const btn = screen.getByRole("button", { name: /finish session/i });
+    await user.click(btn);
+    expect(onNextStory).toHaveBeenCalled();
+  });
+
+  it("shows no advance button for an ad-hoc reveal (no stories)", () => {
+    render(
+      <RevealBoard
+        {...baseProps}
+        onNextStory={vi.fn()}
+        hasNextStory={false}
+        hasActiveStory={false}
+      />
+    );
+    expect(screen.queryByRole("button", { name: "Next Story" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /finish session/i })).toBeNull();
+  });
+});
