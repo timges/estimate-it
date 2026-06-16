@@ -13,7 +13,9 @@ export default function SessionSummary({ stories }: SessionSummaryProps) {
     <div className={styles.summary}>
       <div className={styles.head}>
         <h2 className={styles.heading}>Session complete</h2>
-        <span className={styles.count}>{stories.length} stories</span>
+        <span className={styles.count}>
+          {stories.length} {stories.length === 1 ? "story" : "stories"}
+        </span>
       </div>
 
       <div className={styles.totals}>
