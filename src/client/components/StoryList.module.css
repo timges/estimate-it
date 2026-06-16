@@ -91,6 +91,18 @@
   color: var(--accent-primary);
 }
 
+.finalBadge {
+  flex-shrink: 0;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
 .rowActions {
   display: flex;
   gap: 4px;

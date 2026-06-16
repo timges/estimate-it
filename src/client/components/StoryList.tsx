@@ -100,6 +100,12 @@ export default function StoryList({
                     >
                       {story.title}
                     </button>
+                    {(story.status === "done" ||
+                      story.status === "revealed") && (
+                      <span className={styles.finalBadge}>
+                        {story.finalEstimate ?? "—"}
+                      </span>
+                    )}
                     <div className={styles.rowActions}>
                       <button
                         type="button"

@@ -90,6 +90,21 @@ describe("StoryList", () => {
     expect(screen.getByText("Pending")).toBeInTheDocument();
     expect(screen.getByText("Done")).toBeInTheDocument();
   });
+
+  it("shows the final estimate badge on done stories", () => {
+    const stories = [
+      makeStory({ id: 1, title: "Login", status: "done", finalEstimate: "8" }),
+    ];
+    render(
+      <StoryList
+        stories={stories}
+        onEditStory={() => {}}
+        onDeleteStory={() => {}}
+        onSelectStory={() => {}}
+      />
+    );
+    expect(screen.getByText("8")).toBeInTheDocument();
+  });
 });
 
 describe("StoryList edit and delete", () => {
@@ -140,6 +155,25 @@ describe("StoryList edit and delete", () => {
     await user.type(input, "Add SSO login");
     await user.click(screen.getByRole("button", { name: /^save$/i }));
     expect(onEditStory).toHaveBeenCalledWith(1, "Add SSO login", "");
+  });
+
+  it("keeps focus in the Description field while typing", async () => {
+    const user = userEvent.setup();
+    render(
+      <StoryList
+        stories={stories}
+        onEditStory={vi.fn()}
+        onDeleteStory={vi.fn()}
+        onSelectStory={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /edit add login/i }));
+    const description = screen.getByLabelText(/description/i);
+    await user.click(description);
+    await user.type(description, "Some details");
+    // Focus must not jump back to the Title input on each keystroke.
+    expect(description).toHaveFocus();
+    expect(description).toHaveValue("Some details");
   });
 });
 
