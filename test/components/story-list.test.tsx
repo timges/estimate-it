@@ -10,6 +10,8 @@ const makeStory = (overrides: Partial<Story> = {}): Story => ({
   description: "",
   position: 1,
   status: "pending",
+  finalEstimate: null,
+  unanimous: null,
   ...overrides,
 });
 
@@ -94,7 +96,7 @@ describe("StoryList edit and delete", () => {
     },
   ];
 
-  it("calls onDeleteStory after confirming", async () => {
+  it("calls onDeleteStory after confirming via modal", async () => {
     const user = userEvent.setup();
     const onDeleteStory = vi.fn();
     render(
@@ -105,11 +107,12 @@ describe("StoryList edit and delete", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /delete add login/i }));
-    await user.click(screen.getByRole("button", { name: /confirm delete/i }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^delete$/i }));
     expect(onDeleteStory).toHaveBeenCalledWith(1);
   });
 
-  it("calls onEditStory with edited values", async () => {
+  it("calls onEditStory with edited values via modal", async () => {
     const user = userEvent.setup();
     const onEditStory = vi.fn();
     render(
@@ -120,10 +123,11 @@ describe("StoryList edit and delete", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /edit add login/i }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     const input = screen.getByDisplayValue("Add login");
     await user.clear(input);
     await user.type(input, "Add SSO login");
-    await user.click(screen.getByRole("button", { name: /^save/i }));
+    await user.click(screen.getByRole("button", { name: /^save$/i }));
     expect(onEditStory).toHaveBeenCalledWith(1, "Add SSO login", "");
   });
 });

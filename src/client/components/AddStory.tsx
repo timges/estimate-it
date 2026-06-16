@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Modal from "./Modal";
 import styles from "./AddStory.module.css";
 
 interface AddStoryProps {
@@ -22,54 +23,50 @@ export default function AddStory({ onAdd }: AddStoryProps) {
     reset();
   };
 
-  if (!open) {
-    return (
+  return (
+    <>
       <button type="button" className={styles.trigger} onClick={() => setOpen(true)}>
         + Add Story
       </button>
-    );
-  }
-
-  return (
-    <div className={styles.form}>
-      <label className={styles.label} htmlFor="story-title">
-        Story Title
-      </label>
-      <input
-        id="story-title"
-        className={styles.input}
-        placeholder="Story title…"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        autoFocus={window.matchMedia("(pointer: fine)").matches}
-        name="storyTitle"
-        autoComplete="off"
-      />
-      <label className={styles.label} htmlFor="story-description">
-        Description
-      </label>
-      <textarea
-        id="story-description"
-        className={styles.textarea}
-        placeholder="Description (optional)…"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        rows={3}
-        name="storyDescription"
-        autoComplete="off"
-      />
-      <div className={styles.actions}>
-        <button className={styles.cancel} onClick={reset}>
-          Cancel
-        </button>
-        <button
-          className={styles.submit}
-          onClick={handleSubmit}
-          disabled={!title.trim()}
-        >
-          Add
-        </button>
-      </div>
-    </div>
+      <Modal isOpen={open} onClose={reset} title="Add Story">
+        <label className={styles.label} htmlFor="story-title">
+          Story Title
+        </label>
+        <input
+          id="story-title"
+          className={styles.input}
+          placeholder="Story title…"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          name="storyTitle"
+          autoComplete="off"
+        />
+        <label className={styles.label} htmlFor="story-description">
+          Description
+        </label>
+        <textarea
+          id="story-description"
+          className={styles.textarea}
+          placeholder="Description (optional)…"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          name="storyDescription"
+          autoComplete="off"
+        />
+        <div className={styles.actions}>
+          <button className={styles.cancel} onClick={reset}>
+            Cancel
+          </button>
+          <button
+            className={styles.submit}
+            onClick={handleSubmit}
+            disabled={!title.trim()}
+          >
+            Add
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }

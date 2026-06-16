@@ -50,6 +50,10 @@
 .item {
   padding: 6px 0;
   border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .item:last-child {
@@ -64,13 +68,6 @@
   white-space: nowrap;
 }
 
-.item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .rowActions {
   display: flex;
   gap: 4px;
@@ -81,7 +78,7 @@
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   padding: 2px 4px;
@@ -93,17 +90,98 @@
   background: var(--bg-hover);
 }
 
-.editInput {
-  flex: 1;
-  background: var(--bg-void, var(--bg-input));
-  color: var(--text-primary);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 13px;
-}
-
 .iconBtn:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 1px;
+}
+
+/* Modal form styles */
+
+.modalLabel {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.modalInput,
+.modalTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.modalTextarea {
+  resize: none;
+}
+
+.modalInput:focus,
+.modalTextarea:focus {
+  border-color: var(--accent-primary);
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.modalCancel {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.modalSave {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border: none;
+  color: white;
+}
+
+.modalSave:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modalDelete {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--status-error);
+  border: none;
+  color: white;
+}
+
+.deleteMessage {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
 }
