@@ -218,6 +218,14 @@ export default function Room() {
         <div className={styles.content}>
           {sessionComplete ? (
             <SessionSummary stories={stories} />
+          ) : !currentStory ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyTitle}>No story to estimate yet</p>
+              <p className={styles.emptyHint}>
+                Add a story to start the round.
+              </p>
+              <AddStory onAdd={handleAddStory} />
+            </div>
           ) : !revealed ? (
             <>
               <StorySpotlight

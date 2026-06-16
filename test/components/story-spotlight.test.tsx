@@ -25,11 +25,6 @@ describe("StorySpotlight", () => {
     expect(screen.getByText("Short description")).toBeInTheDocument();
   });
 
-  it("shows the no-story state when story is null", () => {
-    render(<StorySpotlight story={null} position={1} total={0} />);
-    expect(screen.getByText(/no story/i)).toBeInTheDocument();
-  });
-
   it("offers show more/less only for long descriptions", async () => {
     const user = userEvent.setup();
     const long = "x".repeat(200);

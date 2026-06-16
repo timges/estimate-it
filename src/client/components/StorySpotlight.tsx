@@ -3,7 +3,7 @@ import type { Story } from "../../shared/types";
 import styles from "./StorySpotlight.module.css";
 
 interface StorySpotlightProps {
-  story: Story | null;
+  story: Story;
   position: number;
   total: number;
 }
@@ -16,18 +16,6 @@ export default function StorySpotlight({
   total,
 }: StorySpotlightProps) {
   const [expanded, setExpanded] = useState(false);
-
-  if (!story) {
-    return (
-      <div className={styles.panel}>
-        <div className={styles.label}>No story</div>
-        <div className={styles.title}>Estimating…</div>
-        <div className={styles.description}>
-          Discuss the story verbally, then pick your estimate.
-        </div>
-      </div>
-    );
-  }
 
   const isLong = story.description.length > LONG_DESCRIPTION_CHARS;
   const collapsed = isLong && !expanded;

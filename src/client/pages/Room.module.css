@@ -127,6 +127,29 @@
     margin: 0 0 4px;
 }
 
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 64px 24px;
+    text-align: center;
+}
+
+.emptyTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.emptyHint {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+}
+
 .revealArea {
     display: flex;
     justify-content: center;
