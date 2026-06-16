@@ -50,6 +50,7 @@ export default function StorySpotlight({
       )}
       {isLong && (
         <button
+          type="button"
           className={styles.toggle}
           onClick={() => setExpanded((e) => !e)}
         >
