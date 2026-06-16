@@ -46,8 +46,8 @@ export interface RevealResult {
 
 // WebSocket messages: Client → Server
 export type ClientMessage =
-  | { type: "create"; displayName: string }
-  | { type: "join"; displayName: string }
+  | { type: "create"; displayName: string; clientId: string }
+  | { type: "join"; displayName: string; clientId: string }
   | { type: "estimate"; value: FibonacciValue }
   | { type: "clear_estimate" }
   | { type: "reveal" }

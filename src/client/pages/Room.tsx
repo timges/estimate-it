@@ -10,6 +10,26 @@ import { RoomSocket } from "../lib/ws";
 import { useRoomStore } from "../store/room";
 import styles from "./Room.module.css";
 
+// A stable per-browser id so refreshes and reconnects rejoin as the same
+// participant instead of creating a new room member. Falls back to a
+// session-scoped id when storage is unavailable (e.g. private mode), which
+// still keeps reconnects stable for the life of the page.
+let inMemoryClientId: string | null = null;
+
+function getClientId(): string {
+  try {
+    let id = localStorage.getItem("clientId");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("clientId", id);
+    }
+    return id;
+  } catch {
+    if (!inMemoryClientId) inMemoryClientId = crypto.randomUUID();
+    return inMemoryClientId;
+  }
+}
+
 export default function Room() {
   const { roomId } = useParams<{ roomId: string }>();
   const wsRef = useRef<RoomSocket | null>(null);
@@ -41,14 +61,14 @@ export default function Room() {
       if (!roomId) return;
 
       const ws = new RoomSocket(roomId, handleMessage, setConnected);
-      ws.connect();
       wsRef.current = ws;
 
       const roomAction = localStorage.getItem("roomAction") || "join";
       localStorage.removeItem("roomAction");
-      ws.send({
+      ws.connect({
         type: roomAction === "create" ? "create" : "join",
         displayName,
+        clientId: getClientId(),
       });
     },
     [roomId, handleMessage, setConnected],
@@ -102,6 +122,7 @@ export default function Room() {
 
   const handleRename = useCallback((newName: string) => {
     wsRef.current?.send({ type: "rename", displayName: newName });
+    wsRef.current?.updateName(newName);
     localStorage.setItem("displayName", newName);
   }, []);
 

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type {
   Estimate,
@@ -5,6 +6,7 @@ import type {
   Participant,
   FibonacciValue,
 } from "../../shared/types";
+import { useConsensusCelebration } from "./useConsensusCelebration";
 import styles from "./RevealBoard.module.css";
 
 interface RevealBoardProps {
@@ -27,6 +29,7 @@ export default function RevealBoard({
   hasNextStory,
 }: RevealBoardProps) {
   const shouldReduceMotion = useReducedMotion();
+  const estimatesRef = useRef<HTMLDivElement>(null);
 
   const getName = (participantId: string) =>
     participants.find((p) => p.id === participantId)?.displayName ?? "?";
@@ -38,9 +41,23 @@ export default function RevealBoard({
     (a, b) => FIB_ORDER.indexOf(a.value) - FIB_ORDER.indexOf(b.value)
   );
 
+  const allAgree = revealResult?.allAgree ?? false;
+  const agreedValue = allAgree
+    ? sorted.find((e) => e.value !== "☕")?.value
+    : undefined;
+
+  // Crown the reveal once the staggered cards have settled.
+  const celebrationDelayMs = (0.2 + sorted.length * 0.12 + 0.3) * 1000;
+  useConsensusCelebration(
+    allAgree,
+    estimatesRef,
+    !shouldReduceMotion,
+    celebrationDelayMs
+  );
+
   return (
     <div className={styles.board}>
-      <div className={styles.estimates}>
+      <div className={styles.estimates} ref={estimatesRef}>
         {sorted.map((est, i) => {
           const color = getColor(est.participantId);
           return (
@@ -89,7 +106,26 @@ export default function RevealBoard({
           }
         >
           {revealResult.allAgree ? (
-            <div className={styles.consensus}>All Agree!</div>
+            <div className={styles.consensus}>
+              <motion.div
+                className={styles.consensusValue}
+                initial={shouldReduceMotion ? {} : { opacity: 0, scale: 0.6 }}
+                animate={shouldReduceMotion ? {} : { opacity: 1, scale: 1 }}
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : {
+                        delay: celebrationDelayMs / 1000,
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 14,
+                      }
+                }
+              >
+                {agreedValue}
+              </motion.div>
+              <span className={styles.consensusLabel}>All Agree!</span>
+            </div>
           ) : (
             <div className={styles.distribution}>
               {revealResult.distribution.map((d) => {

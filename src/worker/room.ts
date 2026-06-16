@@ -18,7 +18,15 @@ interface ConnectionData {
   participantId: string;
 }
 
+// How long a participant's row is kept after their socket closes, so a refresh
+// or transient network drop can reclaim the same identity instead of joining
+// as a brand-new member.
+const DISCONNECT_GRACE_MS = 15_000;
 
+// Heartbeat frames. The exact serialized strings are matched by the Durable
+// Object's auto-responder, which replies without waking from hibernation.
+const PING_MESSAGE = JSON.stringify({ type: "ping" });
+const PONG_MESSAGE = JSON.stringify({ type: "pong" });
 
 export class Room extends DurableObject<Env> {
   private roomId: string;
@@ -26,6 +34,9 @@ export class Room extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.roomId = this.ctx.id.toString();
+    this.ctx.setWebSocketAutoResponse(
+      new WebSocketRequestResponsePair(PING_MESSAGE, PONG_MESSAGE)
+    );
     this.ctx.blockConcurrencyWhile(async () => {
       this.ctx.storage.sql.exec(`
         CREATE TABLE IF NOT EXISTS room (
@@ -39,9 +50,26 @@ export class Room extends DurableObject<Env> {
           id TEXT PRIMARY KEY,
           display_name TEXT,
           color TEXT,
-          joined_at INTEGER
+          joined_at INTEGER,
+          client_id TEXT,
+          disconnected_at INTEGER
         )
       `);
+      // Migrate rooms created before stable-identity columns existed.
+      const columns = this.ctx.storage.sql
+        .exec("PRAGMA table_info(participant)")
+        .toArray()
+        .map((row) => String(row["name"]));
+      if (!columns.includes("client_id")) {
+        this.ctx.storage.sql.exec(
+          "ALTER TABLE participant ADD COLUMN client_id TEXT"
+        );
+      }
+      if (!columns.includes("disconnected_at")) {
+        this.ctx.storage.sql.exec(
+          "ALTER TABLE participant ADD COLUMN disconnected_at INTEGER"
+        );
+      }
       this.ctx.storage.sql.exec(`
         CREATE TABLE IF NOT EXISTS story (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,7 +108,7 @@ export class Room extends DurableObject<Env> {
     switch (msg.type) {
       case "create": {
         this.createRoom();
-        const result = this.join(msg.displayName);
+        const result = this.join(msg.displayName, msg.clientId);
         ws.serializeAttachment({ participantId: result.participant.id });
         this.sendToClient(ws, {
           type: "room_state",
@@ -91,13 +119,15 @@ export class Room extends DurableObject<Env> {
           totalParticipants: result.totalParticipants,
           myParticipantId: result.participant.id,
         });
-        this.broadcast(
-          {
-            type: "participant_joined",
-            participant: result.participant,
-          },
-          ws
-        );
+        if (result.isNew) {
+          this.broadcast(
+            {
+              type: "participant_joined",
+              participant: result.participant,
+            },
+            ws
+          );
+        }
         break;
       }
       case "join": {
@@ -108,7 +138,7 @@ export class Room extends DurableObject<Env> {
           });
           break;
         }
-        const result = this.join(msg.displayName);
+        const result = this.join(msg.displayName, msg.clientId);
         ws.serializeAttachment({ participantId: result.participant.id });
         this.sendToClient(ws, {
           type: "room_state",
@@ -119,13 +149,17 @@ export class Room extends DurableObject<Env> {
           totalParticipants: result.totalParticipants,
           myParticipantId: result.participant.id,
         });
-        this.broadcast(
-          {
-            type: "participant_joined",
-            participant: result.participant,
-          },
-          ws
-        );
+        // A reconnecting participant is still present in everyone's list during
+        // the grace window, so only announce genuinely new members.
+        if (result.isNew) {
+          this.broadcast(
+            {
+              type: "participant_joined",
+              participant: result.participant,
+            },
+            ws
+          );
+        }
         break;
       }
       case "estimate":
@@ -188,12 +222,53 @@ export class Room extends DurableObject<Env> {
 
   async webSocketClose(ws: WebSocket): Promise<void> {
     const data = ws.deserializeAttachment() as ConnectionData | null;
-    if (data) {
-      this.removeParticipant(data.participantId);
-      this.broadcast({
-        type: "participant_left",
-        participantId: data.participantId,
-      });
+    if (!data) return;
+
+    // Another open socket (e.g. a second tab) still represents this
+    // participant — keep them present.
+    const stillConnected = this.ctx.getWebSockets().some((other) => {
+      if (other === ws || other.readyState !== WebSocket.OPEN) return false;
+      const otherData = other.deserializeAttachment() as ConnectionData | null;
+      return otherData?.participantId === data.participantId;
+    });
+    if (stillConnected) return;
+
+    // Defer removal: mark disconnected and schedule reaping so a quick
+    // reconnect can reclaim the identity.
+    this.ctx.storage.sql.exec(
+      "UPDATE participant SET disconnected_at = ? WHERE id = ?",
+      Date.now(),
+      data.participantId
+    );
+    const existingAlarm = await this.ctx.storage.getAlarm();
+    if (existingAlarm === null) {
+      await this.ctx.storage.setAlarm(Date.now() + DISCONNECT_GRACE_MS);
+    }
+  }
+
+  async alarm(): Promise<void> {
+    const cutoff = Date.now() - DISCONNECT_GRACE_MS;
+    const expired = this.ctx.storage.sql
+      .exec(
+        "SELECT id FROM participant WHERE disconnected_at IS NOT NULL AND disconnected_at <= ?",
+        cutoff
+      )
+      .toArray();
+
+    for (const row of expired) {
+      const participantId = String(row["id"]);
+      this.removeParticipant(participantId);
+      this.broadcast({ type: "participant_left", participantId });
+    }
+
+    // Re-arm if anyone is still inside their grace window.
+    const next = this.ctx.storage.sql
+      .exec(
+        "SELECT MIN(disconnected_at) as next FROM participant WHERE disconnected_at IS NOT NULL"
+      )
+      .one()["next"];
+    if (next !== null) {
+      await this.ctx.storage.setAlarm(Number(next) + DISCONNECT_GRACE_MS);
     }
   }
 
@@ -212,30 +287,61 @@ export class Room extends DurableObject<Env> {
 
   // --- RPC methods (testable core logic) ---
 
-  join(displayName: string): {
+  join(
+    displayName: string,
+    clientId?: string
+  ): {
     participant: Participant;
+    isNew: boolean;
     room: RoomInfo;
     participants: Participant[];
     stories: Story[];
     currentEstimates: number;
     totalParticipants: number;
   } {
-    const participantCount = Number(
-      this.ctx.storage.sql
-        .exec("SELECT COUNT(*) as count FROM participant")
-        .one()!["count"]
-    );
+    // A client without a stable id (e.g. legacy clients) always joins fresh.
+    const stableClientId = clientId ?? crypto.randomUUID();
 
-    const participantId = crypto.randomUUID();
-    const color = assignColor(participantCount);
+    const existing = this.ctx.storage.sql
+      .exec(
+        "SELECT id, color FROM participant WHERE client_id = ?",
+        stableClientId
+      )
+      .toArray();
 
-    this.ctx.storage.sql.exec(
-      "INSERT INTO participant (id, display_name, color, joined_at) VALUES (?, ?, ?, ?)",
-      participantId,
-      displayName,
-      color,
-      Date.now()
-    );
+    let participantId: string;
+    let color: string;
+    let isNew: boolean;
+
+    if (existing.length > 0) {
+      // Reconnect: reuse the existing identity, clear any pending removal,
+      // and accept the latest display name.
+      participantId = String(existing[0]["id"]);
+      color = String(existing[0]["color"]);
+      isNew = false;
+      this.ctx.storage.sql.exec(
+        "UPDATE participant SET display_name = ?, disconnected_at = NULL WHERE id = ?",
+        displayName,
+        participantId
+      );
+    } else {
+      const participantCount = Number(
+        this.ctx.storage.sql
+          .exec("SELECT COUNT(*) as count FROM participant")
+          .one()!["count"]
+      );
+      participantId = crypto.randomUUID();
+      color = assignColor(participantCount);
+      isNew = true;
+      this.ctx.storage.sql.exec(
+        "INSERT INTO participant (id, display_name, color, joined_at, client_id, disconnected_at) VALUES (?, ?, ?, ?, ?, NULL)",
+        participantId,
+        displayName,
+        color,
+        Date.now(),
+        stableClientId
+      );
+    }
 
     this.ensureRoomExists();
 
@@ -243,17 +349,28 @@ export class Room extends DurableObject<Env> {
       .exec("SELECT * FROM room WHERE id = ?", this.roomId)
       .one()!;
 
+    const roundId = this.getActiveStoryId() ?? 0;
+    const hasEstimated =
+      this.ctx.storage.sql
+        .exec(
+          "SELECT 1 FROM estimate WHERE story_id = ? AND participant_id = ?",
+          roundId,
+          participantId
+        )
+        .toArray().length > 0;
+
     const participant: Participant = {
       id: participantId,
       displayName,
       color,
-      hasEstimated: false,
+      hasEstimated,
     };
 
     const participants = this.getParticipants();
 
     return {
       participant,
+      isNew,
       room: {
         id: String(roomRow["id"]),
         name: String(roomRow["name"]),

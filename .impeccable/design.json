@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-16T00:00:00.000Z",
+  "title": "Design System: estimate-it",
+  "extensions": {
+    "colorMeta": {
+      "accent-blue": { "role": "primary", "displayName": "Signal Blue", "canonical": "#3b82f6", "tonalRamp": ["#0b1729", "#122443", "#193765", "#214f93", "#3b82f6", "#6ba3f8", "#9cc2fb", "#cfe1fd"] },
+      "accent-violet": { "role": "primary", "displayName": "Signal Violet", "canonical": "#8b5cf6", "tonalRamp": ["#1e1340", "#2c1d5e", "#3d287f", "#5b3bb8", "#8b5cf6", "#a988f8", "#c6b1fb", "#e3d8fd"] },
+      "accent-sky": { "role": "primary", "displayName": "Sky Highlight", "canonical": "#60a5fa", "tonalRamp": ["#10243f", "#173659", "#214f80", "#2f6db0", "#60a5fa", "#8cc0fb", "#b3d6fc", "#daebfe"] },
+      "deck-navy-top": { "role": "secondary", "displayName": "Deck Navy (top)", "canonical": "#1a1a2e", "tonalRamp": ["#0d0d17", "#13131f", "#1a1a2e", "#26263f", "#373758", "#535378", "#85859f", "#c0c0ce"] },
+      "deck-navy-bottom": { "role": "secondary", "displayName": "Deck Navy (bottom)", "canonical": "#16213e", "tonalRamp": ["#0a0f1d", "#0f172d", "#16213e", "#203057", "#304878", "#4c69a0", "#8298c4", "#c0cce0"] },
+      "status-success": { "role": "tertiary", "displayName": "Consensus Green", "canonical": "#4ade80", "tonalRamp": ["#0a2417", "#0f3722", "#164e30", "#1f6e42", "#2a9a5b", "#4ade80", "#86eaa9", "#c2f5d4"] },
+      "bg-void": { "role": "neutral", "displayName": "Void", "canonical": "#0a0a0a", "tonalRamp": ["#0a0a0a", "#171717", "#262626", "#333333", "#525252", "#737373", "#a3a3a3", "#e5e5e5"] },
+      "bg-surface": { "role": "neutral", "displayName": "Surface", "canonical": "#171717", "tonalRamp": ["#0a0a0a", "#171717", "#262626", "#333333", "#404040", "#525252", "#737373", "#a3a3a3"] },
+      "text-primary": { "role": "neutral", "displayName": "Text Primary", "canonical": "#e5e5e5", "tonalRamp": ["#0a0a0a", "#262626", "#404040", "#525252", "#737373", "#a3a3a3", "#d4d4d3", "#e5e5e5"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing wordmark only; tight -1px tracking." },
+      "headline": { "displayName": "Headline", "purpose": "Room and section headings." },
+      "title": { "displayName": "Title", "purpose": "Story titles and prominent labels." },
+      "body": { "displayName": "Body", "purpose": "Descriptions and running text; 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Uppercase eyebrow labels with wide tracking." },
+      "numeral": { "displayName": "Numeral", "purpose": "Card values and revealed estimates; always tabular-nums." }
+    },
+    "shadows": [
+      { "name": "card-hover-lift", "value": "0 8px 24px rgba(59, 130, 246, 0.15)", "purpose": "Blue-tinted cast shadow as a vote card rises 8px on hover." },
+      { "name": "card-selected-glow", "value": "0 0 20px rgba(96, 165, 250, 0.2), 0 12px 32px rgba(59, 130, 246, 0.2)", "purpose": "Two-layer glow + cast shadow on the player's selected card (lifted 12px). Strongest elevation in the system." }
+    ],
+    "motion": [
+      { "name": "card-transition", "value": "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease", "purpose": "Vote card hover/select feedback." },
+      { "name": "button-transition", "value": "opacity 0.15s, transform 0.15s, background-color 0.15s", "purpose": "Button hover feedback." },
+      { "name": "dist-bar-grow", "value": "width 0.4s ease", "purpose": "Distribution bar width animation on reveal." }
+    ],
+    "reducedMotion": "Global @media (prefers-reduced-motion: reduce) collapses all animation/transition durations to 0.01ms so the reveal resolves instantly without motion."
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single gradient-filled call to action (Create Room, reveal actions).",
+      "html": "<button class=\"ds-btn-primary\">Create Room</button>",
+      "css": ".ds-btn-primary { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #3b82f6, #8b5cf6); cursor: pointer; transition: opacity 0.15s, transform 0.15s; } .ds-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The quiet flat sibling to the primary action (Join Room).",
+      "html": "<button class=\"ds-btn-secondary\">Join Room</button>",
+      "css": ".ds-btn-secondary { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #e5e5e5; background: #262626; cursor: pointer; transition: background-color 0.15s, transform 0.15s; } .ds-btn-secondary:hover { background: #333333; } .ds-btn-secondary:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Void-filled field on a Surface panel; doubled focus treatment for dark legibility.",
+      "html": "<input class=\"ds-input\" placeholder=\"Room code (e.g. coral-falcon)…\" />",
+      "css": ".ds-input { width: 100%; padding: 12px 16px; background: #0a0a0a; border: 1px solid #333333; border-radius: 10px; color: #e5e5e5; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 15px; transition: border-color 0.2s; } .ds-input::placeholder { color: #525252; } .ds-input:focus { border-color: #3b82f6; outline: 2px solid #3b82f6; outline-offset: 2px; }"
+    },
+    {
+      "name": "Vote Card",
+      "kind": "card",
+      "refersTo": "vote-card",
+      "description": "Signature component: a tall playing card cut from the navy deck. Lifts 8px on hover.",
+      "html": "<button class=\"ds-vote-card\">5</button>",
+      "css": ".ds-vote-card { width: 68px; height: 96px; border: 2px solid #2a2a4a; border-radius: 12px; background: linear-gradient(145deg, #1a1a2e, #16213e); color: #a3a3a3; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 26px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; } .ds-vote-card:hover:not(:disabled) { transform: translateY(-8px); border-color: #3b82f6; color: #60a5fa; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15); } .ds-vote-card:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-vote-card:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Vote Card (Selected)",
+      "kind": "card",
+      "refersTo": "vote-card-selected",
+      "description": "The card the player has committed: deeper navy, lifted 12px, glowing. The card visibly leaves the deck.",
+      "html": "<button class=\"ds-vote-card-selected\">5</button>",
+      "css": ".ds-vote-card-selected { width: 68px; height: 96px; border: 2px solid #3b82f6; border-radius: 12px; background: linear-gradient(145deg, #0f2440, #1e3a5f); color: #60a5fa; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 26px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transform: translateY(-12px); box-shadow: 0 0 20px rgba(96, 165, 250, 0.2), 0 12px 32px rgba(59, 130, 246, 0.2); }"
+    },
+    {
+      "name": "Estimate Card",
+      "kind": "card",
+      "refersTo": "estimate-card",
+      "description": "A revealed estimate: flatter and quieter than a vote card, because the choosing is over and now it is data.",
+      "html": "<div class=\"ds-estimate-card\">8</div>",
+      "css": ".ds-estimate-card { width: 64px; padding: 16px 0; border: 2px solid #333333; border-radius: 10px; background: #171717; color: #a3a3a3; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; }"
+    },
+    {
+      "name": "Distribution Bar",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Reveal-phase histogram row: value, gradient-filled track, count. Tabular numerals.",
+      "html": "<div class=\"ds-dist-row\"><span class=\"ds-dist-value\">5</span><div class=\"ds-dist-track\"><div class=\"ds-dist-bar\" style=\"width:70%\"></div></div><span class=\"ds-dist-count\">3</span></div>",
+      "css": ".ds-dist-row { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', system-ui, sans-serif; } .ds-dist-value { width: 24px; text-align: right; font-size: 13px; font-weight: 700; color: #e5e5e5; font-variant-numeric: tabular-nums; } .ds-dist-track { flex: 1; height: 14px; background: #0a0a0a; border-radius: 7px; overflow: hidden; } .ds-dist-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 5px; transition: width 0.4s ease; } .ds-dist-count { width: 20px; font-size: 13px; font-weight: 600; color: #a3a3a3; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Quiet Vote, Bright Reveal",
+    "overview": "estimate-it has two emotional beats, and the design serves both. During the vote it is a quiet room: a near-black surface, muted neutrals, no movement, nothing that could leak or nudge another person's number. Then everyone reveals at once, and the surface comes alive: cards lift, the blue->violet signature gradient blooms across the stats, the distribution bars animate in, success-green confirms consensus. Focus during concentration, play once the decision is made. The metaphor is a real planning-poker table: voting cards are tall, physical playing cards cut from a dark navy deck that lift on hover and glow when chosen.",
+    "keyCharacteristics": [
+      "Dark-only, near-black canvas (#0a0a0a) built for screen-shared remote sessions",
+      "Two-phase rhythm: still and muted during the vote, animated and bright at reveal",
+      "A physical card deck with its own navy palette as the signature object",
+      "A blue->violet gradient as the recurring brand signal",
+      "Space Grotesk throughout, geometric and a touch playful",
+      "Tabular numerals everywhere a value is compared"
+    ],
+    "rules": [
+      { "name": "The Deck-Is-Separate Rule", "body": "The navy deck palette (#1a1a2e family) is reserved exclusively for voting and estimate cards. Never paint chrome, panels, or buttons in deck navy, and never paint a card in neutral gray.", "section": "colors" },
+      { "name": "The Two-Beat Color Rule", "body": "During the vote, the surface stays neutral and muted; saturated color is held back. The signature gradient and Consensus Green arrive at reveal. Color is a reward for finishing the vote, not ambient decoration.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Every number a human compares against another number uses tabular-nums. Estimates must align in a column at a glance.", "section": "typography" },
+      { "name": "The One-Family Rule", "body": "Space Grotesk does all the work. Do not introduce a second display or mono face; reach for weight and the uppercase label treatment instead.", "section": "typography" },
+      { "name": "The Earned-Shadow Rule", "body": "Shadows are forbidden at rest. They exist only as a response to hover and selection on cards.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the vote phase quiet: neutral surfaces, no saturated color, no motion. Save the signature gradient and Consensus Green for the reveal.",
+      "Do reserve the navy deck palette (#1a1a2e family) for voting and estimate cards only.",
+      "Do use tabular-nums on every compared value.",
+      "Do keep elevation off resting surfaces; let card hover (-8px) and selection (-12px) be the only shadows.",
+      "Do tint neutrals cool toward the deck; never use pure #000 or #fff.",
+      "Do give every interactive element the 2px Signal-Blue focus outline, and honor prefers-reduced-motion."
+    ],
+    "donts": [
+      "Don't build dense, Jira-style boards or busy multi-gradient dashboards.",
+      "Don't ship identical icon-heading-text card grids or hero-metric templates.",
+      "Don't use the blue->violet gradient as text via background-clip: text, except the single existing wordmark dot.",
+      "Don't add border-left/border-right greater than 1px as a colored accent stripe.",
+      "Don't paint chrome or buttons in deck navy, or paint a vote card in neutral gray.",
+      "Don't introduce a second font family.",
+      "Don't animate during the vote or leak vote state through any pre-reveal visual cue."
+    ]
+  }
+}

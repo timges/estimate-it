@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## Design Context
+
+Strategic and visual design context lives at the project root:
+- **PRODUCT.md** — register (product), users, purpose, brand personality, anti-references, and the 5 design principles (bias-free by design; frictionless entry; the reveal is the moment; playful, not noisy; calm during the vote).
+- **DESIGN.md** — the visual system (Stitch format): tokens, colors, typography, components, and named rules. North Star: *"Quiet Vote, Bright Reveal."* A `.impeccable/design.json` sidecar carries component snippets and tonal ramps.
+
+Read both before any UI work. Maintained via the `impeccable` skill (`$impeccable teach` / `document`).
+
 ## Project Overview
 
 Real-time planning poker app built on Cloudflare Workers with Durable Objects for room state management. React frontend with Zustand state management, served as static assets from the Worker.

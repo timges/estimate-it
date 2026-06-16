@@ -91,6 +91,72 @@ describe("Room", () => {
         expect(r1.participant.color).not.toBe(r2.participant.color);
       });
     });
+
+    it("should mark a first-time join as new", async () => {
+      const stub = getStub("join-new-test");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const result = instance.join("Alice", "client-a");
+        expect(result.isNew).toBe(true);
+      });
+    });
+
+    it("should rejoin as the same participant when clientId matches", async () => {
+      const stub = getStub("rejoin-test-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const first = instance.join("Alice", "client-a");
+        const second = instance.join("Alice", "client-a");
+
+        expect(second.isNew).toBe(false);
+        expect(second.participant.id).toBe(first.participant.id);
+        expect(second.participant.color).toBe(first.participant.color);
+        expect(second.totalParticipants).toBe(1);
+        expect(second.participants).toHaveLength(1);
+      });
+    });
+
+    it("should preserve an in-progress estimate across a rejoin", async () => {
+      const stub = getStub("rejoin-test-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const first = instance.join("Alice", "client-a");
+        instance.addStory("Feature", "");
+        instance.nextStory();
+        instance.estimate(first.participant.id, "5");
+
+        const rejoined = instance.join("Alice", "client-a");
+
+        expect(rejoined.participant.id).toBe(first.participant.id);
+        expect(rejoined.participant.hasEstimated).toBe(true);
+        expect(rejoined.currentEstimates).toBe(1);
+      });
+    });
+
+    it("should update the display name on rejoin", async () => {
+      const stub = getStub("rejoin-test-3");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.join("Alice", "client-a");
+        const renamed = instance.join("Alicia", "client-a");
+
+        expect(renamed.isNew).toBe(false);
+        expect(renamed.participant.displayName).toBe("Alicia");
+        expect(renamed.participants[0].displayName).toBe("Alicia");
+      });
+    });
+
+    it("should treat different clientIds as distinct participants", async () => {
+      const stub = getStub("rejoin-test-4");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.join("Alice", "client-a");
+        const bob = instance.join("Bob", "client-b");
+
+        expect(bob.isNew).toBe(true);
+        expect(bob.totalParticipants).toBe(2);
+      });
+    });
   });
 
   describe("estimate", () => {
