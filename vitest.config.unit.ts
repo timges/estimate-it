@@ -5,7 +5,6 @@ export default defineConfig({
     include: [
       "test/unit/store.test.ts",
       "test/unit/dictionary.test.ts",
-      "test/unit/parse-stories.test.ts",
       "test/unit/estimates.test.ts",
     ],
   },

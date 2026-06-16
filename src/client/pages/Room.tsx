@@ -123,13 +123,6 @@ export default function Room() {
     wsRef.current?.send({ type: "add_story", title, description });
   }, []);
 
-  const handleAddStories = useCallback((titles: string[]) => {
-    wsRef.current?.send({
-      type: "add_stories",
-      stories: titles.map((title) => ({ title, description: "" })),
-    });
-  }, []);
-
   const handleEditStory = useCallback(
     (id: number, title: string, description: string) => {
       wsRef.current?.send({ type: "edit_story", id, title, description });
@@ -271,7 +264,7 @@ export default function Room() {
             currentParticipantId={myParticipantId}
             onRename={handleRename}
           />
-          <AddStory onAdd={handleAddStory} onAddMany={handleAddStories} />
+          <AddStory onAdd={handleAddStory} />
           <StoryList
             stories={stories}
             onEditStory={handleEditStory}

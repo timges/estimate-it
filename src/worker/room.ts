@@ -226,12 +226,6 @@ export class Room extends DurableObject<Env> {
         this.broadcast({ type: "story_added", story });
         break;
       }
-      case "add_stories":
-        for (const s of msg.stories) {
-          const story = this.addStory(s.title, s.description);
-          this.broadcast({ type: "story_added", story });
-        }
-        break;
       case "set_final_estimate": {
         const story = this.setFinalEstimate(msg.value);
         if (story) this.broadcast({ type: "story_updated", story });
