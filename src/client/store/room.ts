@@ -146,6 +146,35 @@ export const useRoomStore = create<RoomState>((set) => ({
         }));
         break;
 
+      case "story_updated":
+        set((s) => ({
+          stories: s.stories.map((st) =>
+            st.id === msg.story.id ? msg.story : st
+          ),
+        }));
+        break;
+
+      case "story_deleted":
+        set((s) => {
+          const removed = s.stories.find((st) => st.id === msg.storyId);
+          const wasActiveReveal =
+            s.revealed &&
+            (removed?.status === "active" || removed?.status === "revealed");
+          return {
+            stories: s.stories.filter((st) => st.id !== msg.storyId),
+            ...(wasActiveReveal
+              ? {
+                  revealed: false,
+                  estimates: [],
+                  revealResult: null,
+                  myEstimate: null,
+                  currentEstimates: 0,
+                }
+              : {}),
+          };
+        });
+        break;
+
       case "re_vote_started":
         set((s) => ({
           ...s,

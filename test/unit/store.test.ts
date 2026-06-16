@@ -310,6 +310,60 @@ describe("useRoomStore", () => {
 
       expect(getState().error).toBeNull();
     });
+
+    describe("story_updated / story_deleted", () => {
+      const baseStory = {
+        id: 1,
+        title: "A",
+        description: "",
+        position: 1,
+        status: "revealed" as const,
+        finalEstimate: null,
+        unanimous: null,
+      };
+
+      it("story_updated patches the story without resetting the reveal", () => {
+        useRoomStore.setState({
+          stories: [baseStory],
+          revealed: true,
+          estimates: [{ participantId: "p1", value: "5" }],
+        });
+        useRoomStore.getState().handleMessage({
+          type: "story_updated",
+          story: { ...baseStory, finalEstimate: "8" },
+        });
+        const state = useRoomStore.getState();
+        expect(state.stories[0].finalEstimate).toBe("8");
+        expect(state.revealed).toBe(true);
+        expect(state.estimates).toHaveLength(1);
+      });
+
+      it("story_deleted removes the story", () => {
+        useRoomStore.setState({
+          stories: [{ ...baseStory, status: "pending" }],
+          revealed: false,
+        });
+        useRoomStore.getState().handleMessage({ type: "story_deleted", storyId: 1 });
+        expect(useRoomStore.getState().stories).toHaveLength(0);
+      });
+
+      it("story_deleted resets the reveal when the active story is removed", () => {
+        useRoomStore.setState({
+          stories: [baseStory],
+          revealed: true,
+          estimates: [{ participantId: "p1", value: "5" }],
+          myEstimate: "5",
+          currentEstimates: 1,
+        });
+        useRoomStore.getState().handleMessage({ type: "story_deleted", storyId: 1 });
+        const state = useRoomStore.getState();
+        expect(state.stories).toHaveLength(0);
+        expect(state.revealed).toBe(false);
+        expect(state.estimates).toHaveLength(0);
+        expect(state.myEstimate).toBeNull();
+        expect(state.currentEstimates).toBe(0);
+      });
+    });
   });
 
   describe("setError", () => {
