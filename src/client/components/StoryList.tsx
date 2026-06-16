@@ -29,8 +29,6 @@ export default function StoryList({
   const [editDescription, setEditDescription] = useState("");
   const [deletingStory, setDeletingStory] = useState<Story | null>(null);
 
-  if (stories.length === 0) return null;
-
   const openEdit = (story: Story) => {
     setEditingStory(story);
     setEditTitle(story.title);
@@ -71,8 +69,8 @@ export default function StoryList({
 
   return (
     <>
+      {stories.length > 0 && (
       <div className={styles.list}>
-        <h3 className={styles.heading}>Stories</h3>
         {STATUS_ORDER.map((status) => {
           const group = grouped.get(status);
           if (!group || group.length === 0) return null;
@@ -137,6 +135,7 @@ export default function StoryList({
           );
         })}
       </div>
+      )}
 
       <Modal isOpen={editingStory !== null} onClose={closeEdit} title="Edit Story">
         <label className={styles.modalLabel} htmlFor="edit-story-title">

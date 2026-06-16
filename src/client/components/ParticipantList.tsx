@@ -42,11 +42,7 @@ export default function ParticipantList({
   };
 
   return (
-    <div className={styles.sidebar}>
-      <h3 className={styles.heading}>
-        Participants ({participants.length})
-      </h3>
-      <div className={styles.list}>
+    <div className={styles.list}>
         {participants.map((p) => (
           <div key={p.id} className={styles.participant} data-participant-id={p.id}>
             <div
@@ -114,7 +110,6 @@ export default function ParticipantList({
             </div>
           </div>
         ))}
-      </div>
     </div>
   );
 }

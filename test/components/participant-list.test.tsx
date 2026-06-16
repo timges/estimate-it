@@ -13,15 +13,19 @@ const makeParticipant = (overrides = {}) => ({
 const noop = () => {};
 
 describe("ParticipantList", () => {
-  it("shows 'Participants (N)' with correct count", () => {
+  it("renders a row for each participant", () => {
     render(
       <ParticipantList
-        participants={[makeParticipant(), makeParticipant({ id: "2" })]}
+        participants={[
+          makeParticipant({ id: "1", displayName: "Alice" }),
+          makeParticipant({ id: "2", displayName: "Bob" }),
+        ]}
         currentParticipantId={null}
         onRename={noop}
       />,
     );
-    expect(screen.getByText("Participants (2)")).toBeInTheDocument();
+    expect(screen.getByText("Alice")).toBeInTheDocument();
+    expect(screen.getByText("Bob")).toBeInTheDocument();
   });
 
   it("shows '✓ estimated' for hasEstimated=true", () => {

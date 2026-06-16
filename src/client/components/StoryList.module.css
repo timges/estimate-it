@@ -1,15 +1,5 @@
 .list {
-  padding-top: 4px;
-  border-top: 1px solid var(--border-default);
-}
-
-.heading {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
+  min-width: 0;
 }
 
 .group {

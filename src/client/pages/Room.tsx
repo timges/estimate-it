@@ -264,18 +264,26 @@ export default function Room() {
         </div>
 
         <div className={styles.sidebar}>
-          <ParticipantList
-            participants={participants}
-            currentParticipantId={myParticipantId}
-            onRename={handleRename}
-          />
-          <AddStory onAdd={handleAddStory} />
-          <StoryList
-            stories={stories}
-            onEditStory={handleEditStory}
-            onDeleteStory={handleDeleteStory}
-            onSelectStory={handleSelectStory}
-          />
+          <section className={styles.section}>
+            <h3 className={styles.sectionHeading}>
+              Participants ({participants.length})
+            </h3>
+            <ParticipantList
+              participants={participants}
+              currentParticipantId={myParticipantId}
+              onRename={handleRename}
+            />
+          </section>
+          <section className={styles.section}>
+            <h3 className={styles.sectionHeading}>Stories</h3>
+            <AddStory onAdd={handleAddStory} />
+            <StoryList
+              stories={stories}
+              onEditStory={handleEditStory}
+              onDeleteStory={handleDeleteStory}
+              onSelectStory={handleSelectStory}
+            />
+          </section>
         </div>
       </div>
     </div>
