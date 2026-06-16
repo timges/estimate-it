@@ -6,6 +6,8 @@ import type {
   Participant,
   FibonacciValue,
 } from "../../shared/types";
+import { FIBONACCI_VALUES } from "../../shared/types";
+import { suggestFinalEstimate } from "../../shared/estimates";
 import { useConsensusCelebration } from "./useConsensusCelebration";
 import styles from "./RevealBoard.module.css";
 
@@ -16,6 +18,9 @@ interface RevealBoardProps {
   onReVote: () => void;
   onNextStory: () => void;
   hasNextStory: boolean;
+  hasActiveStory: boolean;
+  finalEstimate: FibonacciValue | null;
+  onSetFinalEstimate: (value: FibonacciValue) => void;
 }
 
 const FIB_ORDER = ["1", "2", "3", "5", "8", "13", "21", "☕"];
@@ -27,6 +32,9 @@ export default function RevealBoard({
   onReVote,
   onNextStory,
   hasNextStory,
+  hasActiveStory,
+  finalEstimate,
+  onSetFinalEstimate,
 }: RevealBoardProps) {
   const shouldReduceMotion = useReducedMotion();
   const estimatesRef = useRef<HTMLDivElement>(null);
@@ -45,6 +53,9 @@ export default function RevealBoard({
   const agreedValue = allAgree
     ? sorted.find((e) => e.value !== "☕")?.value
     : undefined;
+
+  const suggestion = suggestFinalEstimate(estimates.map((e) => e.value));
+  const selectedFinal = finalEstimate ?? suggestion;
 
   // Crown the reveal once the staggered cards have settled.
   const celebrationDelayMs = (0.2 + sorted.length * 0.12 + 0.3) * 1000;
@@ -149,6 +160,27 @@ export default function RevealBoard({
             </div>
           )}
         </motion.div>
+      )}
+
+      {hasActiveStory && (
+        <div className={styles.finalEstimate}>
+          <span className={styles.finalLabel}>Final estimate</span>
+          <div className={styles.finalCards}>
+            {FIBONACCI_VALUES.map((value) => (
+              <button
+                key={value}
+                className={`${styles.finalCard} ${
+                  selectedFinal === value ? styles.finalCardSelected : ""
+                }`}
+                aria-label={`Final estimate ${value}`}
+                aria-pressed={selectedFinal === value}
+                onClick={() => onSetFinalEstimate(value)}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       <motion.div

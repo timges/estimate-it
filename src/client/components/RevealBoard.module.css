@@ -170,3 +170,43 @@
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
+
+.finalEstimate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.finalLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.finalCards {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.finalCard {
+  min-width: 36px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.finalCardSelected {
+  border-color: var(--accent-blue);
+  color: var(--accent-sky);
+  background: var(--deck-navy-selected-top, #0f2440);
+}

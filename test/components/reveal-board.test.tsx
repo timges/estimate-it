@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { render, screen, act } from "@testing-library/react";
 import RevealBoard from "../../src/client/components/RevealBoard";
 import type {
@@ -36,6 +37,9 @@ function renderBoard(estimates: Estimate[], revealResult: RevealResult) {
       onReVote={noop}
       onNextStory={noop}
       hasNextStory={false}
+      hasActiveStory={false}
+      finalEstimate={null}
+      onSetFinalEstimate={() => {}}
     />,
   );
 }
@@ -128,5 +132,57 @@ describe("RevealBoard consensus celebration", () => {
     });
     expect(screen.queryByText("All Agree!")).not.toBeInTheDocument();
     expect(confettiMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("RevealBoard final estimate", () => {
+  const participants = [
+    { id: "p1", displayName: "A", color: "#fff", hasEstimated: true },
+    { id: "p2", displayName: "B", color: "#fff", hasEstimated: true },
+  ];
+
+  it("preselects the suggested value and reports changes", async () => {
+    const user = userEvent.setup();
+    const onSetFinalEstimate = vi.fn();
+    render(
+      <RevealBoard
+        estimates={[
+          { participantId: "p1", value: "5" },
+          { participantId: "p2", value: "8" },
+        ]}
+        revealResult={{ distribution: [], allAgree: false }}
+        participants={participants}
+        onReVote={vi.fn()}
+        onNextStory={vi.fn()}
+        hasNextStory={false}
+        hasActiveStory={true}
+        finalEstimate={null}
+        onSetFinalEstimate={onSetFinalEstimate}
+      />
+    );
+    // Suggestion for [5,8] ties → higher card 8 is preselected.
+    expect(
+      screen.getByRole("button", { name: /final estimate 8/i })
+    ).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: /final estimate 5/i }));
+    expect(onSetFinalEstimate).toHaveBeenCalledWith("5");
+  });
+
+  it("hides the picker when there is no active story", () => {
+    render(
+      <RevealBoard
+        estimates={[{ participantId: "p1", value: "5" }]}
+        revealResult={{ distribution: [], allAgree: false }}
+        participants={participants}
+        onReVote={vi.fn()}
+        onNextStory={vi.fn()}
+        hasNextStory={false}
+        hasActiveStory={false}
+        finalEstimate={null}
+        onSetFinalEstimate={vi.fn()}
+      />
+    );
+    expect(screen.queryByText(/final estimate/i)).toBeNull();
   });
 });
