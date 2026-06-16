@@ -101,6 +101,11 @@
 }
 
 .sidebar {
+    border-left: 1px solid var(--border-default);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     overflow-y: auto;
 }
 

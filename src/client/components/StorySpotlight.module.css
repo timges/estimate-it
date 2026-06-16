@@ -3,7 +3,9 @@
   border: 1px solid var(--deck-edge, #2a2a4a);
   border-radius: 12px;
   padding: 16px 18px;
-  margin: 24px 24px 8px;
+  margin: 24px auto 8px;
+  max-width: 640px;
+  width: calc(100% - 48px);
 }
 
 .header {
