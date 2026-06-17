@@ -130,6 +130,7 @@
 }
 
 .actions {
+  margin-top: var(--space-8);
   display: flex;
   gap: 12px;
 }

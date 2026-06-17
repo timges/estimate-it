@@ -157,7 +157,7 @@ export default function StoryList({
           className={styles.modalTextarea}
           value={editDescription}
           onChange={(e) => setEditDescription(e.target.value)}
-          rows={3}
+          rows={22}
           name="editStoryDescription"
           autoComplete="off"
         />

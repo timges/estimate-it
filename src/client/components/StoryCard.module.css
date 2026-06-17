@@ -28,7 +28,8 @@
   font-size: 14px;
   line-height: 1.6;
   display: -webkit-box;
+  overflow-x: hidden;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  overflow: hidden;
+  word-break: break-word;
 }

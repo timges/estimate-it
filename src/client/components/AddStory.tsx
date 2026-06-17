@@ -50,7 +50,7 @@ export default function AddStory({ onAdd }: AddStoryProps) {
           placeholder="Description (optional)…"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={3}
+          rows={22}
           name="storyDescription"
           autoComplete="off"
         />
