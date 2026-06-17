@@ -74,6 +74,10 @@ export const useRoomStore = create<RoomState>((set) => ({
           stories: msg.stories,
           currentEstimates: msg.currentEstimates,
           totalParticipants: msg.totalParticipants,
+          myEstimate: null,
+          revealed: false,
+          estimates: [],
+          revealResult: null,
         });
         break;
 
@@ -138,7 +142,7 @@ export const useRoomStore = create<RoomState>((set) => ({
           estimates: [],
           revealResult: null,
           myEstimate: null,
-          currentEstimates: 0,
+          currentEstimates: msg.estimateCount ?? 0,
           participants: s.participants.map((p) => ({
             ...p,
             hasEstimated: false,

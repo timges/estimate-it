@@ -844,6 +844,54 @@ describe("Room", () => {
     });
   });
 
+  describe("resetSession", () => {
+    it("clears all stories and estimates", async () => {
+      const stub = getStub("reset-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        const { participant } = instance.join("Alice");
+        instance.addStory("Story A", "");
+        instance.estimate(participant.id, "5");
+
+        instance.resetSession();
+
+        const state = instance.getRoomState();
+        expect(state.stories).toHaveLength(0);
+        expect(state.currentEstimates).toBe(0);
+      });
+    });
+
+    it("keeps participants after reset", async () => {
+      const stub = getStub("reset-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+        instance.join("Alice");
+        instance.join("Bob");
+        instance.addStory("Story A", "");
+
+        instance.resetSession();
+
+        const state = instance.getRoomState();
+        expect(state.participants).toHaveLength(2);
+      });
+    });
+
+    it("succeeds on an already-empty room", async () => {
+      const stub = getStub("reset-3");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        instance.createRoom();
+
+        expect(() => instance.resetSession()).not.toThrow();
+
+        const state = instance.getRoomState();
+        expect(state.stories).toHaveLength(0);
+      });
+    });
+  });
+
   describe("rename", () => {
     it("should rename a participant", async () => {
       const stub = getStub("rename-test-1");

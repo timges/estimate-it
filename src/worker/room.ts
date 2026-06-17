@@ -243,9 +243,42 @@ export class Room extends DurableObject<Env> {
         break;
       }
       case "select_story": {
+        const statusRows = this.ctx.storage.sql
+          .exec("SELECT status FROM story WHERE id = ?", msg.id)
+          .toArray();
+        const wasDone = statusRows.length > 0 && statusRows[0]["status"] === "done";
         const stories = this.setActiveStory(msg.id);
+        const estimateCount = wasDone
+          ? Number(
+              this.ctx.storage.sql
+                .exec(
+                  "SELECT COUNT(*) as count FROM estimate WHERE story_id = ?",
+                  msg.id
+                )
+                .one()!["count"]
+            )
+          : undefined;
         for (const s of stories) {
-          this.broadcast({ type: "story_changed", story: s });
+          if (s.id === msg.id && estimateCount !== undefined) {
+            this.broadcast({ type: "story_changed", story: s, estimateCount });
+          } else {
+            this.broadcast({ type: "story_changed", story: s });
+          }
+        }
+        break;
+      }
+      case "reset_session": {
+        this.resetSession();
+        const state = this.getRoomState();
+        for (const ws of this.ctx.getWebSockets()) {
+          const wsData = ws.deserializeAttachment() as ConnectionData | null;
+          if (wsData && ws.readyState === WebSocket.OPEN) {
+            this.sendToClient(ws, {
+              type: "room_state",
+              ...state,
+              myParticipantId: wsData.participantId,
+            });
+          }
         }
         break;
       }
@@ -580,6 +613,13 @@ export class Room extends DurableObject<Env> {
         activeStoryId
       );
     }
+  }
+
+  resetSession(): void {
+    this.ctx.storage.sql.exec(
+      "DELETE FROM estimate WHERE story_id IN (SELECT id FROM story)"
+    );
+    this.ctx.storage.sql.exec("DELETE FROM story");
   }
 
   addStory(title: string, description: string): Story {

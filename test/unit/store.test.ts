@@ -137,6 +137,10 @@ describe("useRoomStore", () => {
       expect(s.stories).toEqual(stories);
       expect(s.currentEstimates).toBe(3);
       expect(s.totalParticipants).toBe(5);
+      expect(s.myEstimate).toBeNull();
+      expect(s.revealed).toBe(false);
+      expect(s.estimates).toEqual([]);
+      expect(s.revealResult).toBeNull();
     });
 
     it("participant_joined appends participant and increments total", () => {
@@ -255,6 +259,18 @@ describe("useRoomStore", () => {
       expect(s.myEstimate).toBeNull();
       expect(s.currentEstimates).toBe(0);
       expect(s.participants.every((p) => p.hasEstimated === false)).toBe(true);
+    });
+
+    it("story_changed with estimateCount uses it instead of 0", () => {
+      useRoomStore.setState({
+        stories: [makeStory({ id: 1, status: "done" })],
+        currentEstimates: 0,
+      });
+
+      const updated = makeStory({ id: 1, status: "active" });
+      getState().handleMessage({ type: "story_changed", story: updated, estimateCount: 3 });
+
+      expect(getState().currentEstimates).toBe(3);
     });
 
     it("re_vote_started resets reveal/estimates/revealResult/myEstimate/currentEstimates", () => {

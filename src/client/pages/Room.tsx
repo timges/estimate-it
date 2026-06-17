@@ -138,6 +138,10 @@ export default function Room() {
     wsRef.current?.send({ type: "select_story", id });
   }, []);
 
+  const handleNewSession = useCallback(() => {
+    wsRef.current?.send({ type: "reset_session" });
+  }, []);
+
   const handleSetFinalEstimate = useCallback((value: FibonacciValue) => {
     wsRef.current?.send({ type: "set_final_estimate", value });
   }, []);
@@ -217,7 +221,11 @@ export default function Room() {
       <div className={styles.main}>
         <div className={styles.content}>
           {sessionComplete ? (
-            <SessionSummary stories={stories} />
+            <SessionSummary
+              stories={stories}
+              onNewSession={handleNewSession}
+              onSelectStory={handleSelectStory}
+            />
           ) : !revealed ? (
             <>
               {currentStory ? (
