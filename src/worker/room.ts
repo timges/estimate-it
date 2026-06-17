@@ -118,7 +118,12 @@ export class Room extends DurableObject<Env> {
 
   async webSocketMessage(ws: WebSocket, message: string): Promise<void> {
     const data = ws.deserializeAttachment() as ConnectionData | null;
-    const msg = JSON.parse(message);
+    let msg: ClientMessage;
+    try {
+      msg = JSON.parse(message) as ClientMessage;
+    } catch {
+      return;
+    }
 
     switch (msg.type) {
       case "create": {

@@ -23,7 +23,7 @@ describe("form input accessibility", () => {
 
   it("AddStory inputs have accessible names via labels", async () => {
     const user = userEvent.setup();
-    render(<AddStory onAdd={() => {}} onAddMany={() => {}} />);
+    render(<AddStory onAdd={() => {}} />);
     await user.click(screen.getByText("+ Add Story"));
     expect(screen.getByLabelText("Story Title")).toBeInTheDocument();
     expect(screen.getByLabelText("Description")).toBeInTheDocument();

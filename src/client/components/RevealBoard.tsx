@@ -23,7 +23,6 @@ interface RevealBoardProps {
   onSetFinalEstimate: (value: FibonacciValue) => void;
 }
 
-const FIB_ORDER = ["1", "2", "3", "5", "8", "13", "21", "☕"];
 
 export default function RevealBoard({
   estimates,
@@ -46,7 +45,7 @@ export default function RevealBoard({
     participants.find((p) => p.id === participantId)?.color ?? "#666";
 
   const sorted = [...estimates].sort(
-    (a, b) => FIB_ORDER.indexOf(a.value) - FIB_ORDER.indexOf(b.value)
+    (a, b) => FIBONACCI_VALUES.indexOf(a.value) - FIBONACCI_VALUES.indexOf(b.value)
   );
 
   const allAgree = revealResult?.allAgree ?? false;
@@ -92,7 +91,7 @@ export default function RevealBoard({
                 className={styles.estimateCard}
                 style={{
                   borderColor: color,
-                  height: `${60 + FIB_ORDER.indexOf(est.value) * 12}px`,
+                  height: `${60 + FIBONACCI_VALUES.indexOf(est.value) * 12}px`,
                 }}
               >
                 {est.value}

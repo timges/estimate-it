@@ -173,6 +173,10 @@ export const useRoomStore = create<RoomState>((set) => ({
                   revealResult: null,
                   myEstimate: null,
                   currentEstimates: 0,
+                  participants: s.participants.map((p) => ({
+                    ...p,
+                    hasEstimated: false,
+                  })),
                 }
               : {}),
           };
