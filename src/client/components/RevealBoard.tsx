@@ -161,7 +161,7 @@ export default function RevealBoard({
         </motion.div>
       )}
 
-      {hasActiveStory && !revealResult?.allAgree && (
+      {hasActiveStory && (
         <div className={styles.finalEstimate}>
           <span className={styles.finalLabel}>Final estimate</span>
           <div className={styles.finalCards}>

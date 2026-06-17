@@ -169,7 +169,7 @@ describe("RevealBoard final estimate", () => {
     expect(onSetFinalEstimate).toHaveBeenCalledWith("5");
   });
 
-  it("hides the picker when the vote is unanimous", () => {
+  it("shows the picker even when the vote is unanimous (team can override consensus)", () => {
     render(
       <RevealBoard
         estimates={[
@@ -189,7 +189,7 @@ describe("RevealBoard final estimate", () => {
         onSetFinalEstimate={vi.fn()}
       />
     );
-    expect(screen.queryByText(/final estimate/i)).toBeNull();
+    expect(screen.getByText(/final estimate/i)).toBeInTheDocument();
   });
 
   it("shows the picker when the votes are split", () => {

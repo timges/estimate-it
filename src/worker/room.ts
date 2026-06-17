@@ -125,168 +125,181 @@ export class Room extends DurableObject<Env> {
       return;
     }
 
-    switch (msg.type) {
-      case "create": {
-        this.createRoom();
-        const result = this.join(msg.displayName, msg.clientId);
-        ws.serializeAttachment({ participantId: result.participant.id });
-        this.sendToClient(ws, {
-          type: "room_state",
-          room: result.room,
-          participants: result.participants,
-          stories: result.stories,
-          currentEstimates: result.currentEstimates,
-          totalParticipants: result.totalParticipants,
-          myParticipantId: result.participant.id,
-        });
-        if (result.isNew) {
-          this.broadcast(
-            {
-              type: "participant_joined",
-              participant: result.participant,
-            },
-            ws
-          );
-        }
-        break;
-      }
-      case "join": {
-        if (!this.roomExists()) {
+    try {
+      switch (msg.type) {
+        case "create": {
+          this.createRoom();
+          const result = this.join(msg.displayName.slice(0, 64), msg.clientId);
+          ws.serializeAttachment({ participantId: result.participant.id });
           this.sendToClient(ws, {
-            type: "error",
-            message: "Room not found",
+            type: "room_state",
+            room: result.room,
+            participants: result.participants,
+            stories: result.stories,
+            currentEstimates: result.currentEstimates,
+            totalParticipants: result.totalParticipants,
+            myParticipantId: result.participant.id,
           });
+          if (result.isNew) {
+            this.broadcast(
+              {
+                type: "participant_joined",
+                participant: result.participant,
+              },
+              ws
+            );
+          }
           break;
         }
-        const result = this.join(msg.displayName, msg.clientId);
-        ws.serializeAttachment({ participantId: result.participant.id });
-        this.sendToClient(ws, {
-          type: "room_state",
-          room: result.room,
-          participants: result.participants,
-          stories: result.stories,
-          currentEstimates: result.currentEstimates,
-          totalParticipants: result.totalParticipants,
-          myParticipantId: result.participant.id,
-        });
-        // A reconnecting participant is still present in everyone's list during
-        // the grace window, so only announce genuinely new members.
-        if (result.isNew) {
-          this.broadcast(
-            {
-              type: "participant_joined",
-              participant: result.participant,
-            },
-            ws
-          );
-        }
-        break;
-      }
-      case "estimate":
-        if (data) {
-          this.estimate(data.participantId, msg.value);
-          this.broadcast({
-            type: "estimate_received",
-            participantId: data.participantId,
-          });
-        }
-        break;
-      case "clear_estimate":
-        if (data) {
-          this.clearEstimate(data.participantId);
-          this.broadcast({
-            type: "estimate_cleared",
-            participantId: data.participantId,
-          });
-        }
-        break;
-      case "reveal": {
-        const result = this.reveal();
-        if (result) this.broadcast({ type: "revealed", ...result });
-        break;
-      }
-      case "next_story": {
-        const stories = this.nextStory();
-        for (const s of stories) {
-          this.broadcast({ type: "story_changed", story: s });
-        }
-        break;
-      }
-      case "re_vote":
-        this.reVote();
-        this.broadcast({ type: "re_vote_started" });
-        break;
-      case "rename":
-        if (data) {
-          this.rename(data.participantId, msg.displayName);
-          this.broadcast({
-            type: "participant_renamed",
-            participantId: data.participantId,
-            displayName: msg.displayName,
-          });
-        }
-        break;
-      case "add_story": {
-        const story = this.addStory(msg.title, msg.description);
-        this.broadcast({ type: "story_added", story });
-        break;
-      }
-      case "set_final_estimate": {
-        const story = this.setFinalEstimate(msg.value);
-        if (story) this.broadcast({ type: "story_updated", story });
-        break;
-      }
-      case "edit_story": {
-        const story = this.editStory(msg.id, msg.title, msg.description);
-        if (story) this.broadcast({ type: "story_updated", story });
-        break;
-      }
-      case "delete_story": {
-        const promoted = this.deleteStory(msg.id);
-        this.broadcast({ type: "story_deleted", storyId: msg.id });
-        if (promoted) this.broadcast({ type: "story_changed", story: promoted });
-        break;
-      }
-      case "select_story": {
-        const statusRows = this.ctx.storage.sql
-          .exec("SELECT status FROM story WHERE id = ?", msg.id)
-          .toArray();
-        const wasDone = statusRows.length > 0 && statusRows[0]["status"] === "done";
-        const stories = this.setActiveStory(msg.id);
-        const estimateCount = wasDone
-          ? Number(
-              this.ctx.storage.sql
-                .exec(
-                  "SELECT COUNT(*) as count FROM estimate WHERE story_id = ?",
-                  msg.id
-                )
-                .one()!["count"]
-            )
-          : undefined;
-        for (const s of stories) {
-          if (s.id === msg.id && estimateCount !== undefined) {
-            this.broadcast({ type: "story_changed", story: s, estimateCount });
-          } else {
-            this.broadcast({ type: "story_changed", story: s });
-          }
-        }
-        break;
-      }
-      case "reset_session": {
-        this.resetSession();
-        const state = this.getRoomState();
-        for (const ws of this.ctx.getWebSockets()) {
-          const wsData = ws.deserializeAttachment() as ConnectionData | null;
-          if (wsData && ws.readyState === WebSocket.OPEN) {
+        case "join": {
+          if (!this.roomExists()) {
             this.sendToClient(ws, {
-              type: "room_state",
-              ...state,
-              myParticipantId: wsData.participantId,
+              type: "error",
+              message: "Room not found",
+            });
+            break;
+          }
+          const result = this.join(msg.displayName.slice(0, 64), msg.clientId);
+          ws.serializeAttachment({ participantId: result.participant.id });
+          this.sendToClient(ws, {
+            type: "room_state",
+            room: result.room,
+            participants: result.participants,
+            stories: result.stories,
+            currentEstimates: result.currentEstimates,
+            totalParticipants: result.totalParticipants,
+            myParticipantId: result.participant.id,
+          });
+          // A reconnecting participant is still present in everyone's list during
+          // the grace window, so only announce genuinely new members.
+          if (result.isNew) {
+            this.broadcast(
+              {
+                type: "participant_joined",
+                participant: result.participant,
+              },
+              ws
+            );
+          }
+          break;
+        }
+        case "estimate":
+          if (data && FIBONACCI_VALUES.includes(msg.value)) {
+            this.estimate(data.participantId, msg.value);
+            this.broadcast({
+              type: "estimate_received",
+              participantId: data.participantId,
             });
           }
+          break;
+        case "clear_estimate":
+          if (data) {
+            this.clearEstimate(data.participantId);
+            this.broadcast({
+              type: "estimate_cleared",
+              participantId: data.participantId,
+            });
+          }
+          break;
+        case "reveal": {
+          const result = this.reveal();
+          if (result) this.broadcast({ type: "revealed", ...result });
+          break;
         }
-        break;
+        case "next_story": {
+          const stories = this.nextStory();
+          for (const s of stories) {
+            this.broadcast({ type: "story_changed", story: s });
+          }
+          break;
+        }
+        case "re_vote":
+          this.reVote();
+          this.broadcast({ type: "re_vote_started" });
+          break;
+        case "rename":
+          if (data) {
+            const displayName = msg.displayName.slice(0, 64);
+            this.rename(data.participantId, displayName);
+            this.broadcast({
+              type: "participant_renamed",
+              participantId: data.participantId,
+              displayName,
+            });
+          }
+          break;
+        case "add_story": {
+          const story = this.addStory(
+            msg.title.slice(0, 200),
+            msg.description.slice(0, 2000)
+          );
+          this.broadcast({ type: "story_added", story });
+          break;
+        }
+        case "set_final_estimate": {
+          if (msg.value !== null && !FIBONACCI_VALUES.includes(msg.value)) break;
+          const story = this.setFinalEstimate(msg.value);
+          if (story) this.broadcast({ type: "story_updated", story });
+          break;
+        }
+        case "edit_story": {
+          const story = this.editStory(
+            msg.id,
+            msg.title.slice(0, 200),
+            msg.description.slice(0, 2000)
+          );
+          if (story) this.broadcast({ type: "story_updated", story });
+          break;
+        }
+        case "delete_story": {
+          const promoted = this.deleteStory(msg.id);
+          this.broadcast({ type: "story_deleted", storyId: msg.id });
+          if (promoted) this.broadcast({ type: "story_changed", story: promoted });
+          break;
+        }
+        case "select_story": {
+          const statusRows = this.ctx.storage.sql
+            .exec("SELECT status FROM story WHERE id = ?", msg.id)
+            .toArray();
+          const wasDone = statusRows.length > 0 && statusRows[0]["status"] === "done";
+          const stories = this.setActiveStory(msg.id);
+          const estimateCount = wasDone
+            ? Number(
+                this.ctx.storage.sql
+                  .exec(
+                    "SELECT COUNT(*) as count FROM estimate WHERE story_id = ?",
+                    msg.id
+                  )
+                  .one()!["count"]
+              )
+            : undefined;
+          for (const s of stories) {
+            if (s.id === msg.id && estimateCount !== undefined) {
+              this.broadcast({ type: "story_changed", story: s, estimateCount });
+            } else {
+              this.broadcast({ type: "story_changed", story: s });
+            }
+          }
+          break;
+        }
+        case "reset_session": {
+          this.resetSession();
+          const state = this.getRoomState();
+          for (const ws of this.ctx.getWebSockets()) {
+            const wsData = ws.deserializeAttachment() as ConnectionData | null;
+            if (wsData && ws.readyState === WebSocket.OPEN) {
+              this.sendToClient(ws, {
+                type: "room_state",
+                ...state,
+                myParticipantId: wsData.participantId,
+              });
+            }
+          }
+          break;
+        }
       }
+    } catch (e) {
+      console.error("webSocketMessage:", e);
     }
   }
 
@@ -303,42 +316,50 @@ export class Room extends DurableObject<Env> {
     });
     if (stillConnected) return;
 
-    // Defer removal: mark disconnected and schedule reaping so a quick
-    // reconnect can reclaim the identity.
-    this.ctx.storage.sql.exec(
-      "UPDATE participant SET disconnected_at = ? WHERE id = ?",
-      Date.now(),
-      data.participantId
-    );
-    const existingAlarm = await this.ctx.storage.getAlarm();
-    if (existingAlarm === null) {
-      await this.ctx.storage.setAlarm(Date.now() + DISCONNECT_GRACE_MS);
+    try {
+      // Defer removal: mark disconnected and schedule reaping so a quick
+      // reconnect can reclaim the identity.
+      this.ctx.storage.sql.exec(
+        "UPDATE participant SET disconnected_at = ? WHERE id = ?",
+        Date.now(),
+        data.participantId
+      );
+      const existingAlarm = await this.ctx.storage.getAlarm();
+      if (existingAlarm === null) {
+        await this.ctx.storage.setAlarm(Date.now() + DISCONNECT_GRACE_MS);
+      }
+    } catch (e) {
+      console.error("webSocketClose:", e);
     }
   }
 
   async alarm(): Promise<void> {
-    const cutoff = Date.now() - DISCONNECT_GRACE_MS;
-    const expired = this.ctx.storage.sql
-      .exec(
-        "SELECT id FROM participant WHERE disconnected_at IS NOT NULL AND disconnected_at <= ?",
-        cutoff
-      )
-      .toArray();
+    try {
+      const cutoff = Date.now() - DISCONNECT_GRACE_MS;
+      const expired = this.ctx.storage.sql
+        .exec(
+          "SELECT id FROM participant WHERE disconnected_at IS NOT NULL AND disconnected_at <= ?",
+          cutoff
+        )
+        .toArray();
 
-    for (const row of expired) {
-      const participantId = String(row["id"]);
-      this.removeParticipant(participantId);
-      this.broadcast({ type: "participant_left", participantId });
-    }
+      for (const row of expired) {
+        const participantId = String(row["id"]);
+        this.removeParticipant(participantId);
+        this.broadcast({ type: "participant_left", participantId });
+      }
 
-    // Re-arm if anyone is still inside their grace window.
-    const next = this.ctx.storage.sql
-      .exec(
-        "SELECT MIN(disconnected_at) as next FROM participant WHERE disconnected_at IS NOT NULL"
-      )
-      .one()["next"];
-    if (next !== null) {
-      await this.ctx.storage.setAlarm(Number(next) + DISCONNECT_GRACE_MS);
+      // Re-arm if anyone is still inside their grace window.
+      const next = this.ctx.storage.sql
+        .exec(
+          "SELECT MIN(disconnected_at) as next FROM participant WHERE disconnected_at IS NOT NULL"
+        )
+        .one()["next"];
+      if (next !== null) {
+        await this.ctx.storage.setAlarm(Number(next) + DISCONNECT_GRACE_MS);
+      }
+    } catch (e) {
+      console.error("alarm:", e);
     }
   }
 
@@ -682,7 +703,7 @@ export class Room extends DurableObject<Env> {
 
     const newId = Number(pendingRows[0]["id"]);
     this.ctx.storage.sql.exec(
-      "UPDATE story SET status = 'active' WHERE id = ?",
+      "UPDATE story SET status = 'active', final_estimate = NULL, unanimous = NULL WHERE id = ?",
       newId
     );
     return this.getStoryById(newId);
@@ -752,26 +773,21 @@ export class Room extends DurableObject<Env> {
 
   private getParticipants(): Participant[] {
     const roundId = this.getActiveStoryId() ?? 0;
+    const estimatorIds = new Set(
+      this.ctx.storage.sql
+        .exec("SELECT participant_id FROM estimate WHERE story_id = ?", roundId)
+        .toArray()
+        .map((row) => String(row["participant_id"]))
+    );
     return this.ctx.storage.sql
       .exec("SELECT id, display_name, color FROM participant ORDER BY joined_at ASC")
       .toArray()
-      .map((row) => {
-        const hasEstimated =
-          this.ctx.storage.sql
-            .exec(
-              "SELECT 1 FROM estimate WHERE story_id = ? AND participant_id = ?",
-              roundId,
-              row["id"]
-            )
-            .toArray().length > 0;
-
-        return {
-          id: String(row["id"]),
-          displayName: String(row["display_name"]),
-          color: String(row["color"]),
-          hasEstimated,
-        };
-      });
+      .map((row) => ({
+        id: String(row["id"]),
+        displayName: String(row["display_name"]),
+        color: String(row["color"]),
+        hasEstimated: estimatorIds.has(String(row["id"])),
+      }));
   }
 
   private rowToStory(row: Record<string, SqlStorageValue>): Story {
