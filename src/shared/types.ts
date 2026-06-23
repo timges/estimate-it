@@ -82,7 +82,7 @@ export type ServerMessage =
       revealResult: RevealResult | null;
     }
   | { type: "story_added"; story: Story }
-  | { type: "story_changed"; story: Story; estimateCount?: number }
+  | { type: "story_changed"; story: Story; estimateCount?: number; estimatedParticipantIds?: string[] }
   | { type: "re_vote_started" }
   | { type: "participant_renamed"; participantId: string; displayName: string }
   | { type: "story_updated"; story: Story }

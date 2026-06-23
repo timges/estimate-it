@@ -89,12 +89,20 @@ export const useRoomStore = create<RoomState>((set) => ({
         break;
 
       case "participant_left":
-        set((s) => ({
-          participants: s.participants.filter(
-            (p) => p.id !== msg.participantId
-          ),
-          totalParticipants: s.totalParticipants - 1,
-        }));
+        set((s) => {
+          const leaving = s.participants.find(
+            (p) => p.id === msg.participantId
+          );
+          return {
+            participants: s.participants.filter(
+              (p) => p.id !== msg.participantId
+            ),
+            totalParticipants: s.totalParticipants - 1,
+            currentEstimates: leaving?.hasEstimated
+              ? Math.max(0, s.currentEstimates - 1)
+              : s.currentEstimates,
+          };
+        });
         break;
 
       case "estimate_received":
@@ -134,20 +142,27 @@ export const useRoomStore = create<RoomState>((set) => ({
         break;
 
       case "story_changed":
-        set((s) => ({
-          stories: s.stories.map((st) =>
-            st.id === msg.story.id ? msg.story : st
-          ),
-          revealed: false,
-          estimates: [],
-          revealResult: null,
-          myEstimate: null,
-          currentEstimates: msg.estimateCount ?? 0,
-          participants: s.participants.map((p) => ({
-            ...p,
-            hasEstimated: false,
-          })),
-        }));
+        set((s) => {
+          const migratedIds = new Set(msg.estimatedParticipantIds ?? []);
+          const hasMigrated = migratedIds.size > 0;
+          return {
+            stories: s.stories.map((st) =>
+              st.id === msg.story.id ? msg.story : st
+            ),
+            revealed: false,
+            estimates: [],
+            revealResult: null,
+            myEstimate:
+              hasMigrated && migratedIds.has(s.myParticipantId ?? "")
+                ? s.myEstimate
+                : null,
+            currentEstimates: msg.estimateCount ?? 0,
+            participants: s.participants.map((p) => ({
+              ...p,
+              hasEstimated: hasMigrated ? migratedIds.has(p.id) : false,
+            })),
+          };
+        });
         break;
 
       case "story_updated":

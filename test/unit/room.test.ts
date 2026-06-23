@@ -429,6 +429,69 @@ describe("Room", () => {
         expect(state.stories[1].status).toBe("active");
       });
     });
+
+    it("should migrate orphaned round-0 estimates when first story auto-activates", async () => {
+      const stub = getStub("story-migrate-1");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+        const b = instance.join("Bob");
+
+        // Vote before any story exists (round 0)
+        instance.estimate(a.participant.id, "5");
+        instance.estimate(b.participant.id, "8");
+
+        // Verify votes at round 0
+        let state = instance.getRoomState();
+        expect(state.currentEstimates).toBe(2);
+
+        // Add first story — auto-activates
+        const story = instance.addStory("Feature", "");
+        expect(story.status).toBe("active");
+
+        // Votes should now be under the new story, not orphaned at round 0
+        state = instance.getRoomState();
+        expect(state.currentEstimates).toBe(2);
+        expect(state.participants[0].hasEstimated).toBe(true);
+        expect(state.participants[1].hasEstimated).toBe(true);
+
+        // Reveal should find both estimates
+        const result = instance.reveal();
+        expect(result).not.toBeNull();
+        expect(result!.estimates).toHaveLength(2);
+      });
+    });
+
+    it("should not migrate round-0 estimates when adding a non-first story", async () => {
+      const stub = getStub("story-migrate-2");
+
+      await runInDurableObject(stub, async (instance: Room) => {
+        const a = instance.join("Alice");
+
+        // Vote without a story (round 0)
+        instance.estimate(a.participant.id, "3");
+
+        // Add first story (auto-activates) — should migrate
+        const s1 = instance.addStory("Story A", "");
+        expect(s1.status).toBe("active");
+
+        // Verify migration happened
+        let result = instance.reveal();
+        expect(result!.estimates).toHaveLength(1);
+        expect(result!.estimates[0].value).toBe("3");
+
+        // Re-vote and add another story (should NOT migrate — there's an active story)
+        instance.reVote();
+        instance.estimate(a.participant.id, "5");
+        const s2 = instance.addStory("Story B", "");
+        expect(s2.status).toBe("pending"); // not active, story A is still active
+
+        // Story A should still have the estimate
+        result = instance.reveal();
+        expect(result!.estimates).toHaveLength(1);
+        expect(result!.estimates[0].value).toBe("5");
+      });
+    });
   });
 
   describe("setActiveStory", () => {

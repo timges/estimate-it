@@ -234,6 +234,18 @@ export class Room extends DurableObject<Env> {
             msg.description.slice(0, 2000)
           );
           this.broadcast({ type: "story_added", story });
+          if (story.status === "active") {
+            const estimatedIds = this.ctx.storage.sql
+              .exec("SELECT participant_id FROM estimate WHERE story_id = ?", story.id)
+              .toArray()
+              .map((row) => String(row["participant_id"]));
+            this.broadcast({
+              type: "story_changed",
+              story,
+              estimateCount: this.getEstimateCount(),
+              estimatedParticipantIds: estimatedIds.length > 0 ? estimatedIds : undefined,
+            });
+          }
           break;
         }
         case "set_final_estimate": {
@@ -655,7 +667,9 @@ export class Room extends DurableObject<Env> {
         .one()!["max_pos"]
     );
 
-    const initialStatus = this.getActiveStoryId() === null ? "active" : "pending";
+    const autoActivated = this.getActiveStoryId() === null;
+
+    const initialStatus = autoActivated ? "active" : "pending";
 
     this.ctx.storage.sql.exec(
       "INSERT INTO story (title, description, position, status) VALUES (?, ?, ?, ?)",
@@ -671,7 +685,20 @@ export class Room extends DurableObject<Env> {
       )
       .one();
 
-    return this.rowToStory(row);
+    const story = this.rowToStory(row);
+
+    if (autoActivated && !Number.isNaN(story.id)) {
+      this.ctx.storage.sql.exec(
+        `INSERT INTO estimate (story_id, participant_id, value, created_at)
+         SELECT ?, participant_id, value, created_at FROM estimate WHERE story_id = 0
+         ON CONFLICT(story_id, participant_id) DO UPDATE SET
+           value = excluded.value, created_at = excluded.created_at`,
+        story.id
+      );
+      this.ctx.storage.sql.exec("DELETE FROM estimate WHERE story_id = 0");
+    }
+
+    return story;
   }
 
   editStory(id: number, title: string, description: string): Story | null {

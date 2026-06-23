@@ -219,6 +219,12 @@ describe("WebSocket flow integration", () => {
     expect((storyAdded1 as any).story.title).toBe("Login");
     expect((storyAdded1 as any).story.status).toBe("active"); // auto-activated
 
+    // Auto-activation also broadcasts story_changed to reset stale estimate state
+    const storyChanged1 = await conn.nextMessage();
+    expect(storyChanged1.type).toBe("story_changed");
+    expect((storyChanged1 as any).story.title).toBe("Login");
+    expect((storyChanged1 as any).estimateCount).toBe(0);
+
     // Second story is pending (first is already active)
     conn.ws.send(
       JSON.stringify({ type: "add_story", title: "Signup", description: "Implement signup" })

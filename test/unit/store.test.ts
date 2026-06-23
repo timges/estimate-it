@@ -169,6 +169,41 @@ describe("useRoomStore", () => {
       expect(s.totalParticipants).toBe(1);
     });
 
+    it("participant_left decrements currentEstimates when leaving participant had voted", () => {
+      const p1 = makeParticipant({ id: "p-1", hasEstimated: true });
+      const p2 = makeParticipant({ id: "p-2", displayName: "Bob", hasEstimated: true });
+      const p3 = makeParticipant({ id: "p-3", displayName: "Carol", hasEstimated: false });
+      useRoomStore.setState({
+        participants: [p1, p2, p3],
+        totalParticipants: 3,
+        currentEstimates: 2,
+      });
+
+      getState().handleMessage({ type: "participant_left", participantId: "p-1" });
+
+      const s = getState();
+      expect(s.participants).toHaveLength(2);
+      expect(s.totalParticipants).toBe(2);
+      expect(s.currentEstimates).toBe(1);
+    });
+
+    it("participant_left does not decrement currentEstimates when leaving participant had not voted", () => {
+      const p1 = makeParticipant({ id: "p-1", hasEstimated: false });
+      const p2 = makeParticipant({ id: "p-2", displayName: "Bob", hasEstimated: true });
+      useRoomStore.setState({
+        participants: [p1, p2],
+        totalParticipants: 2,
+        currentEstimates: 1,
+      });
+
+      getState().handleMessage({ type: "participant_left", participantId: "p-1" });
+
+      const s = getState();
+      expect(s.participants).toHaveLength(1);
+      expect(s.totalParticipants).toBe(1);
+      expect(s.currentEstimates).toBe(1);
+    });
+
     it("estimate_received marks participant and increments count", () => {
       const p1 = makeParticipant({ id: "p-1", hasEstimated: false });
       const p2 = makeParticipant({ id: "p-2", displayName: "Bob", hasEstimated: false });
@@ -271,6 +306,53 @@ describe("useRoomStore", () => {
       getState().handleMessage({ type: "story_changed", story: updated, estimateCount: 3 });
 
       expect(getState().currentEstimates).toBe(3);
+    });
+
+    it("story_changed with estimatedParticipantIds preserves myEstimate for migrated user", () => {
+      useRoomStore.setState({
+        myParticipantId: "p-1",
+        myEstimate: "5",
+        currentEstimates: 0,
+        participants: [
+          makeParticipant({ id: "p-1", hasEstimated: false }),
+          makeParticipant({ id: "p-2", displayName: "Bob", hasEstimated: false }),
+          makeParticipant({ id: "p-3", displayName: "Carol", hasEstimated: false }),
+        ],
+        stories: [],
+      });
+
+      const story = makeStory({ id: 1, status: "active" });
+      getState().handleMessage({
+        type: "story_changed",
+        story,
+        estimateCount: 2,
+        estimatedParticipantIds: ["p-1", "p-2"],
+      });
+
+      const s = getState();
+      expect(s.myEstimate).toBe("5");
+      expect(s.currentEstimates).toBe(2);
+      expect(s.participants[0].hasEstimated).toBe(true);
+      expect(s.participants[1].hasEstimated).toBe(true);
+      expect(s.participants[2].hasEstimated).toBe(false);
+    });
+
+    it("story_changed with empty estimatedParticipantIds clears myEstimate", () => {
+      useRoomStore.setState({
+        myParticipantId: "p-1",
+        myEstimate: "5",
+        participants: [
+          makeParticipant({ id: "p-1", hasEstimated: true }),
+        ],
+        stories: [makeStory({ id: 1, status: "active" })],
+      });
+
+      const updated = makeStory({ id: 1, status: "done" });
+      getState().handleMessage({ type: "story_changed", story: updated });
+
+      const s = getState();
+      expect(s.myEstimate).toBeNull();
+      expect(s.participants[0].hasEstimated).toBe(false);
     });
 
     it("re_vote_started resets reveal/estimates/revealResult/myEstimate/currentEstimates", () => {
