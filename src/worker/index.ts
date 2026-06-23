@@ -54,10 +54,7 @@ export default {
     // Handle auth routes directly (bypass Hono)
     if (url.pathname.startsWith("/api/auth/")) {
       const auth = createAuth(env, request.url);
-      console.log("Calling auth.handler for:", url.pathname);
-      const response = await auth.handler(request);
-      console.log("Auth response:", response.status, response.statusText);
-      return response;
+      return auth.handler(request);
     }
 
     if (url.pathname.startsWith("/api/") || url.pathname === "/robots.txt" || url.pathname === "/sitemap.xml") {
