@@ -119,6 +119,10 @@ export const useRoomStore = create<RoomState>((set) => ({
 
       case "estimate_cleared":
         set((s) => {
+          const target = s.participants.find(
+            (p) => p.id === msg.participantId
+          );
+          if (!target?.hasEstimated) return s;
           const participants = s.participants.map((p) =>
             p.id === msg.participantId ? { ...p, hasEstimated: false } : p
           );

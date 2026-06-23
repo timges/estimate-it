@@ -23,6 +23,8 @@ interface ConnectionData {
 // as a brand-new member.
 const DISCONNECT_GRACE_MS = 15_000;
 
+const NO_STORY_ROUND_ID = 0;
+
 // Heartbeat frames. The exact serialized strings are matched by the Durable
 // Object's auto-responder, which replies without waking from hibernation.
 const PING_MESSAGE = JSON.stringify({ type: "ping" });
@@ -452,7 +454,7 @@ export class Room extends DurableObject<Env> {
       .exec("SELECT * FROM room WHERE id = ?", this.roomId)
       .one()!;
 
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
     const hasEstimated =
       this.ctx.storage.sql
         .exec(
@@ -487,7 +489,7 @@ export class Room extends DurableObject<Env> {
   }
 
   estimate(participantId: string, value: FibonacciValue): void {
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
 
     this.ctx.storage.sql.exec(
       `INSERT INTO estimate (story_id, participant_id, value, created_at)
@@ -501,7 +503,7 @@ export class Room extends DurableObject<Env> {
   }
 
   clearEstimate(participantId: string): void {
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
 
     this.ctx.storage.sql.exec(
       "DELETE FROM estimate WHERE story_id = ? AND participant_id = ?",
@@ -514,7 +516,7 @@ export class Room extends DurableObject<Env> {
     estimates: { participantId: string; value: FibonacciValue }[];
     revealResult: RevealResult | null;
   } | null {
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
 
     const estimateRows = this.ctx.storage.sql
       .exec(
@@ -636,7 +638,7 @@ export class Room extends DurableObject<Env> {
   }
 
   reVote(): void {
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
 
     this.ctx.storage.sql.exec(
       "DELETE FROM estimate WHERE story_id = ?",
@@ -788,9 +790,11 @@ export class Room extends DurableObject<Env> {
   }
 
   removeParticipant(participantId: string): void {
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
     this.ctx.storage.sql.exec(
-      "DELETE FROM estimate WHERE participant_id = ?",
-      participantId
+      "DELETE FROM estimate WHERE participant_id = ? AND story_id = ?",
+      participantId,
+      roundId
     );
     this.ctx.storage.sql.exec(
       "DELETE FROM participant WHERE id = ?",
@@ -799,7 +803,7 @@ export class Room extends DurableObject<Env> {
   }
 
   private getParticipants(): Participant[] {
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
     const estimatorIds = new Set(
       this.ctx.storage.sql
         .exec("SELECT participant_id FROM estimate WHERE story_id = ?", roundId)
@@ -864,7 +868,7 @@ export class Room extends DurableObject<Env> {
   }
 
   private getEstimateCount(): number {
-    const roundId = this.getActiveStoryId() ?? 0;
+    const roundId = this.getActiveStoryId() ?? NO_STORY_ROUND_ID;
     return Number(
       this.ctx.storage.sql
         .exec(
