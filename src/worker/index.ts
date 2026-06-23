@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { Room } from "./room";
 import { createAuth } from "./auth";
+import { createImportRoutes } from "./import";
 
 // Re-export Room for vitest pool workers (must be a named export from main)
 export { Room };
@@ -36,6 +37,9 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
   const auth = createAuth(c.env, c.req.raw.cf as IncomingRequestCfProperties);
   return auth.handler(c.req.raw);
 });
+
+const importRoutes = createImportRoutes();
+app.route("/", importRoutes);
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
