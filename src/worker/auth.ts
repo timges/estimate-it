@@ -11,6 +11,7 @@ interface AuthEnv {
 
 export function createAuth(env: AuthEnv, cf: IncomingRequestCfProperties) {
   return betterAuth({
+    basePath: "/api/auth",
     ...withCloudflare(
       {
         d1Native: env.DB,
