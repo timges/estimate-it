@@ -99,7 +99,7 @@ export function createImportRoutes() {
 
   importApp.post("/api/import", async (c) => {
     // Verify session
-    const auth = createAuth(c.env);
+    const auth = createAuth(c.env, c.req.url);
     const session = await auth.api.getSession({
       headers: c.req.raw.headers,
     });

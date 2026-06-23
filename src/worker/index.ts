@@ -12,6 +12,7 @@ interface Env {
   KV: KVNamespace;
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
+  BETTER_AUTH_URL?: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -52,8 +53,11 @@ export default {
 
     // Handle auth routes directly (bypass Hono)
     if (url.pathname.startsWith("/api/auth/")) {
-      const auth = createAuth(env);
-      return auth.handler(request);
+      const auth = createAuth(env, request.url);
+      console.log("Calling auth.handler for:", url.pathname);
+      const response = await auth.handler(request);
+      console.log("Auth response:", response.status, response.statusText);
+      return response;
     }
 
     if (url.pathname.startsWith("/api/") || url.pathname === "/robots.txt" || url.pathname === "/sitemap.xml") {

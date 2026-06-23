@@ -47,8 +47,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async () => {
     try {
-      const res = await fetch("/api/auth/sign-in/social/github", {
+      const res = await fetch("/api/auth/sign-in/social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ provider: "github" }),
       });
       if (res.ok) {
         const data = (await res.json()) as { url?: string; redirect?: string };
