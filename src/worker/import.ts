@@ -1,10 +1,8 @@
 import { Hono } from "hono";
 import { createAuth } from "./auth";
-import type { IncomingRequestCfProperties } from "@cloudflare/workers-types";
 
 interface ImportEnv {
   DB: D1Database;
-  KV: KVNamespace;
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
 }
@@ -101,7 +99,7 @@ export function createImportRoutes() {
 
   importApp.post("/api/import", async (c) => {
     // Verify session
-    const auth = createAuth(c.env, c.req.raw.cf as IncomingRequestCfProperties);
+    const auth = createAuth(c.env);
     const session = await auth.api.getSession({
       headers: c.req.raw.headers,
     });

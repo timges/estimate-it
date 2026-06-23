@@ -45,8 +45,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  login: () => {
-    window.location.href = "/api/auth/sign-in/social/github";
+  login: async () => {
+    try {
+      const res = await fetch("/api/auth/sign-in/social/github", {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { url?: string; redirect?: string };
+        const redirectUrl = data.url ?? data.redirect;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        }
+      }
+    } catch {
+      // ignore
+    }
   },
 
   logout: async () => {

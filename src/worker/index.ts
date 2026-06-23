@@ -33,11 +33,6 @@ app.get("/sitemap.xml", (c) =>
 </urlset>`, { headers: { "Content-Type": "application/xml" } })
 );
 
-app.on(["GET", "POST"], "/api/auth/*", async (c) => {
-  const auth = createAuth(c.env, c.req.raw.cf as IncomingRequestCfProperties);
-  return auth.handler(c.req.raw);
-});
-
 const importRoutes = createImportRoutes();
 app.route("/", importRoutes);
 
@@ -53,6 +48,12 @@ export default {
       const id = env.ROOM.idFromName(roomId);
       const stub = env.ROOM.get(id);
       return stub.fetch(request);
+    }
+
+    // Handle auth routes directly (bypass Hono)
+    if (url.pathname.startsWith("/api/auth/")) {
+      const auth = createAuth(env);
+      return auth.handler(request);
     }
 
     if (url.pathname.startsWith("/api/") || url.pathname === "/robots.txt" || url.pathname === "/sitemap.xml") {
