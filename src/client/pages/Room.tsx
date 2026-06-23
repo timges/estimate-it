@@ -11,6 +11,7 @@ import StoryList from "../components/StoryList";
 import StorySpotlight from "../components/StorySpotlight";
 import { RoomSocket } from "../lib/ws";
 import { useRoomStore } from "../store/room";
+import { useAuthStore } from "../store/auth";
 import styles from "./Room.module.css";
 
 // A stable per-browser id so refreshes and reconnects rejoin as the same
@@ -33,10 +34,16 @@ function getClientId(): string {
   }
 }
 
+function getGithubClientId(userId: string): string {
+  return `github:${userId}`;
+}
+
 export default function Room() {
   const { roomId } = useParams<{ roomId: string }>();
   const wsRef = useRef<RoomSocket | null>(null);
+  const { user, loading: authLoading, fetchSession } = useAuthStore();
   const [hasName, setHasName] = useState(() => {
+    if (useAuthStore.getState().user) return true;
     const stored = localStorage.getItem("displayName");
     return !!stored;
   });
@@ -66,19 +73,31 @@ export default function Room() {
       const ws = new RoomSocket(roomId, handleMessage, setConnected);
       wsRef.current = ws;
 
+      const currentUser = useAuthStore.getState().user;
+      const clientId = currentUser
+        ? getGithubClientId(currentUser.id)
+        : getClientId();
+      const name = currentUser ? currentUser.name : displayName;
+
       const roomAction = localStorage.getItem("roomAction") || "join";
       localStorage.removeItem("roomAction");
       ws.connect({
         type: roomAction === "create" ? "create" : "join",
-        displayName,
-        clientId: getClientId(),
+        displayName: name,
+        clientId,
       });
     },
     [roomId, handleMessage, setConnected],
   );
 
   useEffect(() => {
-    if (!hasName || !roomId) return;
+    fetchSession();
+  }, [fetchSession]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!hasName && !user) return;
+    if (!roomId) return;
 
     const storedName = localStorage.getItem("displayName") || "Anonymous";
     connectAndJoin(storedName);
@@ -87,7 +106,21 @@ export default function Room() {
       wsRef.current?.close();
       setError(null);
     };
-  }, [hasName, roomId, connectAndJoin, setError]);
+  }, [hasName, user, authLoading, roomId, connectAndJoin, setError]);
+
+  // Handle login-after-join: upgrade identity when user logs in while in room
+  const prevUserRef = useRef(user);
+  useEffect(() => {
+    if (user && !prevUserRef.current && wsRef.current) {
+      // User just logged in while already in the room
+      wsRef.current.send({
+        type: "upgrade_identity",
+        newClientId: getGithubClientId(user.id),
+        displayName: user.name,
+      });
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   const handleNameSubmit = useCallback((name: string) => {
     localStorage.setItem("displayName", name);
@@ -169,7 +202,7 @@ export default function Room() {
   const sessionComplete =
     stories.length > 0 && stories.every((s) => s.status === "done");
 
-  if (!hasName && roomId) {
+  if (!hasName && !user && roomId) {
     return <NamePrompt roomId={roomId} onSubmit={handleNameSubmit} />;
   }
 
