@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateRoomCode } from "../../shared/dictionary";
+import { useAuthStore } from "../store/auth";
+import GithubLogin from "../components/GithubLogin";
 import styles from "./Landing.module.css";
 
 export default function Landing() {
@@ -8,6 +10,11 @@ export default function Landing() {
   const [createName, setCreateName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
+  const { user, loading, fetchSession, login } = useAuthStore();
+
+  useEffect(() => {
+    fetchSession();
+  }, [fetchSession]);
 
   const handleCreate = () => {
     if (!createName.trim()) return;
@@ -30,6 +37,11 @@ export default function Landing() {
         estimate-it<span className={styles.dot}>.</span>
       </h1>
       <p className={styles.subtitle}>Bias-free story estimation</p>
+
+      {!loading && !user && <GithubLogin onLogin={login} />}
+      {!loading && user && (
+        <p className={styles.loggedIn}>Signed in as {user.name}</p>
+      )}
 
       <div className={styles.card}>
         <div className={styles.label}>Create a Room</div>
