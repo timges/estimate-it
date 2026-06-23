@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import type { FibonacciValue } from "../../shared/types";
 import AddStory from "../components/AddStory";
 import CardGrid from "../components/CardGrid";
+import ImportIssues from "../components/ImportIssues";
 import NamePrompt from "../components/NamePrompt";
 import ParticipantList from "../components/ParticipantList";
 import RevealBoard from "../components/RevealBoard";
@@ -152,8 +153,8 @@ export default function Room() {
     wsRef.current?.send({ type: "next_story" });
   }, []);
 
-  const handleAddStory = useCallback((title: string, description: string) => {
-    wsRef.current?.send({ type: "add_story", title, description });
+  const handleAddStory = useCallback((title: string, description: string, sourceUrl?: string) => {
+    wsRef.current?.send({ type: "add_story", title, description, sourceUrl });
   }, []);
 
   const handleEditStory = useCallback(
@@ -328,7 +329,10 @@ export default function Room() {
           </section>
           <section className={styles.section}>
             <h3 className={styles.sectionHeading}>Stories</h3>
-            <AddStory onAdd={handleAddStory} />
+            <div className={styles.storyActions}>
+              <AddStory onAdd={handleAddStory} />
+              {user && <ImportIssues onImport={handleAddStory} />}
+            </div>
             <StoryList
               stories={stories}
               onEditStory={handleEditStory}
