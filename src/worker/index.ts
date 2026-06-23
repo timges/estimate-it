@@ -6,6 +6,10 @@ export { Room };
 
 interface Env {
   ROOM: DurableObjectNamespace<Room>;
+  DB: D1Database;
+  KV: KVNamespace;
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();

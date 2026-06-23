@@ -28,5 +28,18 @@
       "pattern": "estimate-it.app",
       "custom_domain": true
     }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "estimator-auth",
+      "database_id": "placeholder-will-be-replaced-after-creation"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "placeholder-will-be-replaced-after-creation"
+    }
   ]
 }

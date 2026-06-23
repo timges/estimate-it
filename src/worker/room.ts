@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import type {
   ServerMessage,
+  ClientMessage,
   Room as RoomInfo,
   Story,
   Participant,
