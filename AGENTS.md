@@ -23,6 +23,8 @@ Real-time planning poker app built on Cloudflare Workers with Durable Objects fo
 - `test/integration/` — Vitest integration tests (worker via `cloudflare:test`)
 - `test/components/` — Vitest component tests (jsdom + Testing Library)
 - `test/vrt/` — Playwright visual regression tests
+- `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (module, tags, problem_type)
+- `CONCEPTS.md` — shared domain vocabulary (entities, named processes, status concepts) — relevant when orienting to the codebase or discussing domain concepts
 
 ## Commands
 
