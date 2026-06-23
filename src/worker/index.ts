@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { Room } from "./room";
+import { createAuth } from "./auth";
 
 // Re-export Room for vitest pool workers (must be a named export from main)
 export { Room };
@@ -30,6 +31,11 @@ app.get("/sitemap.xml", (c) =>
   </url>
 </urlset>`, { headers: { "Content-Type": "application/xml" } })
 );
+
+app.on(["GET", "POST"], "/api/auth/*", async (c) => {
+  const auth = createAuth(c.env, c.req.raw.cf as IncomingRequestCfProperties);
+  return auth.handler(c.req.raw);
+});
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
