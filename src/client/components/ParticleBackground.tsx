@@ -27,27 +27,9 @@ function drawStaticGradient(
   ctx.fillRect(0, 0, width, height);
 }
 
-function isBackgroundArea(target: Element | null): boolean {
-  let el: Element | null = target;
-  while (el && el !== document.documentElement) {
-    const tag = el.tagName;
-    if (
-      tag === "BUTTON" ||
-      tag === "A" ||
-      tag === "INPUT" ||
-      tag === "SELECT" ||
-      tag === "TEXTAREA" ||
-      (el as HTMLElement).onclick
-    ) {
-      return false;
-    }
-    const style = getComputedStyle(el);
-    if (style.backgroundColor !== "rgba(0, 0, 0, 0)") {
-      return false;
-    }
-    el = el.parentElement;
-  }
-  return true;
+function isTransparent(el: Element): boolean {
+  const bg = getComputedStyle(el).backgroundColor;
+  return bg === "rgba(0, 0, 0, 0)" || bg === "transparent";
 }
 
 export default function ParticleBackground() {
@@ -96,7 +78,12 @@ export default function ParticleBackground() {
     const onPointerMove = (e: PointerEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-      mouse.active = isBackgroundArea(e.target as Element | null);
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      if (!el) {
+        mouse.active = false;
+        return;
+      }
+      mouse.active = isTransparent(el);
     };
 
     const onPointerLeave = () => {

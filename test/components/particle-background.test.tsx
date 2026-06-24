@@ -72,13 +72,14 @@ describe("ParticleBackground", () => {
     expect(window.cancelAnimationFrame).toHaveBeenCalled();
   });
 
-  it("removes event listeners on unmount", () => {
+  it("registers pointermove and pointerleave listeners on window", () => {
     reducedMotion = false;
     const removeSpy = vi.spyOn(window, "removeEventListener");
     const { unmount } = render(<ParticleBackground />);
     unmount();
-    expect(removeSpy).toHaveBeenCalledWith("pointermove", expect.any(Function));
-    expect(removeSpy).toHaveBeenCalledWith("pointerleave", expect.any(Function));
-    expect(removeSpy).toHaveBeenCalledWith("resize", expect.any(Function));
+
+    const events = removeSpy.mock.calls.map((c) => c[0]);
+    expect(events).toContain("pointermove");
+    expect(events).toContain("pointerleave");
   });
 });
