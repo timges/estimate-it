@@ -73,7 +73,9 @@ export default function ParticleBackground() {
     const onPointerMove = (e: PointerEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-      mouse.active = true;
+      const target = e.target as Element | null;
+      mouse.active =
+        target === document.body || target === document.documentElement;
     };
 
     const onPointerLeave = () => {
