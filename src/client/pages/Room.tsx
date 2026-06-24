@@ -11,6 +11,7 @@ import StoryList from "../components/StoryList";
 import StorySpotlight from "../components/StorySpotlight";
 import { RoomSocket } from "../lib/ws";
 import { useRoomStore } from "../store/room";
+import { useAuthStore } from "../store/auth";
 import styles from "./Room.module.css";
 
 // A stable per-browser id so refreshes and reconnects rejoin as the same
@@ -33,10 +34,16 @@ function getClientId(): string {
   }
 }
 
+function getGithubClientId(userId: string): string {
+  return `github:${userId}`;
+}
+
 export default function Room() {
   const { roomId } = useParams<{ roomId: string }>();
   const wsRef = useRef<RoomSocket | null>(null);
+  const { user, loading: authLoading, fetchSession } = useAuthStore();
   const [hasName, setHasName] = useState(() => {
+    if (useAuthStore.getState().user) return true;
     const stored = localStorage.getItem("displayName");
     return !!stored;
   });
@@ -66,19 +73,31 @@ export default function Room() {
       const ws = new RoomSocket(roomId, handleMessage, setConnected);
       wsRef.current = ws;
 
+      const currentUser = useAuthStore.getState().user;
+      const clientId = currentUser
+        ? getGithubClientId(currentUser.id)
+        : getClientId();
+      const name = currentUser ? currentUser.name : displayName;
+
       const roomAction = localStorage.getItem("roomAction") || "join";
       localStorage.removeItem("roomAction");
       ws.connect({
         type: roomAction === "create" ? "create" : "join",
-        displayName,
-        clientId: getClientId(),
+        displayName: name,
+        clientId,
       });
     },
     [roomId, handleMessage, setConnected],
   );
 
   useEffect(() => {
-    if (!hasName || !roomId) return;
+    fetchSession();
+  }, [fetchSession]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!hasName && !user) return;
+    if (!roomId) return;
 
     const storedName = localStorage.getItem("displayName") || "Anonymous";
     connectAndJoin(storedName);
@@ -87,7 +106,25 @@ export default function Room() {
       wsRef.current?.close();
       setError(null);
     };
-  }, [hasName, roomId, connectAndJoin, setError]);
+  }, [hasName, user, authLoading, roomId, connectAndJoin, setError]);
+
+  // Handle login-after-join: upgrade identity when user logs in while in room
+  const prevUserRef = useRef(user);
+  useEffect(() => {
+    if (user && !prevUserRef.current && wsRef.current) {
+      // User just logged in while already in the room. Send upgrade_identity
+      // and update the socket's local hello so a future reconnect re-joins
+      // with the new clientId instead of the anonymous one.
+      const newClientId = getGithubClientId(user.id);
+      wsRef.current.updateIdentity(newClientId, user.name);
+      wsRef.current.send({
+        type: "upgrade_identity",
+        newClientId,
+        displayName: user.name,
+      });
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   const handleNameSubmit = useCallback((name: string) => {
     localStorage.setItem("displayName", name);
@@ -119,8 +156,8 @@ export default function Room() {
     wsRef.current?.send({ type: "next_story" });
   }, []);
 
-  const handleAddStory = useCallback((title: string, description: string) => {
-    wsRef.current?.send({ type: "add_story", title, description });
+  const handleAddStory = useCallback((title: string, description: string, sourceUrl?: string) => {
+    wsRef.current?.send({ type: "add_story", title, description, sourceUrl });
   }, []);
 
   const handleEditStory = useCallback(
@@ -169,8 +206,18 @@ export default function Room() {
   const sessionComplete =
     stories.length > 0 && stories.every((s) => s.status === "done");
 
-  if (!hasName && roomId) {
+  if (!hasName && !user && roomId) {
     return <NamePrompt roomId={roomId} onSubmit={handleNameSubmit} />;
+  }
+
+  if (!hasName && user && roomId) {
+    return (
+      <NamePrompt
+        roomId={roomId}
+        onSubmit={handleNameSubmit}
+        lockedName={user.name}
+      />
+    );
   }
 
   if (error) {
@@ -239,7 +286,7 @@ export default function Room() {
                   <span className={styles.storyPromptText}>
                     No story — add one for context, or just vote.
                   </span>
-                  <AddStory onAdd={handleAddStory} />
+                  <AddStory onAdd={handleAddStory} hasGithubAuth={!!user} />
                 </div>
               )}
               <CardGrid
@@ -295,7 +342,9 @@ export default function Room() {
           </section>
           <section className={styles.section}>
             <h3 className={styles.sectionHeading}>Stories</h3>
-            <AddStory onAdd={handleAddStory} />
+            <div className={styles.storyActions}>
+              <AddStory onAdd={handleAddStory} hasGithubAuth={!!user} />
+            </div>
             <StoryList
               stories={stories}
               onEditStory={handleEditStory}

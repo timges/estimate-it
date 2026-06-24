@@ -3,11 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently --names 'vite,worker' --prefix-colors 'cyan,magenta' 'vite' 'wrangler dev'",
     "dev:worker": "wrangler dev",
     "build": "vite build",
     "preview": "wrangler dev",
-    "deploy": "vite build && wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply estimate-it-auth --local",
+    "db:migrate:remote": "wrangler d1 migrations apply estimate-it-auth --remote",
+    "deploy": "pnpm build && pnpm db:migrate:remote && wrangler deploy",
     "cf-typegen": "wrangler types",
     "lint": "tsc --noEmit",
     "test": "vitest run",
@@ -18,6 +20,8 @@
     "remotion": "remotion"
   },
   "dependencies": {
+    "better-auth": "^1.6.20",
+    "better-auth-cloudflare": "^0.3.0",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.0.0",
     "hono": "^4.0.0",
@@ -29,7 +33,7 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/vitest-pool-workers": "^0.8.71",
     "@cloudflare/workers-types": "^4.0.0",
     "@playwright/test": "^1.59.1",
     "@remotion/cli": "^4.0.446",
@@ -40,6 +44,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "concurrently": "^10.0.3",
     "jsdom": "^29.0.1",
     "remotion": "^4.0.446",
     "typescript": "^5.0.0",

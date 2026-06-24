@@ -127,6 +127,12 @@
     margin: 0 0 4px;
 }
 
+.storyActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .storyPrompt {
     display: flex;
     flex-direction: column;

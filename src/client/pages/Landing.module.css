@@ -69,6 +69,12 @@
   color: var(--text-placeholder);
 }
 
+.input:read-only {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
 .btnPrimary,
 .btnSecondary {
   width: 100%;

@@ -8,6 +8,9 @@ export type MessageHandler = (msg: ServerMessage) => void;
 const PING_INTERVAL_MS = 20_000;
 const PONG_TIMEOUT_MS = 10_000;
 const PING_MESSAGE = JSON.stringify({ type: "ping" });
+// Cap the offline queue so a long disconnection can't pile up unbounded
+// messages and amplify load on reconnect.
+const MAX_QUEUE = 100;
 
 export class RoomSocket {
   private ws: WebSocket | null = null;
@@ -18,8 +21,12 @@ export class RoomSocket {
   private closed = false;
   private queue: ClientMessage[] = [];
   // The identity message re-sent on every (re)open so a reconnected socket
-  // is re-associated with its participant server-side.
+  // is re-associated with its participant server-side. We keep this as a
+  // "create" until we receive confirmation (room_state) that the room
+  // exists, otherwise a quick reconnect would send a stale "join" against a
+  // server-side DO that hasn't finished bootstrapping yet.
   private hello: ClientMessage | null = null;
+  private pendingCreate = false;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private pongTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -35,7 +42,10 @@ export class RoomSocket {
   }
 
   connect(hello?: ClientMessage) {
-    if (hello) this.hello = hello;
+    if (hello) {
+      this.hello = hello;
+      this.pendingCreate = hello.type === "create";
+    }
     this.ws = new WebSocket(this.url);
 
     this.ws.onopen = () => {
@@ -43,14 +53,6 @@ export class RoomSocket {
       this.onConnectionChange(true);
       if (this.hello) {
         this.ws!.send(JSON.stringify(this.hello));
-        // After the first connect the room exists, so any reconnect rejoins.
-        if (this.hello.type === "create") {
-          this.hello = {
-            type: "join",
-            displayName: this.hello.displayName,
-            clientId: this.hello.clientId,
-          };
-        }
       }
       this.flushQueue();
       this.startHeartbeat();
@@ -61,6 +63,18 @@ export class RoomSocket {
       if (msg.type === "pong") {
         this.clearPongTimer();
         return;
+      }
+      // The first room_state confirms the room exists; from here on any
+      // reconnect should re-join, never re-create.
+      if (msg.type === "room_state" && this.pendingCreate) {
+        this.pendingCreate = false;
+        if (this.hello && this.hello.type === "create") {
+          this.hello = {
+            type: "join",
+            displayName: this.hello.displayName,
+            clientId: this.hello.clientId,
+          };
+        }
       }
       this.onMessage(msg);
     };
@@ -81,11 +95,22 @@ export class RoomSocket {
     };
   }
 
-  // Keep the identity message in sync (e.g. after a rename) so a reconnect
-  // restores the latest display name rather than the original.
-  updateName(displayName: string) {
+// Keep the identity message in sync (e.g. after a rename) so a reconnect
+// restores the latest display name rather than the original.
+updateName(displayName: string) {
     if (this.hello && (this.hello.type === "create" || this.hello.type === "join")) {
       this.hello = { ...this.hello, displayName };
+    }
+  }
+
+  // Update the stable clientId after a login-while-in-room transition. The
+  // `type` (create vs join) is preserved so the reconnect after a network
+  // blip still uses the correct mode. `pendingCreate` is cleared because
+  // the server has already acknowledged our original identity.
+  updateIdentity(clientId: string, displayName: string) {
+    if (this.hello && (this.hello.type === "create" || this.hello.type === "join")) {
+      this.hello = { ...this.hello, clientId, displayName };
+      this.pendingCreate = false;
     }
   }
 
@@ -93,6 +118,9 @@ export class RoomSocket {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(msg));
     } else {
+      if (this.queue.length >= MAX_QUEUE) {
+        this.queue.shift();
+      }
       this.queue.push(msg);
     }
   }

@@ -4,10 +4,10 @@ import { describe, it, expect, vi } from "vitest";
 import AddStory from "../../src/client/components/AddStory";
 
 describe("AddStory", () => {
-  it("calls onAdd with title and description when form is submitted via modal", async () => {
+  it("calls onAdd with title and description when manual form is submitted", async () => {
     const user = userEvent.setup();
     const onAdd = vi.fn();
-    render(<AddStory onAdd={onAdd} />);
+    render(<AddStory onAdd={onAdd} hasGithubAuth={false} />);
 
     await user.click(screen.getByRole("button", { name: /add story/i }));
 
@@ -27,5 +27,23 @@ describe("AddStory", () => {
     expect(onAdd).toHaveBeenCalledWith("My new story", "Some details");
     // Modal should be closed after submit
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("disables the GitHub tab when not authenticated", async () => {
+    const user = userEvent.setup();
+    render(<AddStory onAdd={vi.fn()} hasGithubAuth={false} />);
+
+    await user.click(screen.getByRole("button", { name: /add story/i }));
+    const githubTab = screen.getByRole("tab", { name: /from github/i });
+    expect(githubTab).toBeDisabled();
+  });
+
+  it("enables the GitHub tab when authenticated", async () => {
+    const user = userEvent.setup();
+    render(<AddStory onAdd={vi.fn()} hasGithubAuth={true} />);
+
+    await user.click(screen.getByRole("button", { name: /add story/i }));
+    const githubTab = screen.getByRole("tab", { name: /from github/i });
+    expect(githubTab).not.toBeDisabled();
   });
 });

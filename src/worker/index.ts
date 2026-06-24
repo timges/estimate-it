@@ -1,11 +1,17 @@
 import { Hono } from "hono";
 import { Room } from "./room";
+import { createImportRoutes } from "./import";
 
 // Re-export Room for vitest pool workers (must be a named export from main)
 export { Room };
 
 interface Env {
   ROOM: DurableObjectNamespace<Room>;
+  DB: D1Database;
+  KV: KVNamespace;
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
+  BETTER_AUTH_URL?: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -27,6 +33,9 @@ app.get("/sitemap.xml", (c) =>
 </urlset>`, { headers: { "Content-Type": "application/xml" } })
 );
 
+const importRoutes = createImportRoutes();
+app.route("/", importRoutes);
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -39,6 +48,13 @@ export default {
       const id = env.ROOM.idFromName(roomId);
       const stub = env.ROOM.get(id);
       return stub.fetch(request);
+    }
+
+// Handle auth routes directly (bypass Hono)
+    if (url.pathname.startsWith("/api/auth/") || url.pathname.startsWith("/callback/")) {
+      const { createAuth } = await import("./auth");
+      const auth = createAuth(env, request.cf as IncomingRequestCfProperties, request.url);
+      return auth.handler(request);
     }
 
     if (url.pathname.startsWith("/api/") || url.pathname === "/robots.txt" || url.pathname === "/sitemap.xml") {

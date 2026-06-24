@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import type {
   ServerMessage,
+  ClientMessage,
   Room as RoomInfo,
   Story,
   Participant,
@@ -96,6 +97,11 @@ export class Room extends DurableObject<Env> {
           "ALTER TABLE story ADD COLUMN unanimous INTEGER"
         );
       }
+      if (!storyColumns.includes("source_url")) {
+        this.ctx.storage.sql.exec(
+          "ALTER TABLE story ADD COLUMN source_url TEXT"
+        );
+      }
       this.ctx.storage.sql.exec(`
         CREATE TABLE IF NOT EXISTS estimate (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -154,13 +160,6 @@ export class Room extends DurableObject<Env> {
           break;
         }
         case "join": {
-          if (!this.roomExists()) {
-            this.sendToClient(ws, {
-              type: "error",
-              message: "Room not found",
-            });
-            break;
-          }
           const result = this.join(msg.displayName.slice(0, 64), msg.clientId);
           ws.serializeAttachment({ participantId: result.participant.id });
           this.sendToClient(ws, {
@@ -233,7 +232,8 @@ export class Room extends DurableObject<Env> {
         case "add_story": {
           const story = this.addStory(
             msg.title.slice(0, 200),
-            msg.description.slice(0, 2000)
+            msg.description.slice(0, 2000),
+            msg.sourceUrl
           );
           this.broadcast({ type: "story_added", story });
           if (story.status === "active") {
@@ -294,6 +294,51 @@ export class Room extends DurableObject<Env> {
               this.broadcast({ type: "story_changed", story: s });
             }
           }
+          break;
+        }
+        case "upgrade_identity": {
+          // v1 limitation: the DO trusts the client-supplied newClientId
+          // because the WebSocket itself carries no auth context. The only
+          // existing check is a name-collision guard against participants
+          // currently in the room. A determined client can still claim any
+          // github:* id. Full validation requires the WS to present a
+          // better-auth session and the DO to look up the matching user id
+          // server-side; deferred to v2.
+          if (!data) break;
+          const newClientId = msg.newClientId.slice(0, 128);
+          const displayName = msg.displayName.slice(0, 64);
+
+          // Check if newClientId is already taken by another participant
+          const existing = this.ctx.storage.sql
+            .exec("SELECT id FROM participant WHERE client_id = ?", newClientId)
+            .toArray();
+          if (existing.length > 0) {
+            const existingId = String(existing[0]["id"]);
+            if (existingId !== data.participantId) {
+              this.sendToClient(ws, {
+                type: "error",
+                message: "Identity already in use",
+              });
+              break;
+            }
+          }
+
+          // Update participant's client_id and display_name
+          this.ctx.storage.sql.exec(
+            "UPDATE participant SET client_id = ?, display_name = ? WHERE id = ?",
+            newClientId,
+            displayName,
+            data.participantId
+          );
+
+          // Update the connection data
+          ws.serializeAttachment({ participantId: data.participantId });
+
+          this.broadcast({
+            type: "participant_renamed",
+            participantId: data.participantId,
+            displayName,
+          });
           break;
         }
         case "reset_session": {
@@ -598,7 +643,7 @@ export class Room extends DurableObject<Env> {
 
     const pendingRows = this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1"
+        "SELECT id, title, description, position, status, final_estimate, unanimous, source_url FROM story WHERE status = 'pending' ORDER BY position ASC LIMIT 1"
       )
       .toArray();
 
@@ -662,7 +707,7 @@ export class Room extends DurableObject<Env> {
     this.ctx.storage.sql.exec("DELETE FROM story");
   }
 
-  addStory(title: string, description: string): Story {
+  addStory(title: string, description: string, sourceUrl?: string): Story {
     const maxPos = Number(
       this.ctx.storage.sql
         .exec("SELECT COALESCE(MAX(position), 0) as max_pos FROM story")
@@ -674,16 +719,17 @@ export class Room extends DurableObject<Env> {
     const initialStatus = autoActivated ? "active" : "pending";
 
     this.ctx.storage.sql.exec(
-      "INSERT INTO story (title, description, position, status) VALUES (?, ?, ?, ?)",
+      "INSERT INTO story (title, description, position, status, source_url) VALUES (?, ?, ?, ?, ?)",
       title,
       description,
       maxPos + 1,
-      initialStatus
+      initialStatus,
+      sourceUrl ?? null
     );
 
     const row = this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story WHERE id = last_insert_rowid()"
+        "SELECT id, title, description, position, status, final_estimate, unanimous, source_url FROM story WHERE id = last_insert_rowid()"
       )
       .one();
 
@@ -776,17 +822,12 @@ export class Room extends DurableObject<Env> {
   // --- Private helpers ---
 
   private ensureRoomExists(): void {
-    const rows = this.ctx.storage.sql
-      .exec("SELECT 1 FROM room WHERE id = ?", this.roomId)
-      .toArray();
-    if (rows.length === 0) {
-      this.ctx.storage.sql.exec(
-        "INSERT INTO room (id, name, created_at) VALUES (?, ?, ?)",
-        this.roomId,
-        this.roomId,
-        Date.now()
-      );
-    }
+    this.ctx.storage.sql.exec(
+      "INSERT OR IGNORE INTO room (id, name, created_at) VALUES (?, ?, ?)",
+      this.roomId,
+      this.roomId,
+      Date.now()
+    );
   }
 
   removeParticipant(participantId: string): void {
@@ -824,6 +865,7 @@ export class Room extends DurableObject<Env> {
   private rowToStory(row: Record<string, SqlStorageValue>): Story {
     const finalEstimate = row["final_estimate"];
     const unanimous = row["unanimous"];
+    const sourceUrl = row["source_url"];
     return {
       id: Number(row["id"]),
       title: String(row["title"]),
@@ -838,13 +880,17 @@ export class Room extends DurableObject<Env> {
         unanimous === null || unanimous === undefined
           ? null
           : Number(unanimous) === 1,
+      sourceUrl:
+        sourceUrl === null || sourceUrl === undefined
+          ? undefined
+          : String(sourceUrl),
     };
   }
 
   private getStoryById(id: number): Story | null {
     const rows = this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story WHERE id = ?",
+        "SELECT id, title, description, position, status, final_estimate, unanimous, source_url FROM story WHERE id = ?",
         id
       )
       .toArray();
@@ -854,7 +900,7 @@ export class Room extends DurableObject<Env> {
   private getStories(): Story[] {
     return this.ctx.storage.sql
       .exec(
-        "SELECT id, title, description, position, status, final_estimate, unanimous FROM story ORDER BY position ASC"
+        "SELECT id, title, description, position, status, final_estimate, unanimous, source_url FROM story ORDER BY position ASC"
       )
       .toArray()
       .map((row) => this.rowToStory(row));

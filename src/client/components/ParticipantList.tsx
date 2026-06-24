@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import type { Participant } from "../../shared/types";
+import { useAuthStore } from "../store/auth";
 import styles from "./ParticipantList.module.css";
 
 interface ParticipantListProps {
@@ -16,6 +17,8 @@ export default function ParticipantList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuthStore();
+  const nameLocked = Boolean(user);
 
   useEffect(() => {
     if (editingId && inputRef.current) {
@@ -25,6 +28,7 @@ export default function ParticipantList({
   }, [editingId]);
 
   const handleStartEdit = (p: Participant) => {
+    if (nameLocked) return;
     setEditingId(p.id);
     setEditValue(p.displayName);
   };
@@ -66,13 +70,14 @@ export default function ParticipantList({
                 <div className={styles.nameRow}>
                   <button
                     type="button"
-                    className={`${styles.name} ${p.id === currentParticipantId ? styles.clickable : ""}`}
-                    onClick={p.id === currentParticipantId ? () => handleStartEdit(p) : undefined}
-                    title={p.id === currentParticipantId ? "Click to rename" : undefined}
+                    className={`${styles.name} ${p.id === currentParticipantId && !nameLocked ? styles.clickable : ""}`}
+                    onClick={p.id === currentParticipantId && !nameLocked ? () => handleStartEdit(p) : undefined}
+                    title={p.id === currentParticipantId ? (nameLocked ? "Display name is locked to your GitHub identity" : "Click to rename") : undefined}
+                    disabled={nameLocked && p.id === currentParticipantId}
                   >
                     {p.displayName}
                   </button>
-                  {p.id === currentParticipantId && (
+                  {p.id === currentParticipantId && !nameLocked && (
                     <svg
                       data-pencil-icon
                       role="button"

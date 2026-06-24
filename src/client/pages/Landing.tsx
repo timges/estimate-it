@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateRoomCode } from "../../shared/dictionary";
+import { useAuthStore } from "../store/auth";
+import AccountBadge from "../components/AccountBadge";
+import GithubLogin from "../components/GithubLogin";
 import styles from "./Landing.module.css";
 
 export default function Landing() {
@@ -8,6 +11,26 @@ export default function Landing() {
   const [createName, setCreateName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
+  const { user, loading, fetchSession, login } = useAuthStore();
+  const prevUserRef = useRef(user);
+
+  useEffect(() => {
+    fetchSession();
+  }, [fetchSession]);
+
+  // When the user transitions from logged-out to logged-in, lock the display
+  // name to the GitHub identity. Don't clobber an in-progress manual edit
+  // when the user object re-renders for unrelated reasons.
+  useEffect(() => {
+    if (user && !prevUserRef.current) {
+      setCreateName(user.name);
+      setJoinName(user.name);
+    } else if (!user && prevUserRef.current) {
+      setCreateName("");
+      setJoinName("");
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   const handleCreate = () => {
     if (!createName.trim()) return;
@@ -31,6 +54,9 @@ export default function Landing() {
       </h1>
       <p className={styles.subtitle}>Bias-free story estimation</p>
 
+      {!loading && !user && <GithubLogin onLogin={login} />}
+      {!loading && user && <AccountBadge />}
+
       <div className={styles.card}>
         <div className={styles.label}>Create a Room</div>
         <label className={styles.label} htmlFor="create-name">
@@ -46,6 +72,7 @@ export default function Landing() {
           name="displayName"
           autoComplete="name"
           spellCheck={false}
+          readOnly={!!user}
         />
         <button
           className={styles.btnPrimary}
@@ -87,6 +114,7 @@ export default function Landing() {
           name="displayName"
           autoComplete="name"
           spellCheck={false}
+          readOnly={!!user}
         />
         <button
           className={styles.btnSecondary}

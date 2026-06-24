@@ -11,6 +11,23 @@ export const FIBONACCI_VALUES = [
 
 export type FibonacciValue = (typeof FIBONACCI_VALUES)[number];
 
+export interface IssueImportResult {
+  url: string;
+  ok: boolean;
+  title?: string;
+  body?: string;
+  error?: string;
+}
+
+export interface IssueImportRequest {
+  urls: string[];
+}
+
+export interface IssueImportResponse {
+  results: IssueImportResult[];
+  error?: string;
+}
+
 export interface Room {
   id: string;
   name: string;
@@ -25,6 +42,7 @@ export interface Story {
   status: "pending" | "active" | "revealed" | "done";
   finalEstimate: FibonacciValue | null;
   unanimous: boolean | null;
+  sourceUrl?: string;
 }
 
 export interface Participant {
@@ -32,6 +50,7 @@ export interface Participant {
   displayName: string;
   color: string;
   hasEstimated: boolean;
+  avatarUrl?: string;
 }
 
 export interface Estimate {
@@ -54,12 +73,13 @@ export type ClientMessage =
   | { type: "next_story" }
   | { type: "re_vote" }
   | { type: "rename"; displayName: string }
-  | { type: "add_story"; title: string; description: string }
+  | { type: "add_story"; title: string; description: string; sourceUrl?: string }
   | { type: "set_final_estimate"; value: FibonacciValue | null }
   | { type: "edit_story"; id: number; title: string; description: string }
   | { type: "delete_story"; id: number }
   | { type: "select_story"; id: number }
-  | { type: "reset_session" };
+  | { type: "reset_session" }
+  | { type: "upgrade_identity"; newClientId: string; displayName: string };
 
 // WebSocket messages: Server → Client
 export type ServerMessage =
