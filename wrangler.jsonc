@@ -48,8 +48,5 @@
 	],
 	"vars": {
 		"GITHUB_CLIENT_ID": "Iv23lijNnWbbj36rqHns"
-	},
-	"dev": {
-		"host": "localhost"
 	}
 }
