@@ -74,15 +74,18 @@ function uid(): string {
 }
 
 describe("WebSocket flow integration", () => {
-  it("join to nonexistent room returns error", async () => {
+  it("join to nonexistent room lazily creates it", async () => {
     const room = `flow-noexist-${uid()}`;
     const conn = await connect(room);
 
-    // Try to join a room that hasn't been created
+    // Joining a room that hasn't been created implicitly creates it —
+    // this is what makes a shared link "just work" for the first visitor.
     conn.ws.send(JSON.stringify({ type: "join", displayName: "Alice" }));
     const msg = await conn.nextMessage();
-    expect(msg.type).toBe("error");
-    expect((msg as any).message).toBe("Room not found");
+    if (msg.type !== "room_state") throw new Error(`expected room_state, got ${msg.type}`);
+    expect(msg.room.id).toBeTruthy();
+    expect(msg.participants).toHaveLength(1);
+    expect(msg.participants[0].displayName).toBe("Alice");
 
     conn.close();
   });

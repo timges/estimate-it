@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Room } from "./room";
-import { createAuth } from "./auth";
 import { createImportRoutes } from "./import";
 
 // Re-export Room for vitest pool workers (must be a named export from main)
@@ -51,8 +50,9 @@ export default {
       return stub.fetch(request);
     }
 
-    // Handle auth routes directly (bypass Hono)
-    if (url.pathname.startsWith("/api/auth/")) {
+// Handle auth routes directly (bypass Hono)
+    if (url.pathname.startsWith("/api/auth/") || url.pathname.startsWith("/callback/")) {
+      const { createAuth } = await import("./auth");
       const auth = createAuth(env, request.cf as IncomingRequestCfProperties, request.url);
       return auth.handler(request);
     }

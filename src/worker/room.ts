@@ -160,13 +160,6 @@ export class Room extends DurableObject<Env> {
           break;
         }
         case "join": {
-          if (!this.roomExists()) {
-            this.sendToClient(ws, {
-              type: "error",
-              message: "Room not found",
-            });
-            break;
-          }
           const result = this.join(msg.displayName.slice(0, 64), msg.clientId);
           ws.serializeAttachment({ participantId: result.participant.id });
           this.sendToClient(ws, {
@@ -304,6 +297,13 @@ export class Room extends DurableObject<Env> {
           break;
         }
         case "upgrade_identity": {
+          // v1 limitation: the DO trusts the client-supplied newClientId
+          // because the WebSocket itself carries no auth context. The only
+          // existing check is a name-collision guard against participants
+          // currently in the room. A determined client can still claim any
+          // github:* id. Full validation requires the WS to present a
+          // better-auth session and the DO to look up the matching user id
+          // server-side; deferred to v2.
           if (!data) break;
           const newClientId = msg.newClientId.slice(0, 128);
           const displayName = msg.displayName.slice(0, 64);
@@ -822,17 +822,12 @@ export class Room extends DurableObject<Env> {
   // --- Private helpers ---
 
   private ensureRoomExists(): void {
-    const rows = this.ctx.storage.sql
-      .exec("SELECT 1 FROM room WHERE id = ?", this.roomId)
-      .toArray();
-    if (rows.length === 0) {
-      this.ctx.storage.sql.exec(
-        "INSERT INTO room (id, name, created_at) VALUES (?, ?, ?)",
-        this.roomId,
-        this.roomId,
-        Date.now()
-      );
-    }
+    this.ctx.storage.sql.exec(
+      "INSERT OR IGNORE INTO room (id, name, created_at) VALUES (?, ?, ?)",
+      this.roomId,
+      this.roomId,
+      Date.now()
+    );
   }
 
   removeParticipant(participantId: string): void {

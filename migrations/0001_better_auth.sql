@@ -1,12 +1,7 @@
--- Fix: better-auth expects camelCase column names
--- Drop and recreate with correct schema
+-- Better Auth tables for D1
+-- camelCase column names per better-auth schema
 
-DROP TABLE IF EXISTS "verification";
-DROP TABLE IF EXISTS "account";
-DROP TABLE IF EXISTS "session";
-DROP TABLE IF EXISTS "user";
-
-CREATE TABLE "user" (
+CREATE TABLE IF NOT EXISTS "user" (
   "id" TEXT PRIMARY KEY,
   "name" TEXT NOT NULL,
   "email" TEXT NOT NULL UNIQUE,
@@ -16,7 +11,7 @@ CREATE TABLE "user" (
   "updatedAt" INTEGER NOT NULL
 );
 
-CREATE TABLE "session" (
+CREATE TABLE IF NOT EXISTS "session" (
   "id" TEXT PRIMARY KEY,
   "expiresAt" INTEGER NOT NULL,
   "token" TEXT NOT NULL UNIQUE,
@@ -27,7 +22,7 @@ CREATE TABLE "session" (
   "updatedAt" INTEGER NOT NULL
 );
 
-CREATE TABLE "account" (
+CREATE TABLE IF NOT EXISTS "account" (
   "id" TEXT PRIMARY KEY,
   "accountId" TEXT NOT NULL,
   "providerId" TEXT NOT NULL,
@@ -43,7 +38,7 @@ CREATE TABLE "account" (
   "updatedAt" INTEGER NOT NULL
 );
 
-CREATE TABLE "verification" (
+CREATE TABLE IF NOT EXISTS "verification" (
   "id" TEXT PRIMARY KEY,
   "identifier" TEXT NOT NULL,
   "value" TEXT NOT NULL,
@@ -52,8 +47,8 @@ CREATE TABLE "verification" (
   "updatedAt" INTEGER NOT NULL
 );
 
-CREATE INDEX "idx_session_userId" ON "session"("userId");
-CREATE INDEX "idx_session_token" ON "session"("token");
-CREATE INDEX "idx_account_userId" ON "account"("userId");
-CREATE INDEX "idx_account_provider" ON "account"("providerId", "accountId");
-CREATE INDEX "idx_verification_identifier" ON "verification"("identifier");
+CREATE INDEX IF NOT EXISTS "idx_session_userId" ON "session"("userId");
+CREATE INDEX IF NOT EXISTS "idx_session_token" ON "session"("token");
+CREATE INDEX IF NOT EXISTS "idx_account_userId" ON "account"("userId");
+CREATE INDEX IF NOT EXISTS "idx_account_provider" ON "account"("providerId", "accountId");
+CREATE INDEX IF NOT EXISTS "idx_verification_identifier" ON "verification"("identifier");

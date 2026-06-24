@@ -3,8 +3,10 @@ dist/
 .wrangler/
 .playwright-mcp/
 test-results/
+worker-configuration.d.ts
 docs/
 
 # Visual brainstorming companion
 .superpowers/
 .gstack/
+.env

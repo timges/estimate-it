@@ -9,9 +9,11 @@ describe("Worker integration", () => {
     expect(data.status).toBe("ok");
   });
 
-  it("returns 404 for unknown non-asset routes", async () => {
+  it("serves SPA fallback for unknown non-asset routes", async () => {
     const res = await SELF.fetch("http://example.com/unknown");
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toContain("<html");
   });
 
   it("rejects WebSocket without room ID", async () => {

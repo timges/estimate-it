@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import type { FibonacciValue } from "../../shared/types";
 import AddStory from "../components/AddStory";
 import CardGrid from "../components/CardGrid";
-import ImportIssues from "../components/ImportIssues";
 import NamePrompt from "../components/NamePrompt";
 import ParticipantList from "../components/ParticipantList";
 import RevealBoard from "../components/RevealBoard";
@@ -113,10 +112,14 @@ export default function Room() {
   const prevUserRef = useRef(user);
   useEffect(() => {
     if (user && !prevUserRef.current && wsRef.current) {
-      // User just logged in while already in the room
+      // User just logged in while already in the room. Send upgrade_identity
+      // and update the socket's local hello so a future reconnect re-joins
+      // with the new clientId instead of the anonymous one.
+      const newClientId = getGithubClientId(user.id);
+      wsRef.current.updateIdentity(newClientId, user.name);
       wsRef.current.send({
         type: "upgrade_identity",
-        newClientId: getGithubClientId(user.id),
+        newClientId,
         displayName: user.name,
       });
     }
@@ -207,6 +210,16 @@ export default function Room() {
     return <NamePrompt roomId={roomId} onSubmit={handleNameSubmit} />;
   }
 
+  if (!hasName && user && roomId) {
+    return (
+      <NamePrompt
+        roomId={roomId}
+        onSubmit={handleNameSubmit}
+        lockedName={user.name}
+      />
+    );
+  }
+
   if (error) {
     return (
       <div className={styles.errorContainer}>
@@ -273,7 +286,7 @@ export default function Room() {
                   <span className={styles.storyPromptText}>
                     No story — add one for context, or just vote.
                   </span>
-                  <AddStory onAdd={handleAddStory} />
+                  <AddStory onAdd={handleAddStory} hasGithubAuth={!!user} />
                 </div>
               )}
               <CardGrid
@@ -330,8 +343,7 @@ export default function Room() {
           <section className={styles.section}>
             <h3 className={styles.sectionHeading}>Stories</h3>
             <div className={styles.storyActions}>
-              <AddStory onAdd={handleAddStory} />
-              {user && <ImportIssues onImport={handleAddStory} />}
+              <AddStory onAdd={handleAddStory} hasGithubAuth={!!user} />
             </div>
             <StoryList
               stories={stories}

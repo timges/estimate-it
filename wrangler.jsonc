@@ -10,7 +10,7 @@
 	"assets": {
 		"directory": "dist",
 		"not_found_handling": "single-page-application",
-		"run_worker_first": ["/api/*"]
+		"run_worker_first": ["/api/*", "/ws/*", "/callback/*"]
 	},
 	"durable_objects": {
 		"bindings": [
@@ -47,10 +47,11 @@
 			"id": "5a5906b2820c4e84bc8b4b20c8a87dcd"
 		}
 	],
-	"vars": {
+"vars": {
 		"GITHUB_CLIENT_ID": "Iv23lijNnWbbj36rqHns"
 	},
 	"dev": {
-		"host": "localhost:8787"
+		"host": "localhost",
+		"port": 8787
 	}
 }

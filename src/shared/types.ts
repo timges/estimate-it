@@ -11,6 +11,23 @@ export const FIBONACCI_VALUES = [
 
 export type FibonacciValue = (typeof FIBONACCI_VALUES)[number];
 
+export interface IssueImportResult {
+  url: string;
+  ok: boolean;
+  title?: string;
+  body?: string;
+  error?: string;
+}
+
+export interface IssueImportRequest {
+  urls: string[];
+}
+
+export interface IssueImportResponse {
+  results: IssueImportResult[];
+  error?: string;
+}
+
 export interface Room {
   id: string;
   name: string;

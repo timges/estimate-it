@@ -7,6 +7,7 @@ export default defineConfig({
       "test/unit/dictionary.test.ts",
       "test/unit/estimates.test.ts",
       "test/unit/github-url.test.ts",
+      "test/unit/import-utils.test.ts",
     ],
   },
 });

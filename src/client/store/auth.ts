@@ -67,12 +67,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await fetch("/api/auth/sign-out", {
+      const res = await fetch("/api/auth/sign-out", {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
       });
-    } catch {
-      // ignore
+      if (!res.ok) {
+        console.warn("[auth] sign-out returned", res.status);
+      }
+    } catch (err) {
+      console.warn("[auth] sign-out failed:", err);
     }
     set({ user: null, session: null });
   },
