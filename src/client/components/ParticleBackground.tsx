@@ -27,11 +27,6 @@ function drawStaticGradient(
   ctx.fillRect(0, 0, width, height);
 }
 
-function isTransparent(el: Element): boolean {
-  const bg = getComputedStyle(el).backgroundColor;
-  return bg === "rgba(0, 0, 0, 0)" || bg === "transparent";
-}
-
 export default function ParticleBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -78,12 +73,7 @@ export default function ParticleBackground() {
     const onPointerMove = (e: PointerEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      if (!el) {
-        mouse.active = false;
-        return;
-      }
-      mouse.active = isTransparent(el);
+      mouse.active = true;
     };
 
     const onPointerLeave = () => {
