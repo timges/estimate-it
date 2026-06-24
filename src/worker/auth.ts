@@ -19,6 +19,7 @@ export function createAuth(env: AuthEnv, requestURL?: string) {
     database: env.DB,
     baseURL,
     basePath: "/api/auth",
+    trustedOrigins: ["http://localhost:5173"],
     socialProviders: {
       github: {
         clientId: env.GITHUB_CLIENT_ID,
