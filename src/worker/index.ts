@@ -53,7 +53,7 @@ export default {
 
     // Handle auth routes directly (bypass Hono)
     if (url.pathname.startsWith("/api/auth/")) {
-      const auth = createAuth(env, request.url);
+      const auth = createAuth(env, request.cf as IncomingRequestCfProperties, request.url);
       return auth.handler(request);
     }
 
