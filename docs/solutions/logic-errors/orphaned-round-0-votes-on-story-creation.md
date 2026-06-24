@@ -135,4 +135,4 @@ The secondary counter drift bug was caused by `participant_left` not accounting 
 
 - Commit `292a41a`: introduced round-0 voting (the feature that created the orphaning path)
 - Commit `4153471`: prior fix for ghost votes from disconnects (same counter-drift pattern)
-- This is the first `docs/solutions/` entry in the project
+- See also: `docs/solutions/integration-issues/github-oauth-issue-import.md` — same "state you assumed existed doesn't yet exist" shape shows up in the `pendingCreate` race for lazy room creation.
