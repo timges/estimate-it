@@ -25,8 +25,8 @@ Heavyweight enterprise agile tooling. Avoid the Jira/scrum-board cliché: dense 
 - **Bias-free by design.** The interface must never leak or nudge votes before the reveal. Hidden state is a feature, not a limitation, and the UI should make privacy obvious and trustworthy.
 - **Frictionless entry.** Creating or joining a room is a few keystrokes. Never make a team fight the tool to start estimating.
 - **The reveal is the moment.** The transition from hidden to revealed is the emotional peak of a session. Treat it with intention; everything else can be quiet.
-- **Playful, not noisy.** Personality lives in small, deliberate touches (room codes, microcopy, the reveal), never in decoration that competes with the task.
-- **Calm during the vote.** While people are deciding, the surface stays still and unintrusive so the discussion, not the tool, holds attention.
+- **Playful, not noisy.** Personality lives in small, deliberate touches (room codes, microcopy, the reveal, the ambient particle background), never in decoration that competes with the task.
+- **Calm during the vote.** While people are deciding, the surface stays still and unintrusive so the discussion, not the tool, holds attention. The ambient particle background is a calm backdrop, not motion that demands attention.
 
 ## Accessibility & Inclusion
 
