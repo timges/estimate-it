@@ -1,45 +1,55 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "estimate",
-  "workers_dev": false,
-  "main": "src/worker/index.ts",
-  "compatibility_date": "2026-04-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "directory": "dist",
-    "not_found_handling": "single-page-application"
-  },
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "ROOM",
-        "class_name": "Room"
-      }
-    ]
-  },
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["Room"]
-    }
-  ],
-  "routes": [
-    {
-      "pattern": "estimate-it.app",
-      "custom_domain": true
-    }
-  ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "estimator-auth",
-      "database_id": "placeholder-will-be-replaced-after-creation"
-    }
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "KV",
-      "id": "placeholder-will-be-replaced-after-creation"
-    }
-  ]
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "estimate",
+	"workers_dev": false,
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2026-04-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"directory": "dist",
+		"not_found_handling": "single-page-application"
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "ROOM",
+				"class_name": "Room"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"Room"
+			]
+		}
+	],
+	"routes": [
+		{
+			"pattern": "estimate-it.app",
+			"custom_domain": true
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "estimate-it-auth",
+			"database_id": "644d4d4b-6748-4abb-8d54-ba72ee0549a5"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "5a5906b2820c4e84bc8b4b20c8a87dcd"
+		}
+	],
+	"vars": {
+		"GITHUB_CLIENT_ID": "Iv23lijNnWbbj36rqHns"
+	},
+	"dev": {
+		"host": "localhost"
+	}
 }
