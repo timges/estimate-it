@@ -242,7 +242,7 @@ A flat-by-default system. Surfaces sit on the void as flat planes separated by t
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** keep the vote phase quiet: neutral surfaces, no saturated color, no motion. Save the signature gradient and Consensus Green for the reveal (The Two-Beat Color Rule).
+- **Do** keep the vote phase quiet: neutral surfaces, no saturated color, no motion that competes with the decision. Save the signature gradient and Consensus Green for the reveal (The Two-Beat Color Rule). The ambient particle background is an exception — it is always-on decoration, not vote-phase motion.
 - **Do** reserve the navy deck palette (`#1a1a2e` family) for voting and estimate cards only (The Deck-Is-Separate Rule).
 - **Do** use `tabular-nums` on every compared value (The Tabular Rule).
 - **Do** keep elevation off resting surfaces; let card hover (−8px) and selection (−12px) be the only shadows (The Earned-Shadow Rule).
@@ -256,4 +256,4 @@ A flat-by-default system. Surfaces sit on the void as flat planes separated by t
 - **Don't** add `border-left`/`border-right` greater than 1px as a colored accent stripe on rows, cards, or callouts. The participant sidebar's 1px left border is a structural divider, the only acceptable side border.
 - **Don't** paint chrome or buttons in deck navy, or paint a vote card in neutral gray. The deck must always look like a deck.
 - **Don't** introduce a second font family. Space Grotesk plus weight and the uppercase label treatment cover the whole hierarchy.
-- **Don't** animate during the vote or leak vote state through any pre-reveal visual cue.
+- **Don't** animate during the vote or leak vote state through any pre-reveal visual cue. *Exception: the global ambient particle background (`ParticleBackground` component) runs continuously at a subtle level across all phases — it is decorative ambience, not motion that competes with the voting surface, and is gated by `prefers-reduced-motion`.*
