@@ -11,7 +11,9 @@ export function createAuth(env: AuthEnv, requestURL?: string) {
   let baseURL = env.BETTER_AUTH_URL;
   if (!baseURL && requestURL) {
     const url = new URL(requestURL);
-    baseURL = `${url.protocol}//${url.host}`;
+    // Cloudflare terminates TLS — force https for production domains
+    const protocol = url.hostname === "localhost" ? "http:" : "https:";
+    baseURL = `${protocol}//${url.host}`;
   }
   return betterAuth({
     database: env.DB,
