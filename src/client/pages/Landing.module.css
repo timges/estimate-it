@@ -71,7 +71,7 @@
 
 .input:read-only {
   background: var(--bg-secondary);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: not-allowed;
 }
 

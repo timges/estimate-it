@@ -13,8 +13,8 @@ describe("Landing", () => {
 
   it("shows 'Create a Room' and 'Join a Room'", () => {
     renderLanding();
-    expect(screen.getByText("Create a Room")).toBeInTheDocument();
-    expect(screen.getByText("Join a Room")).toBeInTheDocument();
+    expect(screen.getAllByText("Create a Room").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Join a Room").length).toBeGreaterThanOrEqual(1);
   });
 
   it("create button is disabled without name", () => {

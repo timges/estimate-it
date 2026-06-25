@@ -4,6 +4,7 @@ import { generateRoomCode } from "../../shared/dictionary";
 import { useAuthStore } from "../store/auth";
 import AccountBadge from "../components/AccountBadge";
 import GithubLogin from "../components/GithubLogin";
+import SeoContent from "../components/SeoContent";
 import styles from "./Landing.module.css";
 
 export default function Landing() {
@@ -124,6 +125,8 @@ export default function Landing() {
           Join Room
         </button>
       </div>
+
+      <SeoContent />
     </div>
   );
 }
