@@ -10,7 +10,7 @@
 	"assets": {
 		"directory": "dist",
 		"not_found_handling": "single-page-application",
-		"run_worker_first": ["/api/*", "/ws/*", "/callback/*"]
+		"run_worker_first": ["/api/*", "/ws/*", "/callback/*", "/sitemap.xml", "/what-is-planning-poker", "/sprint-planning-guide"]
 	},
 	"durable_objects": {
 		"bindings": [

@@ -18,23 +18,149 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
-app.get("/robots.txt", (c) =>
-  c.text("User-agent: *\nAllow: /\n", { headers: { "Content-Type": "text/plain" } })
-);
-
-app.get("/sitemap.xml", (c) =>
-  c.text(`<?xml version="1.0" encoding="UTF-8"?>
+app.get("/sitemap.xml", (c) => {
+  const today = new Date().toISOString().split("T")[0];
+  return c.text(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://estimate-it.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <lastmod>${today}</lastmod>
   </url>
-</urlset>`, { headers: { "Content-Type": "application/xml" } })
-);
+  <url>
+    <loc>https://estimate-it.app/what-is-planning-poker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>${today}</lastmod>
+  </url>
+  <url>
+    <loc>https://estimate-it.app/sprint-planning-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>${today}</lastmod>
+  </url>
+</urlset>`, { headers: { "Content-Type": "application/xml" } });
+});
 
 const importRoutes = createImportRoutes();
 app.route("/", importRoutes);
+
+const landingPageStyles = `
+  :root {
+    --bg-tertiary: #0a0a0a; --bg-primary: #171717; --bg-secondary: #262626;
+    --text-primary: #e5e5e5; --text-secondary: #a3a3a3; --text-muted: #737373;
+    --border-subtle: #262626; --border-default: #333333;
+    --accent-primary: #3b82f6; --accent-secondary: #8b5cf6;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body { font-family: "Space Grotesk", system-ui, sans-serif; background: var(--bg-tertiary); color: var(--text-primary); line-height: 1.6; }
+  .container { max-width: 720px; margin: 0 auto; padding: 80px 24px 60px; }
+  h1 { font-size: 42px; font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; }
+  h2 { font-size: 24px; font-weight: 600; color: var(--text-secondary); margin: 40px 0 16px; }
+  h3 { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin: 24px 0 8px; }
+  p { color: var(--text-secondary); margin-bottom: 16px; font-size: 15px; }
+  .cta { display: inline-block; margin-top: 32px; padding: 14px 32px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 15px; transition: opacity 0.15s, transform 0.15s; }
+  .cta:hover { opacity: 0.9; transform: translateY(-1px); }
+  .back { display: inline-block; margin-bottom: 32px; color: var(--text-secondary); text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .back:hover { color: var(--text-primary); }
+  @media (prefers-reduced-motion: reduce) { .cta, .back { transition: none; } }
+`;
+
+function landingPage(title: string, description: string, canonical: string, body: string) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${title}</title>
+  <meta name="description" content="${description}" />
+  <link rel="canonical" href="${canonical}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:url" content="${canonical}" />
+  <meta property="og:image" content="https://estimate-it.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="https://estimate-it.app/og-image.png" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>${landingPageStyles}</style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back">&larr; Back to estimate-it</a>
+    ${body}
+    <a href="/" class="cta">Try estimate-it free</a>
+  </div>
+</body>
+</html>`;
+}
+
+app.get("/what-is-planning-poker", (c) =>
+  c.html(landingPage(
+    "What is Planning Poker? | estimate-it",
+    "Learn what planning poker is, how it works, and why agile teams use it for unbiased story estimation. A complete guide to planning poker.",
+    "https://estimate-it.app/what-is-planning-poker",
+    `<h1>What is Planning Poker?</h1>
+    <p>Planning poker (also called Scrum poker) is a consensus-based estimation technique used by agile software teams. It helps teams estimate the effort required for user stories, features, or tasks — without the bias that comes from hearing someone else's estimate first.</p>
+
+    <h2>How Planning Poker Works</h2>
+    <p>A facilitator presents a user story to the team. Each team member privately selects a card from a deck showing the Fibonacci sequence (1, 2, 3, 5, 8, 13, 21). Once everyone has chosen, all cards are revealed simultaneously.</p>
+    <p>If estimates differ significantly, the team discusses why. The person who played the highest and lowest cards explains their reasoning. Then the team re-votes until they reach consensus. This process surfaces hidden complexity and assumptions early.</p>
+
+    <h2>Benefits for Agile Teams</h2>
+    <h3>Eliminates anchoring bias</h3>
+    <p>Traditional estimation often starts with one person stating a number. Everyone else unconsciously anchors to that number. Planning poker prevents this by keeping votes hidden until everyone has made their own independent judgment.</p>
+    <h3>Surfaces hidden complexity</h3>
+    <p>When one developer estimates a story at 3 points and another estimates 13, it reveals different assumptions about the work. The discussion that follows catches edge cases, technical debt, and integration concerns before development starts.</p>
+    <h3>Builds shared understanding</h3>
+    <p>The estimation conversation forces the team to align on what "done" means for each story. This shared understanding reduces rework and miscommunication during the sprint.</p>
+
+    <h2>How to Run a Planning Poker Session</h2>
+    <p><strong>1. Prepare the backlog.</strong> Make sure each story has a clear description and acceptance criteria before the session.</p>
+    <p><strong>2. Set up the room.</strong> Share the room code with your team. Everyone joins and gets ready to vote.</p>
+    <p><strong>3. Present and estimate.</strong> Walk through each story. Everyone votes, then reveal. Discuss differences, re-vote if needed, and move to the next story.</p>
+    <p><strong>4. Record the estimates.</strong> Once the team agrees on a point value, record it and move on. Keep sessions to 30-60 minutes to maintain focus.</p>`
+  ))
+);
+
+app.get("/sprint-planning-guide", (c) =>
+  c.html(landingPage(
+    "Sprint Planning Estimation Guide | estimate-it",
+    "A practical guide to sprint planning estimation. Learn why estimation matters, common techniques like planning poker and t-shirt sizing, and tips for better estimates.",
+    "https://estimate-it.app/sprint-planning-guide",
+    `<h1>Sprint Planning Estimation Guide</h1>
+    <p>Good estimation is the foundation of predictable delivery. When your team estimates well, you can commit to realistic sprint goals, identify risks early, and build trust with stakeholders. This guide covers the most effective estimation techniques and practical tips to improve your team's accuracy.</p>
+
+    <h2>Why Estimation Matters</h2>
+    <p>Estimation is not about predicting the future with precision. It is about creating a shared understanding of the work and making trade-offs visible. Teams that estimate consistently can answer questions like: How much can we deliver this sprint? Is this feature worth the investment? Where are the risks?</p>
+    <p>Without estimation, teams either overcommit and burn out, or undercommit and waste capacity. Neither is sustainable.</p>
+
+    <h2>Common Estimation Techniques</h2>
+    <h3>Planning Poker</h3>
+    <p>The most popular technique for agile teams. Each team member selects a Fibonacci card privately, then all cards are revealed at once. Differences in estimates trigger discussion about assumptions and complexity. Planning poker works because it combines independent judgment with structured conversation.</p>
+    <h3>T-Shirt Sizing</h3>
+    <p>A quick, relative estimation method using sizes (XS, S, M, L, XL). Best for early-stage planning or when you need a rough sense of effort without precise numbers. T-shirt sizing is fast but less granular — use it for backlog grooming, not sprint commitment.</p>
+    <h3>Dot Voting</h3>
+    <p>Each team member gets a fixed number of dots to place on stories they think are most valuable or important. Useful for prioritization rather than effort estimation. Combine with another technique for a complete picture.</p>
+    <h3>Story Points vs. Hours</h3>
+    <p>Story points measure relative effort and complexity. Hours measure absolute time. Points are better for teams because they account for the fact that a 5-point story for one developer might take a different amount of time for another. Points normalize across the team.</p>
+
+    <h2>Tips for Better Estimates</h2>
+    <p><strong>Estimate as a team.</strong> Solo estimates miss perspectives. The whole team should participate — developers, testers, and anyone who touches the work.</p>
+    <p><strong>Use relative sizing.</strong> Compare stories to each other rather than guessing absolute effort. "This is about twice as complex as that story" is more reliable than "this will take 6 hours."</p>
+    <p><strong>Break down large stories.</strong> If a story is too big to estimate confidently, split it. Stories that are 8+ points are signals to decompose further.</p>
+    <p><strong>Calibrate with completed work.</strong> After each sprint, compare estimated points to actual effort. Look for patterns. Are you consistently underestimating integration work? Overestimating UI tasks? Adjust your calibration over time.</p>
+    <p><strong>Timebox estimation sessions.</strong> Long sessions produce fatigue and diminishing returns. Keep planning poker sessions to 30-60 minutes. If you have more stories than time, prioritize and estimate the rest next time.</p>
+    <p><strong>Don't estimate bugs the same way.</strong> Bugs are unpredictable. Use a simple "small/medium/large" or track them separately from feature work. Trying to assign Fibonacci points to debugging is often misleading.</p>`
+  ))
+);
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -57,7 +183,7 @@ export default {
       return auth.handler(request);
     }
 
-    if (url.pathname.startsWith("/api/") || url.pathname === "/robots.txt" || url.pathname === "/sitemap.xml") {
+    if (url.pathname.startsWith("/api/") || url.pathname === "/sitemap.xml" || url.pathname === "/what-is-planning-poker" || url.pathname === "/sprint-planning-guide") {
       return app.fetch(request, env);
     }
 
