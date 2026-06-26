@@ -321,11 +321,18 @@ describe("RevealBoard distribution", () => {
     );
   }
 
-  function countDotsInRow(row: HTMLElement): number {
+  function countFilledDotsInRow(row: HTMLElement): number {
     const dotsContainer = row.children[1] as HTMLElement;
-    return Array.from(dotsContainer.children).filter(
-      (c) => !c.textContent
-    ).length;
+    return dotsContainer.querySelectorAll('[data-filled="true"]').length;
+  }
+
+  function countTotalSlotsInRow(row: HTMLElement): number {
+    const dotsContainer = row.children[1] as HTMLElement;
+    return dotsContainer.querySelectorAll('[data-filled]').length;
+  }
+
+  function getPercentInRow(row: HTMLElement): string {
+    return (row.children[3] as HTMLElement).textContent ?? "";
   }
 
   it("AE1 — renders split (8×1, 13×1) with no leader border", () => {
@@ -398,7 +405,7 @@ describe("RevealBoard distribution", () => {
     expect(screen.getByRole("img", { name: "Abstained: 1" })).toBeInTheDocument();
   });
 
-  it("AE5 — tall room (5×6) renders 6 dots without an overflow label", () => {
+  it("AE5 — tall room (5×6 of 8 voters) renders fraction bar with 6 filled + 2 empty, 75%", () => {
     const estimates: Estimate[] = [
       { participantId: "p1", value: "5" },
       { participantId: "p2", value: "5" },
@@ -418,12 +425,12 @@ describe("RevealBoard distribution", () => {
       ],
     });
     const row5 = screen.getByRole("img", { name: "5: 6 votes, leading" });
-    expect(countDotsInRow(row5)).toBe(6);
-    const dotsContainer = row5.children[1] as HTMLElement;
-    expect(dotsContainer.textContent).toBe("");
+    expect(countFilledDotsInRow(row5)).toBe(6);
+    expect(countTotalSlotsInRow(row5)).toBe(8);
+    expect(getPercentInRow(row5)).toBe("75%");
   });
 
-  it("AE6 — very tall room (5×12) caps at 8 dots with +4 overflow label", () => {
+  it("AE6 — very tall room (5×12 of 15 voters) renders 12 filled + 3 empty, 80%", () => {
     const estimates: Estimate[] = [];
     for (let i = 0; i < 12; i++) {
       estimates.push({ participantId: `p${i + 1}`, value: "5" });
@@ -440,9 +447,9 @@ describe("RevealBoard distribution", () => {
       ],
     });
     const row5 = screen.getByRole("img", { name: "5: 12 votes, leading" });
-    expect(countDotsInRow(row5)).toBe(8);
-    const dotsContainer = row5.children[1] as HTMLElement;
-    expect(dotsContainer.textContent).toBe("+4");
+    expect(countFilledDotsInRow(row5)).toBe(12);
+    expect(countTotalSlotsInRow(row5)).toBe(15);
+    expect(getPercentInRow(row5)).toBe("80%");
   });
 
   it("AE7 — tied leaders (5×2, 8×2, 13×1) border both 5 and 8; 13 stays plain", () => {

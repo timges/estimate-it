@@ -60,6 +60,7 @@ export default function RevealBoard({
   const distribution = revealResult?.distribution ?? [];
   const numericRows = distribution.filter((d) => d.value !== "☕");
   const abstainCount = distribution.find((d) => d.value === "☕")?.count ?? 0;
+  const totalNumericVoters = numericRows.reduce((sum, d) => sum + d.count, 0);
 
   const sortedRows = [...numericRows].sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count;
@@ -85,15 +86,26 @@ export default function RevealBoard({
     celebrationDelayMs
   );
 
-  const renderDots = (count: number) => {
-    const visibleCount = Math.min(count, MAX_DOTS_PER_ROW);
-    const overflow = count - visibleCount;
-    const dots = [];
-    for (let i = 0; i < visibleCount; i++) {
-      dots.push(<div key={i} className={styles.distDot} />);
+  const renderFractionBar = (count: number) => {
+    const slots = [];
+    const totalSlots = Math.max(totalNumericVoters, count);
+    for (let i = 0; i < totalSlots; i++) {
+      const isFilled = i < count;
+      slots.push(
+        <div
+          key={i}
+          className={isFilled ? styles.distDot : styles.distDotEmpty}
+          data-filled={isFilled ? "true" : "false"}
+        />
+      );
     }
-    return { dots, overflow };
+    return slots;
   };
+
+  const percentLabel = (count: number) =>
+    totalNumericVoters > 0
+      ? `${Math.round((count / totalNumericVoters) * 100)}%`
+      : "0%";
 
   const pluralize = (n: number) => (n === 1 ? "vote" : "votes");
 
@@ -170,7 +182,7 @@ export default function RevealBoard({
               {sortedRows.map((row, i) => {
                 const isLeader = leaderIndexSet.has(i);
                 const ariaLabel = `${row.value}: ${row.count} ${pluralize(row.count)}${isLeader ? ", leading" : ""}`;
-                const { dots, overflow } = renderDots(row.count);
+                const slots = renderFractionBar(row.count);
                 return (
                   <div
                     key={row.value}
@@ -179,13 +191,9 @@ export default function RevealBoard({
                     aria-label={ariaLabel}
                   >
                     <span className={styles.distValue}>{row.value}</span>
-                    <div className={styles.distDots}>
-                      {dots}
-                      {overflow > 0 && (
-                        <span className={styles.distOverflow}>+{overflow}</span>
-                      )}
-                    </div>
+                    <div className={styles.distDots}>{slots}</div>
                     <span className={styles.distCount}>×{row.count}</span>
+                    <span className={styles.distPercent}>{percentLabel(row.count)}</span>
                   </div>
                 );
               })}
