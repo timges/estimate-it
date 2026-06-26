@@ -297,13 +297,36 @@ describe("RevealBoard advance button", () => {
 });
 
 describe("RevealBoard distribution", () => {
-  const participants = [
+  const distributionParticipants: Participant[] = [
     { id: "p1", displayName: "Alice", color: "#fff", hasEstimated: true },
     { id: "p2", displayName: "Bob", color: "#fff", hasEstimated: true },
     { id: "p3", displayName: "Carol", color: "#fff", hasEstimated: true },
     { id: "p4", displayName: "Dan", color: "#fff", hasEstimated: true },
     { id: "p5", displayName: "Eve", color: "#fff", hasEstimated: true },
   ];
+
+  afterEach(() => {
+    setReducedMotion(false);
+  });
+
+  function renderBoard(
+    estimates: Estimate[],
+    revealResult: RevealResult
+  ): ReturnType<typeof render> {
+    return render(
+      <RevealBoard
+        estimates={estimates}
+        revealResult={revealResult}
+        participants={distributionParticipants}
+        onReVote={noop}
+        onNextStory={noop}
+        hasNextStory={false}
+        hasActiveStory={false}
+        finalEstimate={null}
+        onSetFinalEstimate={() => {}}
+      />,
+    );
+  }
 
   function countFilledDotsInRow(row: HTMLElement): number {
     const dotsContainer = row.children[1] as HTMLElement;
@@ -321,6 +344,10 @@ describe("RevealBoard distribution", () => {
     return (row.children[3] as HTMLElement).textContent ?? "";
   }
 
+  function getLeaderRows(): HTMLElement[] {
+    return screen.getAllByRole("img", { name: /leading/i });
+  }
+
   it("AE1 — renders split (8×1, 13×1) with no leader border", () => {
     renderBoard(
       [
@@ -335,8 +362,11 @@ describe("RevealBoard distribution", () => {
         ],
       }
     );
-    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    const rows = screen.getAllByRole("img", { name: /vote$/ });
+    expect(rows.map((r) => r.getAttribute("aria-label"))).toEqual([
+      "8: 1 vote",
+      "13: 1 vote",
+    ]);
     expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
   });
 
@@ -363,6 +393,10 @@ describe("RevealBoard distribution", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(getPercentInRow(screen.getByRole("img", { name: "5: 3 votes, leading" }))).toBe("60%");
+    expect(getPercentInRow(screen.getByRole("img", { name: "8: 1 vote" }))).toBe("20%");
+    expect(getPercentInRow(screen.getByRole("img", { name: "13: 1 vote" }))).toBe("20%");
+    expect(getLeaderRows()).toHaveLength(1);
   });
 
   it("AE4 — renders abstain row separately from numeric rows", () => {
@@ -463,6 +497,10 @@ describe("RevealBoard distribution", () => {
       screen.getByRole("img", { name: "8: 2 votes, leading" })
     ).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(getLeaderRows()).toHaveLength(2);
+    expect(
+      getLeaderRows().map((r) => r.getAttribute("aria-label"))
+    ).toEqual(["5: 2 votes, leading", "8: 2 votes, leading"]);
   });
 
   it("AE8 — all-tied (5×2, 8×2) renders no leader border", () => {

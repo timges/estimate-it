@@ -6,7 +6,10 @@ import type {
   Participant,
   FibonacciValue,
 } from "../../shared/types";
-import { FIBONACCI_VALUES } from "../../shared/types";
+import {
+  ABSTAIN_VALUE,
+  FIBONACCI_VALUES,
+} from "../../shared/types";
 import { suggestFinalEstimate } from "../../shared/estimates";
 import { useConsensusCelebration } from "./useConsensusCelebration";
 import styles from "./RevealBoard.module.css";
@@ -49,15 +52,16 @@ export default function RevealBoard({
 
   const allAgree = revealResult?.allAgree ?? false;
   const agreedValue = allAgree
-    ? sorted.find((e) => e.value !== "☕")?.value
+    ? sorted.find((e) => e.value !== ABSTAIN_VALUE)?.value
     : undefined;
 
   const suggestion = suggestFinalEstimate(estimates.map((e) => e.value));
   const selectedFinal = finalEstimate ?? suggestion;
 
   const distribution = revealResult?.distribution ?? [];
-  const numericRows = distribution.filter((d) => d.value !== "☕");
-  const abstainCount = distribution.find((d) => d.value === "☕")?.count ?? 0;
+  const numericRows = distribution.filter((d) => d.value !== ABSTAIN_VALUE);
+  const abstainCount =
+    distribution.find((d) => d.value === ABSTAIN_VALUE)?.count ?? 0;
   const totalNumericVoters = numericRows.reduce((sum, d) => sum + d.count, 0);
 
   const sortedRows = [...numericRows].sort((a, b) => {
