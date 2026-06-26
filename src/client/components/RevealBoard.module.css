@@ -127,6 +127,25 @@
   gap: 5px;
   flex: 1;
   min-width: 0;
+  height: 18px;
+  position: relative;
+}
+
+.distDots::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 3px;
+  background: rgba(96, 165, 250, 0.18);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+.distRowLeader .distDots::before {
+  background: rgba(96, 165, 250, 0.32);
 }
 
 .distDot {
@@ -136,6 +155,8 @@
   background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
   border: 1px solid rgba(96, 165, 250, 0.4);
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .distDotEmpty {
@@ -145,6 +166,8 @@
   background: transparent;
   border: 1px solid var(--border-default);
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .distRowLeader .distDotEmpty {
