@@ -22,6 +22,10 @@ A participant's vote for the current round. Stored as a Fibonacci value (`1` thr
 
 The action of showing all estimates for the current round simultaneously. Queries all estimates scoped to the active story, computes the distribution, and broadcasts to all clients. The anti-bias design: no one sees others' votes until everyone has voted and someone triggers reveal.
 
+## Distribution
+
+The post-reveal aggregation of vote values displayed to all participants: a count of how many participants chose each Fibonacci value, plus a separate count of abstentions. Server-side `RevealResult.distribution` (`src/shared/types.ts:61-64`) holds the raw counts; the client renders each value as a row in a fraction-bar with the leader row highlighted. Excludes `ABSTAIN_VALUE` from the total so abstention does not deflate everyone's share.
+
 ## Participant
 
 A user in the room, identified by a stable `clientId` (persisted in localStorage). Participants survive brief disconnects via a 15-second grace period — their identity and vote are preserved. After the grace period, they are removed and must rejoin as a new participant.

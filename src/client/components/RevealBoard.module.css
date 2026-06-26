@@ -165,7 +165,7 @@
 }
 
 .distCount {
-    width: 40px;
+    width: 30px;
     font-size: 13px;
     font-weight: 700;
     color: var(--text-secondary);
@@ -178,8 +178,6 @@
 }
 
 .distPercent {
-    width: 36px;
-    text-align: right;
     font-size: 12px;
     font-weight: 700;
     color: var(--text-muted);
