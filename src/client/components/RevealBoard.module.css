@@ -127,25 +127,15 @@
   gap: 5px;
   flex: 1;
   min-width: 0;
-  height: 18px;
+  height: 20px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
   position: relative;
 }
 
-.distDots::before {
-  content: "";
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 3px;
-  background: rgba(96, 165, 250, 0.18);
-  border-radius: 2px;
-  z-index: 0;
-}
-
-.distRowLeader .distDots::before {
-  background: rgba(96, 165, 250, 0.32);
+.distRowLeader .distDots {
+  border-color: rgba(96, 165, 250, 0.45);
 }
 
 .distDot {
