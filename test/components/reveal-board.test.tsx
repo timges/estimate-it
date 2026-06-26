@@ -4,6 +4,7 @@ import { render, screen, act } from "@testing-library/react";
 import RevealBoard from "../../src/client/components/RevealBoard";
 import type {
   Estimate,
+  FibonacciValue,
   Participant,
   RevealResult,
 } from "../../src/shared/types";
@@ -289,5 +290,248 @@ describe("RevealBoard advance button", () => {
     );
     expect(screen.queryByRole("button", { name: "Next Story" })).toBeNull();
     expect(screen.queryByRole("button", { name: /wrap up/i })).toBeNull();
+  });
+});
+
+describe("RevealBoard distribution", () => {
+  const participants = [
+    { id: "p1", displayName: "Alice", color: "#fff", hasEstimated: true },
+    { id: "p2", displayName: "Bob", color: "#fff", hasEstimated: true },
+    { id: "p3", displayName: "Carol", color: "#fff", hasEstimated: true },
+    { id: "p4", displayName: "Dan", color: "#fff", hasEstimated: true },
+    { id: "p5", displayName: "Eve", color: "#fff", hasEstimated: true },
+  ];
+
+  function renderBoard(
+    estimates: Estimate[],
+    revealResult: RevealResult
+  ): ReturnType<typeof render> {
+    return render(
+      <RevealBoard
+        estimates={estimates}
+        revealResult={revealResult}
+        participants={participants}
+        onReVote={noop}
+        onNextStory={noop}
+        hasNextStory={false}
+        hasActiveStory={false}
+        finalEstimate={null}
+        onSetFinalEstimate={() => {}}
+      />
+    );
+  }
+
+  function countDotsInRow(row: HTMLElement): number {
+    const dotsContainer = row.children[1] as HTMLElement;
+    return Array.from(dotsContainer.children).filter(
+      (c) => !c.textContent
+    ).length;
+  }
+
+  it("AE1 — renders split (8×1, 13×1) with no leader border", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "8" },
+        { participantId: "p2", value: "13" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
+  });
+
+  it("AE2 — renders dominant (5×3, 8×1, 13×1) with the 5 row as leader", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "13" },
+        { participantId: "p4", value: "5" },
+        { participantId: "p5", value: "5" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 3 },
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 3 votes, leading" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+  });
+
+  it("AE4 — renders abstain row separately from numeric rows", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "13" },
+        { participantId: "p4", value: "☕" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 2 },
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+          { value: "☕", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 2 votes, leading" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Abstained: 1" })).toBeInTheDocument();
+  });
+
+  it("AE5 — tall room (5×6) renders 6 dots without an overflow label", () => {
+    const estimates: Estimate[] = [
+      { participantId: "p1", value: "5" },
+      { participantId: "p2", value: "5" },
+      { participantId: "p3", value: "5" },
+      { participantId: "p4", value: "5" },
+      { participantId: "p5", value: "5" },
+      { participantId: "p6", value: "5" },
+      { participantId: "p7", value: "8" },
+      { participantId: "p8", value: "13" },
+    ];
+    renderBoard(estimates, {
+      allAgree: false,
+      distribution: [
+        { value: "5", count: 6 },
+        { value: "8", count: 1 },
+        { value: "13", count: 1 },
+      ],
+    });
+    const row5 = screen.getByRole("img", { name: "5: 6 votes, leading" });
+    expect(countDotsInRow(row5)).toBe(6);
+    const dotsContainer = row5.children[1] as HTMLElement;
+    expect(dotsContainer.textContent).toBe("");
+  });
+
+  it("AE6 — very tall room (5×12) caps at 8 dots with +4 overflow label", () => {
+    const estimates: Estimate[] = [];
+    for (let i = 0; i < 12; i++) {
+      estimates.push({ participantId: `p${i + 1}`, value: "5" });
+    }
+    estimates.push({ participantId: "p13", value: "8" });
+    estimates.push({ participantId: "p14", value: "8" });
+    estimates.push({ participantId: "p15", value: "13" });
+    renderBoard(estimates, {
+      allAgree: false,
+      distribution: [
+        { value: "5", count: 12 },
+        { value: "8", count: 2 },
+        { value: "13", count: 1 },
+      ],
+    });
+    const row5 = screen.getByRole("img", { name: "5: 12 votes, leading" });
+    expect(countDotsInRow(row5)).toBe(8);
+    const dotsContainer = row5.children[1] as HTMLElement;
+    expect(dotsContainer.textContent).toBe("+4");
+  });
+
+  it("AE7 — tied leaders (5×2, 8×2, 13×1) border both 5 and 8; 13 stays plain", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "5" },
+        { participantId: "p4", value: "8" },
+        { participantId: "p5", value: "13" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 2 },
+          { value: "8", count: 2 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 2 votes, leading" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "8: 2 votes, leading" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+  });
+
+  it("AE8 — all-tied (5×2, 8×2) renders no leader border", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "5" },
+        { participantId: "p4", value: "8" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 2 },
+          { value: "8", count: 2 },
+        ],
+      }
+    );
+    expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
+  });
+
+  it("AE9 — single voter (8×1) renders no leader border", () => {
+    renderBoard(
+      [{ participantId: "p1", value: "8" }],
+      {
+        allAgree: false,
+        distribution: [{ value: "8", count: 1 }],
+      }
+    );
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
+  });
+
+  it("renders empty distribution without errors", () => {
+    renderBoard([], {
+      allAgree: false,
+      distribution: [],
+    });
+    expect(screen.queryByRole("img", { name: /vote/i })).not.toBeInTheDocument();
+  });
+
+  it("AE10 — prefers-reduced-motion does not affect leader border", () => {
+    setReducedMotion(true);
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "5" },
+        { participantId: "p3", value: "5" },
+        { participantId: "p4", value: "8" },
+        { participantId: "p5", value: "13" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 3 },
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 3 votes, leading" })
+    ).toBeInTheDocument();
   });
 });

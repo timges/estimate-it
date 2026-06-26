@@ -23,6 +23,7 @@ interface RevealBoardProps {
   onSetFinalEstimate: (value: FibonacciValue) => void;
 }
 
+const MAX_DOTS_PER_ROW = 8;
 
 export default function RevealBoard({
   estimates,
@@ -56,7 +57,26 @@ export default function RevealBoard({
   const suggestion = suggestFinalEstimate(estimates.map((e) => e.value));
   const selectedFinal = finalEstimate ?? suggestion;
 
-  // Crown the reveal once the staggered cards have settled.
+  const distribution = revealResult?.distribution ?? [];
+  const numericRows = distribution.filter((d) => d.value !== "☕");
+  const abstainCount = distribution.find((d) => d.value === "☕")?.count ?? 0;
+
+  const sortedRows = [...numericRows].sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return FIBONACCI_VALUES.indexOf(a.value) - FIBONACCI_VALUES.indexOf(b.value);
+  });
+
+  const maxCount = sortedRows.length > 0 ? sortedRows[0].count : 0;
+  const rowsAtMax = sortedRows.filter((r) => r.count === maxCount).length;
+  const hasUniqueMax = maxCount > 0 && rowsAtMax < sortedRows.length;
+  const leaderIndexSet = new Set(
+    hasUniqueMax
+      ? sortedRows
+          .map((r, i) => (r.count === maxCount ? i : -1))
+          .filter((i) => i >= 0)
+      : []
+  );
+
   const celebrationDelayMs = (0.2 + sorted.length * 0.12 + 0.3) * 1000;
   useConsensusCelebration(
     allAgree,
@@ -64,6 +84,18 @@ export default function RevealBoard({
     !shouldReduceMotion,
     celebrationDelayMs
   );
+
+  const renderDots = (count: number) => {
+    const visibleCount = Math.min(count, MAX_DOTS_PER_ROW);
+    const overflow = count - visibleCount;
+    const dots = [];
+    for (let i = 0; i < visibleCount; i++) {
+      dots.push(<div key={i} className={styles.distDot} />);
+    }
+    return { dots, overflow };
+  };
+
+  const pluralize = (n: number) => (n === 1 ? "vote" : "votes");
 
   return (
     <div className={styles.board}>
@@ -89,10 +121,7 @@ export default function RevealBoard({
             >
               <div
                 className={styles.estimateCard}
-                style={{
-                  borderColor: color,
-                  height: `${60 + FIBONACCI_VALUES.indexOf(est.value) * 12}px`,
-                }}
+                style={{ borderColor: color }}
               >
                 {est.value}
               </div>
@@ -138,24 +167,38 @@ export default function RevealBoard({
             </div>
           ) : (
             <div className={styles.distribution}>
-              {revealResult.distribution.map((d) => {
-                const maxCount = Math.max(
-                  ...revealResult.distribution.map((x) => x.count)
-                );
-                const barWidth = maxCount > 0 ? (d.count / maxCount) * 100 : 0;
+              {sortedRows.map((row, i) => {
+                const isLeader = leaderIndexSet.has(i);
+                const ariaLabel = `${row.value}: ${row.count} ${pluralize(row.count)}${isLeader ? ", leading" : ""}`;
+                const { dots, overflow } = renderDots(row.count);
                 return (
-                  <div key={d.value} className={styles.distRow}>
-                    <span className={styles.distValue}>{d.value}</span>
-                    <div className={styles.distBarTrack}>
-                      <div
-                        className={styles.distBar}
-                        style={{ width: `${barWidth}%` }}
-                      />
+                  <div
+                    key={row.value}
+                    className={`${styles.distRow} ${isLeader ? styles.distRowLeader : ""}`}
+                    role="img"
+                    aria-label={ariaLabel}
+                  >
+                    <span className={styles.distValue}>{row.value}</span>
+                    <div className={styles.distDots}>
+                      {dots}
+                      {overflow > 0 && (
+                        <span className={styles.distOverflow}>+{overflow}</span>
+                      )}
                     </div>
-                    <span className={styles.distCount}>×{d.count}</span>
+                    <span className={styles.distCount}>×{row.count}</span>
                   </div>
                 );
               })}
+              {abstainCount > 0 && (
+                <div
+                  className={styles.abstainRow}
+                  role="img"
+                  aria-label={`Abstained: ${abstainCount}`}
+                >
+                  <span className={styles.abstainLabel}>☕ Abstained</span>
+                  <span className={styles.abstainCount}>×{abstainCount}</span>
+                </div>
+              )}
             </div>
           )}
         </motion.div>
