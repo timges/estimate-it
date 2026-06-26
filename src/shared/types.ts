@@ -11,6 +11,8 @@ export const FIBONACCI_VALUES = [
 
 export type FibonacciValue = (typeof FIBONACCI_VALUES)[number];
 
+export const ABSTAIN_VALUE = "☕" as const satisfies FibonacciValue;
+
 export interface IssueImportResult {
   url: string;
   ok: boolean;

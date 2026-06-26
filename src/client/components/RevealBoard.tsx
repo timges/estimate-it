@@ -6,7 +6,10 @@ import type {
   Participant,
   FibonacciValue,
 } from "../../shared/types";
-import { FIBONACCI_VALUES } from "../../shared/types";
+import {
+  ABSTAIN_VALUE,
+  FIBONACCI_VALUES,
+} from "../../shared/types";
 import { suggestFinalEstimate } from "../../shared/estimates";
 import { useConsensusCelebration } from "./useConsensusCelebration";
 import styles from "./RevealBoard.module.css";
@@ -22,7 +25,6 @@ interface RevealBoardProps {
   finalEstimate: FibonacciValue | null;
   onSetFinalEstimate: (value: FibonacciValue) => void;
 }
-
 
 export default function RevealBoard({
   estimates,
@@ -50,13 +52,31 @@ export default function RevealBoard({
 
   const allAgree = revealResult?.allAgree ?? false;
   const agreedValue = allAgree
-    ? sorted.find((e) => e.value !== "☕")?.value
+    ? sorted.find((e) => e.value !== ABSTAIN_VALUE)?.value
     : undefined;
 
   const suggestion = suggestFinalEstimate(estimates.map((e) => e.value));
   const selectedFinal = finalEstimate ?? suggestion;
 
-  // Crown the reveal once the staggered cards have settled.
+  const distribution = revealResult?.distribution ?? [];
+  const numericRows = distribution.filter((d) => d.value !== ABSTAIN_VALUE);
+  const abstainCount =
+    distribution.find((d) => d.value === ABSTAIN_VALUE)?.count ?? 0;
+  const totalNumericVoters = numericRows.reduce((sum, d) => sum + d.count, 0);
+
+  const sortedRows = [...numericRows].sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return FIBONACCI_VALUES.indexOf(a.value) - FIBONACCI_VALUES.indexOf(b.value);
+  });
+
+  const maxCount = sortedRows[0]?.count ?? 0;
+  let leadersAtMax = 0;
+  for (const row of sortedRows) {
+    if (row.count === maxCount) leadersAtMax++;
+    else break;
+  }
+  const hasLeader = leadersAtMax > 0 && leadersAtMax < sortedRows.length;
+
   const celebrationDelayMs = (0.2 + sorted.length * 0.12 + 0.3) * 1000;
   useConsensusCelebration(
     allAgree,
@@ -89,10 +109,7 @@ export default function RevealBoard({
             >
               <div
                 className={styles.estimateCard}
-                style={{
-                  borderColor: color,
-                  height: `${60 + FIBONACCI_VALUES.indexOf(est.value) * 12}px`,
-                }}
+                style={{ borderColor: color }}
               >
                 {est.value}
               </div>
@@ -138,24 +155,49 @@ export default function RevealBoard({
             </div>
           ) : (
             <div className={styles.distribution}>
-              {revealResult.distribution.map((d) => {
-                const maxCount = Math.max(
-                  ...revealResult.distribution.map((x) => x.count)
-                );
-                const barWidth = maxCount > 0 ? (d.count / maxCount) * 100 : 0;
+              {sortedRows.map((row, i) => {
+                const isLeader = hasLeader && i < leadersAtMax;
+                const voteWord = row.count === 1 ? "vote" : "votes";
+                const ariaLabel = `${row.value}: ${row.count} ${voteWord}${isLeader ? ", leading" : ""}`;
+                const totalSlots = Math.max(totalNumericVoters, row.count);
+                const percent =
+                  totalNumericVoters > 0
+                    ? `${Math.round((row.count / totalNumericVoters) * 100)}%`
+                    : "0%";
                 return (
-                  <div key={d.value} className={styles.distRow}>
-                    <span className={styles.distValue}>{d.value}</span>
-                    <div className={styles.distBarTrack}>
-                      <div
-                        className={styles.distBar}
-                        style={{ width: `${barWidth}%` }}
-                      />
+                  <div
+                    key={row.value}
+                    className={`${styles.distRow} ${isLeader ? styles.distRowLeader : ""}`}
+                    role="img"
+                    aria-label={ariaLabel}
+                  >
+                    <span className={styles.distValue}>{row.value}</span>
+                    <div className={styles.distDots}>
+                      {Array.from({ length: totalSlots }, (_, j) => {
+                        const filled = j < row.count;
+                        return (
+                          <div
+                            key={j}
+                            className={filled ? styles.distDot : styles.distDotEmpty}
+                          />
+                        );
+                      })}
                     </div>
-                    <span className={styles.distCount}>×{d.count}</span>
+                    <span className={styles.distCount}>×{row.count}</span>
+                    <span className={styles.distPercent}>{percent}</span>
                   </div>
                 );
               })}
+              {abstainCount > 0 && (
+                <div
+                  className={styles.abstainRow}
+                  role="img"
+                  aria-label={`Abstained: ${abstainCount}`}
+                >
+                  <span className={styles.abstainLabel}>☕ Abstained</span>
+                  <span className={styles.abstainCount}>×{abstainCount}</span>
+                </div>
+              )}
             </div>
           )}
         </motion.div>

@@ -28,12 +28,16 @@ const participants: Participant[] = [
 
 const noop = () => {};
 
-function renderBoard(estimates: Estimate[], revealResult: RevealResult) {
+function renderBoard(
+  estimates: Estimate[],
+  revealResult: RevealResult,
+  testParticipants: Participant[] = participants,
+) {
   return render(
     <RevealBoard
       estimates={estimates}
       revealResult={revealResult}
-      participants={participants}
+      participants={testParticipants}
       onReVote={noop}
       onNextStory={noop}
       hasNextStory={false}
@@ -289,5 +293,276 @@ describe("RevealBoard advance button", () => {
     );
     expect(screen.queryByRole("button", { name: "Next Story" })).toBeNull();
     expect(screen.queryByRole("button", { name: /wrap up/i })).toBeNull();
+  });
+});
+
+describe("RevealBoard distribution", () => {
+  const distributionParticipants: Participant[] = [
+    { id: "p1", displayName: "Alice", color: "#fff", hasEstimated: true },
+    { id: "p2", displayName: "Bob", color: "#fff", hasEstimated: true },
+    { id: "p3", displayName: "Carol", color: "#fff", hasEstimated: true },
+    { id: "p4", displayName: "Dan", color: "#fff", hasEstimated: true },
+    { id: "p5", displayName: "Eve", color: "#fff", hasEstimated: true },
+  ];
+
+  afterEach(() => {
+    setReducedMotion(false);
+  });
+
+  function renderBoard(
+    estimates: Estimate[],
+    revealResult: RevealResult
+  ): ReturnType<typeof render> {
+    return render(
+      <RevealBoard
+        estimates={estimates}
+        revealResult={revealResult}
+        participants={distributionParticipants}
+        onReVote={noop}
+        onNextStory={noop}
+        hasNextStory={false}
+        hasActiveStory={false}
+        finalEstimate={null}
+        onSetFinalEstimate={() => {}}
+      />,
+    );
+  }
+
+  function countFilledDotsInRow(row: HTMLElement): number {
+    const dotsContainer = row.children[1] as HTMLElement;
+    return Array.from(dotsContainer.children).filter(
+      (c) => !c.className.includes("Empty")
+    ).length;
+  }
+
+  function countTotalSlotsInRow(row: HTMLElement): number {
+    const dotsContainer = row.children[1] as HTMLElement;
+    return dotsContainer.children.length;
+  }
+
+  function getPercentInRow(row: HTMLElement): string {
+    return (row.children[3] as HTMLElement).textContent ?? "";
+  }
+
+  function getLeaderRows(): HTMLElement[] {
+    return screen.getAllByRole("img", { name: /leading/i });
+  }
+
+  it("AE1 — renders split (8×1, 13×1) with no leader border", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "8" },
+        { participantId: "p2", value: "13" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    const rows = screen.getAllByRole("img", { name: /vote$/ });
+    expect(rows.map((r) => r.getAttribute("aria-label"))).toEqual([
+      "8: 1 vote",
+      "13: 1 vote",
+    ]);
+    expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
+  });
+
+  it("AE2 — renders dominant (5×3, 8×1, 13×1) with the 5 row as leader", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "13" },
+        { participantId: "p4", value: "5" },
+        { participantId: "p5", value: "5" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 3 },
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 3 votes, leading" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(getPercentInRow(screen.getByRole("img", { name: "5: 3 votes, leading" }))).toBe("60%");
+    expect(getPercentInRow(screen.getByRole("img", { name: "8: 1 vote" }))).toBe("20%");
+    expect(getPercentInRow(screen.getByRole("img", { name: "13: 1 vote" }))).toBe("20%");
+    expect(getLeaderRows()).toHaveLength(1);
+  });
+
+  it("AE4 — renders abstain row separately from numeric rows", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "13" },
+        { participantId: "p4", value: "☕" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 2 },
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+          { value: "☕", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 2 votes, leading" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Abstained: 1" })).toBeInTheDocument();
+  });
+
+  it("AE5 — tall room (5×6 of 8 voters) renders fraction bar with 6 filled + 2 empty, 75%", () => {
+    const estimates: Estimate[] = [
+      { participantId: "p1", value: "5" },
+      { participantId: "p2", value: "5" },
+      { participantId: "p3", value: "5" },
+      { participantId: "p4", value: "5" },
+      { participantId: "p5", value: "5" },
+      { participantId: "p6", value: "5" },
+      { participantId: "p7", value: "8" },
+      { participantId: "p8", value: "13" },
+    ];
+    renderBoard(estimates, {
+      allAgree: false,
+      distribution: [
+        { value: "5", count: 6 },
+        { value: "8", count: 1 },
+        { value: "13", count: 1 },
+      ],
+    });
+    const row5 = screen.getByRole("img", { name: "5: 6 votes, leading" });
+    expect(countFilledDotsInRow(row5)).toBe(6);
+    expect(countTotalSlotsInRow(row5)).toBe(8);
+    expect(getPercentInRow(row5)).toBe("75%");
+  });
+
+  it("AE6 — very tall room (5×12 of 15 voters) renders 12 filled + 3 empty, 80%", () => {
+    const estimates: Estimate[] = [];
+    for (let i = 0; i < 12; i++) {
+      estimates.push({ participantId: `p${i + 1}`, value: "5" });
+    }
+    estimates.push({ participantId: "p13", value: "8" });
+    estimates.push({ participantId: "p14", value: "8" });
+    estimates.push({ participantId: "p15", value: "13" });
+    renderBoard(estimates, {
+      allAgree: false,
+      distribution: [
+        { value: "5", count: 12 },
+        { value: "8", count: 2 },
+        { value: "13", count: 1 },
+      ],
+    });
+    const row5 = screen.getByRole("img", { name: "5: 12 votes, leading" });
+    expect(countFilledDotsInRow(row5)).toBe(12);
+    expect(countTotalSlotsInRow(row5)).toBe(15);
+    expect(getPercentInRow(row5)).toBe("80%");
+  });
+
+  it("AE7 — tied leaders (5×2, 8×2, 13×1) border both 5 and 8; 13 stays plain", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "5" },
+        { participantId: "p4", value: "8" },
+        { participantId: "p5", value: "13" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 2 },
+          { value: "8", count: 2 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 2 votes, leading" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "8: 2 votes, leading" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "13: 1 vote" })).toBeInTheDocument();
+    expect(getLeaderRows()).toHaveLength(2);
+    expect(
+      getLeaderRows().map((r) => r.getAttribute("aria-label"))
+    ).toEqual(["5: 2 votes, leading", "8: 2 votes, leading"]);
+  });
+
+  it("AE8 — all-tied (5×2, 8×2) renders no leader border", () => {
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "8" },
+        { participantId: "p3", value: "5" },
+        { participantId: "p4", value: "8" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 2 },
+          { value: "8", count: 2 },
+        ],
+      }
+    );
+    expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
+  });
+
+  it("AE9 — single voter (8×1) renders no leader border", () => {
+    renderBoard(
+      [{ participantId: "p1", value: "8" }],
+      {
+        allAgree: false,
+        distribution: [{ value: "8", count: 1 }],
+      }
+    );
+    expect(screen.getByRole("img", { name: "8: 1 vote" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /leading/i })).not.toBeInTheDocument();
+  });
+
+  it("renders empty distribution without errors", () => {
+    renderBoard([], {
+      allAgree: false,
+      distribution: [],
+    });
+    expect(screen.queryByRole("img", { name: /vote/i })).not.toBeInTheDocument();
+  });
+
+  it("AE10 — prefers-reduced-motion does not affect leader border", () => {
+    setReducedMotion(true);
+    renderBoard(
+      [
+        { participantId: "p1", value: "5" },
+        { participantId: "p2", value: "5" },
+        { participantId: "p3", value: "5" },
+        { participantId: "p4", value: "8" },
+        { participantId: "p5", value: "13" },
+      ],
+      {
+        allAgree: false,
+        distribution: [
+          { value: "5", count: 3 },
+          { value: "8", count: 1 },
+          { value: "13", count: 1 },
+        ],
+      }
+    );
+    expect(
+      screen.getByRole("img", { name: "5: 3 votes, leading" })
+    ).toBeInTheDocument();
   });
 });
