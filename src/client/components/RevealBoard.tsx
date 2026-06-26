@@ -23,8 +23,6 @@ interface RevealBoardProps {
   onSetFinalEstimate: (value: FibonacciValue) => void;
 }
 
-const MAX_DOTS_PER_ROW = 8;
-
 export default function RevealBoard({
   estimates,
   revealResult,

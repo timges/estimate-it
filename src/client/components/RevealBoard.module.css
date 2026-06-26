@@ -99,7 +99,8 @@
   gap: 12px;
   padding: 6px 10px;
   border-radius: 8px;
-  width: 100%;
+  width: fit-content;
+  min-width: 320px;
   max-width: 480px;
 }
 
@@ -109,7 +110,6 @@
 }
 
 .distValue {
-  width: 28px;
   text-align: right;
   font-size: 14px;
   font-weight: 700;
@@ -124,11 +124,11 @@
 .distDots {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   flex: 1;
   min-width: 0;
   height: 20px;
-  padding: 0 10px;
+  padding-inline: 4px;
   border-radius: 10px;
   border: 1px solid rgba(96, 165, 250, 0.22);
   position: relative;
@@ -139,8 +139,8 @@
 }
 
 .distDot {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
   border: 1px solid rgba(96, 165, 250, 0.4);
@@ -150,8 +150,8 @@
 }
 
 .distDotEmpty {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: transparent;
   border: 1px solid var(--border-default);
@@ -173,7 +173,6 @@
 }
 
 .distCount {
-  width: 36px;
   font-size: 13px;
   font-weight: 700;
   color: var(--text-secondary);
@@ -186,8 +185,6 @@
 }
 
 .distPercent {
-  width: 44px;
-  text-align: right;
   font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);
