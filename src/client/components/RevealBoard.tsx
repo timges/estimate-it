@@ -65,16 +65,13 @@ export default function RevealBoard({
     return FIBONACCI_VALUES.indexOf(a.value) - FIBONACCI_VALUES.indexOf(b.value);
   });
 
-  const maxCount = sortedRows.length > 0 ? sortedRows[0].count : 0;
-  const rowsAtMax = sortedRows.filter((r) => r.count === maxCount).length;
-  const hasUniqueMax = maxCount > 0 && rowsAtMax < sortedRows.length;
-  const leaderIndexSet = new Set(
-    hasUniqueMax
-      ? sortedRows
-          .map((r, i) => (r.count === maxCount ? i : -1))
-          .filter((i) => i >= 0)
-      : []
-  );
+  const maxCount = sortedRows[0]?.count ?? 0;
+  let leadersAtMax = 0;
+  for (const row of sortedRows) {
+    if (row.count === maxCount) leadersAtMax++;
+    else break;
+  }
+  const hasLeader = leadersAtMax > 0 && leadersAtMax < sortedRows.length;
 
   const celebrationDelayMs = (0.2 + sorted.length * 0.12 + 0.3) * 1000;
   useConsensusCelebration(
@@ -83,29 +80,6 @@ export default function RevealBoard({
     !shouldReduceMotion,
     celebrationDelayMs
   );
-
-  const renderFractionBar = (count: number) => {
-    const slots = [];
-    const totalSlots = Math.max(totalNumericVoters, count);
-    for (let i = 0; i < totalSlots; i++) {
-      const isFilled = i < count;
-      slots.push(
-        <div
-          key={i}
-          className={isFilled ? styles.distDot : styles.distDotEmpty}
-          data-filled={isFilled ? "true" : "false"}
-        />
-      );
-    }
-    return slots;
-  };
-
-  const percentLabel = (count: number) =>
-    totalNumericVoters > 0
-      ? `${Math.round((count / totalNumericVoters) * 100)}%`
-      : "0%";
-
-  const pluralize = (n: number) => (n === 1 ? "vote" : "votes");
 
   return (
     <div className={styles.board}>
@@ -178,9 +152,14 @@ export default function RevealBoard({
           ) : (
             <div className={styles.distribution}>
               {sortedRows.map((row, i) => {
-                const isLeader = leaderIndexSet.has(i);
-                const ariaLabel = `${row.value}: ${row.count} ${pluralize(row.count)}${isLeader ? ", leading" : ""}`;
-                const slots = renderFractionBar(row.count);
+                const isLeader = hasLeader && i < leadersAtMax;
+                const voteWord = row.count === 1 ? "vote" : "votes";
+                const ariaLabel = `${row.value}: ${row.count} ${voteWord}${isLeader ? ", leading" : ""}`;
+                const totalSlots = Math.max(totalNumericVoters, row.count);
+                const percent =
+                  totalNumericVoters > 0
+                    ? `${Math.round((row.count / totalNumericVoters) * 100)}%`
+                    : "0%";
                 return (
                   <div
                     key={row.value}
@@ -189,9 +168,19 @@ export default function RevealBoard({
                     aria-label={ariaLabel}
                   >
                     <span className={styles.distValue}>{row.value}</span>
-                    <div className={styles.distDots}>{slots}</div>
+                    <div className={styles.distDots}>
+                      {Array.from({ length: totalSlots }, (_, j) => {
+                        const filled = j < row.count;
+                        return (
+                          <div
+                            key={j}
+                            className={filled ? styles.distDot : styles.distDotEmpty}
+                          />
+                        );
+                      })}
+                    </div>
                     <span className={styles.distCount}>×{row.count}</span>
-                    <span className={styles.distPercent}>{percentLabel(row.count)}</span>
+                    <span className={styles.distPercent}>{percent}</span>
                   </div>
                 );
               })}

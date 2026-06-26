@@ -4,7 +4,6 @@ import { render, screen, act } from "@testing-library/react";
 import RevealBoard from "../../src/client/components/RevealBoard";
 import type {
   Estimate,
-  FibonacciValue,
   Participant,
   RevealResult,
 } from "../../src/shared/types";
@@ -29,12 +28,16 @@ const participants: Participant[] = [
 
 const noop = () => {};
 
-function renderBoard(estimates: Estimate[], revealResult: RevealResult) {
+function renderBoard(
+  estimates: Estimate[],
+  revealResult: RevealResult,
+  testParticipants: Participant[] = participants,
+) {
   return render(
     <RevealBoard
       estimates={estimates}
       revealResult={revealResult}
-      participants={participants}
+      participants={testParticipants}
       onReVote={noop}
       onNextStory={noop}
       hasNextStory={false}
@@ -302,33 +305,16 @@ describe("RevealBoard distribution", () => {
     { id: "p5", displayName: "Eve", color: "#fff", hasEstimated: true },
   ];
 
-  function renderBoard(
-    estimates: Estimate[],
-    revealResult: RevealResult
-  ): ReturnType<typeof render> {
-    return render(
-      <RevealBoard
-        estimates={estimates}
-        revealResult={revealResult}
-        participants={participants}
-        onReVote={noop}
-        onNextStory={noop}
-        hasNextStory={false}
-        hasActiveStory={false}
-        finalEstimate={null}
-        onSetFinalEstimate={() => {}}
-      />
-    );
-  }
-
   function countFilledDotsInRow(row: HTMLElement): number {
     const dotsContainer = row.children[1] as HTMLElement;
-    return dotsContainer.querySelectorAll('[data-filled="true"]').length;
+    return Array.from(dotsContainer.children).filter(
+      (c) => !c.className.includes("Empty")
+    ).length;
   }
 
   function countTotalSlotsInRow(row: HTMLElement): number {
     const dotsContainer = row.children[1] as HTMLElement;
-    return dotsContainer.querySelectorAll('[data-filled]').length;
+    return dotsContainer.children.length;
   }
 
   function getPercentInRow(row: HTMLElement): string {
