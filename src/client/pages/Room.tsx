@@ -235,7 +235,7 @@ export default function Room() {
   }
 
   async function handleRoomClick() {
-    await navigator.clipboard.writeText(roomId ?? "");
+    await navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
     copiedTimeoutRef.current = setTimeout(() => setCopied(false), 1500);

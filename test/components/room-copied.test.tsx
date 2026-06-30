@@ -20,6 +20,11 @@ describe("Room copied feedback", () => {
     vi.useFakeTimers();
     useRoomStore.setState({ error: null, connected: false });
     localStorage.setItem("displayName", "TestUser");
+    Object.defineProperty(window, "location", {
+      value: { href: "http://localhost/room/test-room" },
+      writable: true,
+      configurable: true,
+    });
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText: writeTextMock },
       writable: true,
@@ -48,7 +53,7 @@ describe("Room copied feedback", () => {
     const codeButton = screen.getByText("test-room");
     fireEvent.click(codeButton);
 
-    expect(writeTextMock).toHaveBeenCalledWith("test-room");
+    expect(writeTextMock).toHaveBeenCalledWith("http://localhost/room/test-room");
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);

@@ -133,32 +133,35 @@ app.get("/what-is-planning-poker", (c) =>
 app.get("/sprint-planning-guide", (c) =>
   c.html(landingPage(
     "Sprint Planning Estimation Guide | estimate-it",
-    "A practical guide to sprint planning estimation. Learn why estimation matters, common techniques like planning poker and t-shirt sizing, and tips for better estimates.",
+    "A practical guide to sprint planning estimation — why it matters, why estimates aren't promises, techniques like planning poker and t-shirt sizing, and tips for more accurate estimates.",
     "https://estimate-it.app/sprint-planning-guide",
     `<h1>Sprint Planning Estimation Guide</h1>
     <p>Good estimation is the foundation of predictable delivery. When your team estimates well, you can commit to realistic sprint goals, identify risks early, and build trust with stakeholders. This guide covers the most effective estimation techniques and practical tips to improve your team's accuracy.</p>
-
     <h2>Why Estimation Matters</h2>
     <p>Estimation is not about predicting the future with precision. It is about creating a shared understanding of the work and making trade-offs visible. Teams that estimate consistently can answer questions like: How much can we deliver this sprint? Is this feature worth the investment? Where are the risks?</p>
     <p>Without estimation, teams either overcommit and burn out, or undercommit and waste capacity. Neither is sustainable.</p>
-
+    <h2>Estimates Are Not Promises</h2>
+    <p>This is the single most important thing to get right, and it is where most estimation cultures break down. An estimate is a forecast made with incomplete information. The moment estimates start being treated as deadlines — or as a scorecard for individual productivity — people stop estimating honestly and start padding, sandbagging, or gaming the numbers. The estimates get worse precisely because they are taken too seriously.</p>
+    <p>A few guardrails keep estimation healthy. Don't hold individuals to their estimates as commitments — the team commits to a sprint goal, not to a number a person said out loud. Never use estimates or velocity to compare developers or teams against each other, since the numbers aren't calibrated across people and the comparison only teaches everyone to inflate. And treat a missed estimate as information rather than a failure: the interesting question is why it was off, not who was wrong.</p>
+    <p>If estimates can't be wrong without consequences, they'll stop being honest — and dishonest estimates are worse than none.</p>
     <h2>Common Estimation Techniques</h2>
     <h3>Planning Poker</h3>
-    <p>The most popular technique for agile teams. Each team member selects a Fibonacci card privately, then all cards are revealed at once. Differences in estimates trigger discussion about assumptions and complexity. Planning poker works because it combines independent judgment with structured conversation.</p>
+    <p>The most popular technique for agile teams. Each team member selects a Fibonacci card privately, then all cards are revealed at once. Differences in estimates trigger discussion about assumptions and complexity. Planning poker works because it combines independent judgment with structured conversation — the private vote prevents anchoring on whoever speaks first.</p>
     <h3>T-Shirt Sizing</h3>
     <p>A quick, relative estimation method using sizes (XS, S, M, L, XL). Best for early-stage planning or when you need a rough sense of effort without precise numbers. T-shirt sizing is fast but less granular — use it for backlog grooming, not sprint commitment.</p>
-    <h3>Dot Voting</h3>
-    <p>Each team member gets a fixed number of dots to place on stories they think are most valuable or important. Useful for prioritization rather than effort estimation. Combine with another technique for a complete picture.</p>
+    <h3>Reference (Baseline) Stories</h3>
+    <p>Not a standalone ceremony so much as a habit that makes every other technique work better. Pick a few well-understood, already-completed stories and treat them as fixed anchors — your canonical 2, your canonical 5, your canonical 8. New stories get estimated by comparison: is this more or less than our reference 5? Baselines keep the scale from drifting over time and give new team members a fast way to calibrate. If you do nothing else on this list, do this.</p>
+    <p><strong>A note on prioritization tools.</strong> Techniques like dot voting — where each member places a fixed number of dots on the stories they find most valuable — are sometimes lumped in with estimation, but they measure perceived value, not effort. They're genuinely useful, just for deciding what to build rather than how big it is. Pair them with one of the estimation techniques above rather than substituting for one.</p>
     <h3>Story Points vs. Hours</h3>
-    <p>Story points measure relative effort and complexity. Hours measure absolute time. Points are better for teams because they account for the fact that a 5-point story for one developer might take a different amount of time for another. Points normalize across the team.</p>
-
+    <p>Story points measure relative effort and complexity; hours measure absolute time. Many teams find points more reliable because they account for the fact that a 5-point story for one developer might take a different amount of wall-clock time for another. Points also resist the false precision of hourly estimates, which tend to imply a confidence nobody actually has.</p>
+    <p>That said, this is a genuine debate, not settled doctrine. Some teams count stories instead of pointing them and get equally stable forecasts. Others argue that slicing work small and measuring cycle time directly makes estimation ceremony unnecessary altogether. For short-horizon, well-understood work, hours can be perfectly fine. Points are a strong default for most teams doing sprint-based delivery, but the right unit depends on your context.</p>
     <h2>Tips for Better Estimates</h2>
     <p><strong>Estimate as a team.</strong> Solo estimates miss perspectives. The whole team should participate — developers, testers, and anyone who touches the work.</p>
-    <p><strong>Use relative sizing.</strong> Compare stories to each other rather than guessing absolute effort. "This is about twice as complex as that story" is more reliable than "this will take 6 hours."</p>
-    <p><strong>Break down large stories.</strong> If a story is too big to estimate confidently, split it. Stories that are 8+ points are signals to decompose further.</p>
-    <p><strong>Calibrate with completed work.</strong> After each sprint, compare estimated points to actual effort. Look for patterns. Are you consistently underestimating integration work? Overestimating UI tasks? Adjust your calibration over time.</p>
+    <p><strong>Use relative sizing.</strong> Compare stories to each other rather than guessing absolute effort. "This is about twice as complex as that story" is more reliable than "this will take 6 hours." This is exactly where reference stories earn their keep.</p>
+    <p><strong>Break down large stories.</strong> If a story is too big to estimate confidently, split it. As a rough heuristic, many teams treat anything beyond their reference 8 as a signal to decompose — but the exact threshold is a team convention, not a law. The real test is whether the team can estimate it with confidence; if not, slice it.</p>
+    <p><strong>Calibrate your relative sizing, not your hours.</strong> After each sprint, the useful question isn't whether the points matched the time — points were never meant to track hours, so reconciling them just smuggles time-estimation back in. Instead, check whether your relative scale still holds: are 5s consistently bigger than 3s? Has a particular kind of work, like integration or cross-team dependencies, drifted out of proportion to its points? Re-anchor against your reference stories when the scale starts to slip.</p>
     <p><strong>Timebox estimation sessions.</strong> Long sessions produce fatigue and diminishing returns. Keep planning poker sessions to 30-60 minutes. If you have more stories than time, prioritize and estimate the rest next time.</p>
-    <p><strong>Don't estimate bugs the same way.</strong> Bugs are unpredictable. Use a simple "small/medium/large" or track them separately from feature work. Trying to assign Fibonacci points to debugging is often misleading.</p>`
+    <p><strong>Don't estimate bugs the same way.</strong> Bugs are unpredictable — you often can't size the work until you've found the cause. Use a simple "small/medium/large," track them separately from feature work, or reserve a fixed slice of capacity for them. Trying to assign Fibonacci points to debugging is usually misleading.</p>`
   ))
 );
 
